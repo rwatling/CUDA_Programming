@@ -5,6 +5,11 @@
 
 # include "system_includes.h"
 
+__global__ void array_search(int* a, int* b, int* match) {
+	//a[thread_id] = b[thread_id] return match
+}
+
+
 using namespace std;
 
 int main() {
@@ -15,8 +20,6 @@ int main() {
 	int num_states;
 
 	//Host int arrays
-	//Might switch to int matrix and put a one where each matches
-	//Matrix num num_states rows and N columns
 	vector<int> host_a;
 	vector<int> host_b;
 	vector<int> host_c;
@@ -35,7 +38,6 @@ int main() {
 	//Initialize host arrays
 	N = 1 << 4;
 
-	//Change to matrix???
 	//Vector a
 	for (int i = 0; i < N; i++) {
 		host_a.push_back(i);
