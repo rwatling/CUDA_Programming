@@ -1,13 +1,19 @@
-CC = nvcc
+NVCC = nvcc
 CFLAGS =
-OBJ = main.o
+OBJ = main.o rand_init.o
+EXEC = main
+LFLAGS=-lcurand
+
+all: main
 
 main: $(OBJ)
-	$(CC) -o main $(OBJ)
+	$(NVCC) -o $(EXEC) $(OBJ) $(LFLAGS)
 
-main.o: main.cu
-	$(CC) $(CFLAGS) -c -o main.o main.cu
+main.o: main.cu cuda_includes.h
+	$(NVCC) $(CFLAGS) -c -o main.o main.cu
 
+rand_init.o: rand_init.cu rand_init.h
+	$(NVCC) $(CFLAGS) -c -o rand_init.o rand_init.cu
 clean:
-	rm main
+	rm $(EXEC)
 	rm $(OBJ)

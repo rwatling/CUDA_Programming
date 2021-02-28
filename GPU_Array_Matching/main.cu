@@ -3,13 +3,12 @@
 * Author: Robbie Watling
 */
 
-# include <cuda.h>
-# include <cuda_runtime_api.h>
-# include <device_launch_parameters.h>
-# include <iostream>
-# include <vector>
-# include <utility>
-# include <iostream>
+#include "cuda_includes.h"
+#include "rand_init.h"
+#include <iostream>
+#include <vector>
+#include <utility>
+#include <iostream>
 
 __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  int size) {
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -22,7 +21,7 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
 				if (current_array[i] == prev_array[j]) {
-					match = 1;
+				match = 1;
 				}
 			}
 		}
@@ -49,6 +48,8 @@ int main() {
 	size_t array_set_bytes;
 	size_t match_bytes;
 	cudaError cuda_err;
+	//curandStatus_t rand_err;
+	//curandGenerator_t gen;
 
 	/***Initialization***/
 	array_size = 1 << 3;
@@ -65,6 +66,7 @@ int main() {
 	host_arrays = (int*) calloc(one_t, array_set_bytes);
 	host_match = (int*) calloc(one_t, match_bytes);
 
+	
 	if (host_arrays == NULL) {
 		cerr << "Host arrays calloc failed\n" << endl;
 		return -1;
@@ -90,6 +92,7 @@ int main() {
 		return -1;
 	}
 
+	/*
 	for (int i = 0; i < num_arrays; i++) {
 		int step = i * array_size;
 		int value = i / 2;
@@ -97,11 +100,13 @@ int main() {
 		for (int j = 0; j < array_size; j++) {
 			host_arrays[step + j] = value;
 		}
-	}
+	}*/
+
+	rand_init <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, num_arrays, array_size);
 
 	/*** Copy arrays to device ***/
-	cudaMemcpy((void*)device_arrays, (void*)host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
-	cudaMemcpy((void*)device_match, (void*)host_match, match_bytes, cudaMemcpyHostToDevice);
+	//cudaMemcpy((void*)device_arrays, (void*)host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+	//cudaMemcpy((void*)device_match, (void*)host_match, match_bytes, cudaMemcpyHostToDevice);
 	
 	/*** Search arrays and copy result back to host ***/
 	//Memcopy works as a synchronization layer
@@ -109,6 +114,9 @@ int main() {
 	
 	//Copy match back to host
 	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
+
+	//Copy gpu arrays to host for verification
+	cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 	//Print arrays
 	cout << "Original arrays:" << endl;
@@ -133,7 +141,7 @@ int main() {
 	/***Free variables***/
 	cudaFree(device_arrays);
 	cudaFree(device_match);
-	free(host_arrays);
+	//free(host_arrays);
 	free(host_match);
 
 	return 0;
