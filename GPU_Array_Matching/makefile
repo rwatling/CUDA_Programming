@@ -1,6 +1,6 @@
 NVCC = nvcc
 CFLAGS =
-OBJ = main.o rand_init.o
+OBJ = main.o array_match.o
 EXEC = main
 LFLAGS=-lcurand
 
@@ -10,10 +10,11 @@ main: $(OBJ)
 	$(NVCC) -o $(EXEC) $(OBJ) $(LFLAGS)
 
 main.o: main.cu cuda_includes.h
-	$(NVCC) $(CFLAGS) -c -o main.o main.cu
+	$(NVCC) $(CFLAGS) -o main.o -c main.cu
 
-rand_init.o: rand_init.cu rand_init.h
-	$(NVCC) $(CFLAGS) -c -o rand_init.o rand_init.cu
+array_match.o: array_match.cu array_match.h
+	$(NVCC) $(CFLAGS) -o array_match.o -c array_match.cu
+
 clean:
 	rm $(EXEC)
 	rm $(OBJ)
