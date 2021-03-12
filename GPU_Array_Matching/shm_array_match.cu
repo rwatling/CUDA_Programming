@@ -14,7 +14,7 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 	if (thread_id > num_arrays) { return; }
 
 	//Copy all_arrays segment current and previous segment to shared_arrays
-	int* temp_all = all_arrays + ((thread_id - 1) * size);
+	int* temp_all = all_arrays + ((thread_id) * size);
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < size; j++) {
@@ -26,7 +26,7 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 	__syncthreads();
 
 	for (int i = 0; i < size; i++) {
-			all_arrays[i+ (thread_id * size)] = shared_arrays[i + size];	
+			temp_all[i+ (thread_id * size)] = shared_arrays[i + size];	
 	}
 
 	//Initialize random numbers
