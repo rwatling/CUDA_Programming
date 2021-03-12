@@ -14,23 +14,18 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 	if (thread_id > num_arrays) { return; }
 
 	//Copy all_arrays segment current and previous segment to shared_arrays
-	int* temp_all = all_arrays + ((thread_id) * size);
+	int* temp_all = all_arrays + ((thread_id - 1) * size);
 
 	for (int i = 0; i < 2; i++) {
 		for (int j = 0; j < size; j++) {
-			//shared_arrays[j + (i * size)]  = temp_all[j + (i * size)];
-			shared_arrays[j + (i * size)] = 3;
+			shared_arrays[j + (i * size)]  = temp_all[j + (i * size)];
 		}
 	}
 
 	__syncthreads();
 
-	for (int i = 0; i < size; i++) {
-			temp_all[i+ (thread_id * size)] = shared_arrays[i + size];	
-	}
-
 	//Initialize random numbers
-	/*curand_init(seed + thread_id, 0, 0, &state);
+	curand_init(seed + thread_id, 0, 0, &state);
 
 	//Shared memory locations for current and previous
 	int* current_array = shared_arrays + size ; //Pointer arithmetic
@@ -72,5 +67,5 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 
 	for (int i = 0; i < size; i++) {
 			temp_all[i] = shared_arrays[i + size];	
-	}*/
+	}
 }
