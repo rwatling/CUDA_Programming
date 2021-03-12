@@ -35,8 +35,8 @@ int main() {
 	cudaError cuda_err;
 
 	/***Initialization***/
-	array_size = 1 << 3;
-	num_arrays = 1 << 3;
+	cin >> array_size;
+	cin >> num_arrays;
 	match_size = num_arrays;
 	NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;

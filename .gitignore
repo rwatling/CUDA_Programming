@@ -11,3 +11,4 @@
 !GPU_Array_Matching
 !.gitignore
 !makefile
+!*.sh
