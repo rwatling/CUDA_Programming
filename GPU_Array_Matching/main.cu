@@ -21,17 +21,17 @@ int main() {
 	int* device_arrays;
 	int* host_match;
 	int* device_match;
-	
+
 	int array_size;
 	int match_size;
 	int num_arrays;
 	int NUM_THREADS;
 	int NUM_BLOCKS;
-	
+
 	size_t one_t;
 	size_t array_set_bytes;
 	size_t match_bytes;
-	
+
 	cudaError cuda_err;
 
 	/***Initialization***/
@@ -75,11 +75,42 @@ int main() {
 		return -1;
 	}
 
-	/*** Search arrays and copy result back to host ***/
-	//Memcopy works as a synchronization layer
+	/*** Search arrays and copy result back to host using shared memory***/
 	shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
 
-	//Mem copy works as a synchronization layer
+	//Copy match back to host
+	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
+
+	//Copy gpu arrays to host for verification
+	cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+
+	//Print arrays
+	cout << "Original arrays:" << endl;
+	for (int i = 0; i < num_arrays; i++) {
+		int step = i * array_size;
+		cout << "[";
+
+		for (int j = 0; j < array_size; j++) {
+			cout << host_arrays[step + j] << " " ;
+		}
+
+		cout << "]" << endl;
+	}
+
+	//Print match array
+	cout << "Match array: [";
+	for (int i = 0; i < match_size; i++) {
+		cout << host_match[i] << " ";
+	}
+	cout << "]" << endl;
+
+	//Zero out device memory
+	cudaMemset(device_arrays, 0, array_set_bytes);
+	cudaMemset(device_match, 0, match_bytes);
+
+	/*** Search arrays and copy back to host using global memory ***/
+	array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
+
 	//Copy match back to host
 	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
 
