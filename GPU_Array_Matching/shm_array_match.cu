@@ -3,69 +3,60 @@
 __global__ void shm_array_match(int* all_arrays, int* match_array, int num_arrays,  int size) {
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 
-	//Declare shared arrays
-	extern __shared__ int shared_arrays[];
+	//Declare current and previous arrays
+	extern __shared__ int current_arr[];
+	int* prev_arr = all_arrays + ((thread_id - 1) * size);
+	int* g_current_arr = all_arrays + (thread_id * size);
+	int match;
+
 
 	//For random number generation
 	int maxRand = 100;
 	curandState state;
-	unsigned long long seed = clock();
+	unsigned long long seed;
+
+	//Initialize random numbers
+	seed = clock();
+	curand_init(seed + thread_id, 0, 0, &state);
 
 	if (thread_id > num_arrays) { return; }
 
-	//Copy all_arrays segment current and previous segment to shared_arrays
-	int* temp_all = all_arrays + ((thread_id - 1) * size);
-
-	for (int i = 0; i < 2; i++) {
-		for (int j = 0; j < size; j++) {
-			shared_arrays[j + (i * size)]  = temp_all[j + (i * size)];
-		}
-	}
-
-	__syncthreads();
-
-	//Initialize random numbers
-	curand_init(seed + thread_id, 0, 0, &state);
-
-	//Shared memory locations for current and previous
-	int* current_array = shared_arrays + size ; //Pointer arithmetic
-	int* prev_array = shared_arrays; //Pointer arithmetic
-
-	int match = 0;
-
 	if (thread_id > 0) {
 
+		//Get random array element (assign to global for verification)
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
-
-				//At runtime moment, generate random number
-				int rand_num = (int) (curand_uniform(&state) * maxRand);;
-				current_array[i] = rand_num;
-
-				//Check if previous match
-				if (rand_num == prev_array[j]) {
-					match = 1;
-				}
+				int rand_num = (int) (curand_uniform(&state) * maxRand);
+				current_arr[i] = rand_num;
+				g_current_arr[i] = rand_num;
 			}
 		}
 
-		match_array[thread_id] = match;
-
-	} else if (thread_id == 0) {
-		
+	} else {
 		for (int i = 0; i < size; i++) {
-			
-			//At runtime moment, generate random number
-			current_array[i] = (int) (curand_uniform(&state) * maxRand);
+			int rand_num = (int) (curand_uniform(&state) * maxRand);
+			current_arr[i] = rand_num;
+			g_current_arr[i] = rand_num;
 		}
 	}
 
 	__syncthreads();
 
-	//Copy just the current array back to global memory
-	temp_all = all_arrays + (thread_id * size);
+	match = 0;
 
-	for (int i = 0; i < size; i++) {
-			temp_all[i] = shared_arrays[i + size];	
+	if (thread_id > 0) {
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				if (current_arr[i] == prev_arr[j]) {
+					match = 1;
+					break;
+				}
+			}
+
+			if (match) {
+				match_array[thread_id] = match;
+				break;
+			}
+		}
 	}
 }

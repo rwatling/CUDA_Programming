@@ -10,34 +10,39 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 
 	curand_init(seed + thread_id, 0, 0, &state);
 
-	if (thread_id < num_arrays) {
-		int* current_array = all_arrays + (thread_id * size); //Pointer arithmetic
-		int* prev_array = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
-		int match = 0;
+	if (thread_id >= num_arrays) { return; }
 
-		if (thread_id > 0) {
+	int* current_array = all_arrays + (thread_id * size); //Pointer arithmetic
+	int* prev_array = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
+	int match = 0;
 
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
+	if (thread_id > 0) {
 
-					//At runtime moment, generate random number
-					int rand_num = (int) (curand_uniform(&state) * maxRand);;
-					current_array[i] = rand_num;
-
-					//Check if previous match
-					if (rand_num == prev_array[j]) {
-						match = 1;
-					}
-				}
-			}
-
-			match_array[thread_id] = match;
-
-		} else if (thread_id == 0) {
-			for (int i = 0; i < size; i++) {
+		for (int i = 0; i < size; i++) {
 				//At runtime moment, generate random number
-				current_array[i] = (int) (curand_uniform(&state) * maxRand);
+				int rand_num = (int) (curand_uniform(&state) * maxRand);;
+				current_array[i] = rand_num;		
+		}
+	} else if (thread_id == 0) {
+		for (int i = 0; i < size; i++) {
+			//At runtime moment, generate random number
+			current_array[i] = (int) (curand_uniform(&state) * maxRand);
+		}
+	}
+
+	__syncthreads();
+
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size; j++) {
+			if (current_array[i] == prev_array[j]) {
+				match = 1;
+				break;
 			}
+		}
+
+		if (match) {
+			match_array[thread_id] = 1;
+			break;
 		}
 	}
 }
