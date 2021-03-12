@@ -5,6 +5,7 @@
 
 #include "cuda_includes.h"
 #include "array_match.h"
+#include "shm_array_match.h"
 #include <iostream>
 #include <vector>
 #include <utility>
@@ -20,14 +21,17 @@ int main() {
 	int* device_arrays;
 	int* host_match;
 	int* device_match;
+	
 	int array_size;
 	int match_size;
 	int num_arrays;
 	int NUM_THREADS;
 	int NUM_BLOCKS;
+	
 	size_t one_t;
 	size_t array_set_bytes;
 	size_t match_bytes;
+	
 	cudaError cuda_err;
 
 	/***Initialization***/
@@ -71,14 +75,11 @@ int main() {
 		return -1;
 	}
 
-	/*** Copy arrays to device ***/
-	//cudaMemcpy((void*)device_arrays, (void*)host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
-	//cudaMemcpy((void*)device_match, (void*)host_match, match_bytes, cudaMemcpyHostToDevice);
-
 	/*** Search arrays and copy result back to host ***/
 	//Memcopy works as a synchronization layer
-	array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
+	shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
 
+	//Mem copy works as a synchronization layer
 	//Copy match back to host
 	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
 
