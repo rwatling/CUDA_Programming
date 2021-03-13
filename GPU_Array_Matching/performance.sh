@@ -16,8 +16,8 @@ cp $empty $file4
 cp $empty $file5
 cp $empty $file6
 
-# array_size goes from 4 to 8192 in increments of 16
-for i in {4..4096..16}
+# array_size goes from 4 to 2048 in increments of 32
+for i in {4..2048..32}
 do	
 	./main $((i)) 8 1 >> $file1
 	./main $((i)) 8 0 >> $file1
@@ -29,8 +29,8 @@ do
 	./main $((i)) 1024 0 >> $file3
 done
 
-# num_arrays goes from 4 to 1024 in increments of 16
-for j in {4..1024..16}
+# num_arrays goes from 4 to 1024 in increments of 32
+for j in {4..1024..32}
 do		
 	./main 8 $((j)) 1 >> $file4
 	./main 8 $((j)) 0 >> $file4
@@ -38,6 +38,6 @@ do
 	./main 512 $((j)) 1 >> $file5
 	./main 512 $((j)) 0 >> $file5
 
-	./main 4096 $((j)) 1 >> $file6
-	./main 4096 $((j)) 0 >> $file6
+	./main 2048 $((j)) 1 >> $file6
+	./main 2048 $((j)) 0 >> $file6
 done
