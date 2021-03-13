@@ -35,13 +35,14 @@ int main(int argc, char** argv) {
 
 	cudaError cuda_err;
 
-	struct timeval startShm; 
+	struct timeval startShm;
 	struct timeval startG;
 	struct timeval stopShm;
 	struct timeval stopG;
 
 	if (argc < 4) {
 		cerr << "./main array_size num_arrays shared(y/n)" << endl;
+		return -1;
 	}
 
 	/***Initialization***/
@@ -86,90 +87,95 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	cudaMemset(device_arrays, 0, array_size);
+	cudaMemset(device_match, 0, match_size);
+
+	//If shared is specified
 	if (shared) {
-	//Start timer shm
-	gettimeofday(&startShm, 0);
+		
+		//Start timer shm
+		gettimeofday(&startShm, 0);
 
-	/*** Search arrays and copy result back to host using shared memory***/
-	shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
+		/*** Search arrays and copy result back to host using shared memory***/
+		shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
 
-	gettimeofday(&stopShm, 0);
+		gettimeofday(&stopShm, 0);
 
-	//Copy match back to host
-	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
+		//Copy match back to host
+		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
 
-	//Copy gpu arrays to host for verification
-	cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+		//Copy gpu arrays to host for verification
+		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-	//Print arrays
-	/*cout << "Original arrays:" << endl;
-	for (int i = 0; i < num_arrays; i++) {
-		int step = i * array_size;
-		cout << "[";
+		//Print arrays
+		/*cout << "Original arrays:" << endl;
+		for (int i = 0; i < num_arrays; i++) {
+			int step = i * array_size;
+			cout << "[";
 
-		for (int j = 0; j < array_size; j++) {
-			cout << host_arrays[step + j] << " " ;
+			for (int j = 0; j < array_size; j++) {
+				cout << host_arrays[step + j] << " " ;
+			}
+
+			cout << "]" << endl;
 		}
 
+		//Print match array
+		cout << "Match array: [";
+		for (int i = 0; i < match_size; i++) {
+			cout << host_match[i] << " ";
+		}
 		cout << "]" << endl;
+		*/
+
+		long shm_sec = stopShm.tv_sec - startShm.tv_sec;
+		long shm_ms = stopShm.tv_usec - startShm.tv_usec;
+		double elapsed = shm_sec + shm_ms*1e-6;
+
+		cout << "Shm elapsed time: " << elapsed << endl;
 	}
 
-	//Print match array
-	cout << "Match array: [";
-	for (int i = 0; i < match_size; i++) {
-		cout << host_match[i] << " ";
-	}
-	cout << "]" << endl;
-	*/
-	
-	long shm_sec = stopShm.tv_sec - startShm.tv_sec;
-	long shm_ms = stopShm.tv_usec - startShm.tv_usec;
-	double elapsed = shm_sec + shm_ms*1e-6;
-
-	cout << "Shm elapsed time: " << elapsed << endl;
-	}
-
-	//Zero out device memory
+	//If not shared is specified
 	if (!shared) {
 
-	gettimeofday(&startG, 0);
+		gettimeofday(&startG, 0);
 
-	/*** Search arrays and copy back to host using global memory ***/
-	array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
+		/*** Search arrays and copy back to host using global memory ***/
+		array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
 
-	gettimeofday(&stopG, 0);
+		//Copy match back to host
+		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
 
-	//Copy match back to host
-	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
+		gettimeofday(&stopG, 0);
 
-	//Copy gpu arrays to host for verification
-	cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+		//Copy gpu arrays to host for verification
+		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-	//Print arrays
-	/*cout << "Original arrays:" << endl;
-	for (int i = 0; i < num_arrays; i++) {
-		int step = i * array_size;
-		cout << "[";
+		//Print arrays
+		/*cout << "Original arrays:" << endl;
+		for (int i = 0; i < num_arrays; i++) {
+			int step = i * array_size;
+			cout << "[";
 
-		for (int j = 0; j < array_size; j++) {
-			cout << host_arrays[step + j] << " " ;
+			for (int j = 0; j < array_size; j++) {
+				cout << host_arrays[step + j] << " " ;
+			}
+
+			cout << "]" << endl;
 		}
 
-		cout << "]" << endl;
-	}
+		//Print match array
+		cout << "Match array: [";
+		for (int i = 0; i < match_size; i++) {
+			cout << host_match[i] << " ";
+		}
+		cout << "]" << endl;*/
 
-	//Print match array
-	cout << "Match array: [";
-	for (int i = 0; i < match_size; i++) {
-		cout << host_match[i] << " ";
-	}
-	cout << "]" << endl;*/ 
+		long g_sec = stopG.tv_sec - startG.tv_sec;
+		long g_ms = stopG.tv_usec - startG.tv_usec;
+		double elapsed = g_sec + g_ms*1e-6;
 
-	long g_sec = stopG.tv_sec - startG.tv_sec;
-	long g_ms = stopG.tv_usec - startG.tv_usec;
-	double elapsed = g_sec + g_ms*1e-6;
-
-	cout << "Global elapsed time: " << elapsed << endl;
+		cout << "Global elapsed time: " << elapsed << endl;
 	}
 
 	/***Free variables***/

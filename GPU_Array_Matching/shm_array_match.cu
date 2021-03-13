@@ -23,16 +23,18 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 
 	if (thread_id > 0) {
 
-		//Get random array element (assign to global for verification)
+		//Get random array element
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
 				int rand_num = (int) (curand_uniform(&state) * maxRand);
 				current_arr[i] = rand_num;
-				g_current_arr[i] = rand_num;
+				g_current_arr[i] = rand_num; //Not certain this is necessary
 			}
 		}
 
 	} else {
+
+		//Get random array element
 		for (int i = 0; i < size; i++) {
 			int rand_num = (int) (curand_uniform(&state) * maxRand);
 			current_arr[i] = rand_num;
@@ -42,6 +44,8 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 
 	__syncthreads();
 
+	//find matches using shared current and global previous
+	//update match if found
 	match = 0;
 
 	if (thread_id > 0) {
