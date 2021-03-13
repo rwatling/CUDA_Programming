@@ -1,13 +1,13 @@
 #!/bin/bash
 
-file1=change_arr_size_small.csv
-file2=change_arr_size_avg.csv
-file3=change_arr_size_lg.csv
-file4=change_num_arr_small.csv
-file5=change_num_arr_avg.csv
-file6=change_num_arr_lg.csv
+file1=./data/change_arr_size_small.csv
+file2=./data/change_arr_size_avg.csv
+file3=./data/change_arr_size_lg.csv
+file4=./data/change_num_arr_small.csv
+file5=./data/change_num_arr_avg.csv
+file6=./data/change_num_arr_lg.csv
 
-empty=empty_results.csv
+empty=./data/empty_results.csv
 
 cp $empty $file1
 cp $empty $file2
