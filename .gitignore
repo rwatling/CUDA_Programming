@@ -13,3 +13,4 @@
 !makefile
 !*.sh
 !*.csv
+!*.R
