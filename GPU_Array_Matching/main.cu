@@ -40,6 +40,8 @@ int main(int argc, char** argv) {
 	struct timeval stopShm;
 	struct timeval stopG;
 
+	double elapsed;
+
 	if (argc < 4) {
 		cerr << "./main array_size num_arrays shared(y/n)" << endl;
 		return -1;
@@ -130,9 +132,9 @@ int main(int argc, char** argv) {
 
 		long shm_sec = stopShm.tv_sec - startShm.tv_sec;
 		long shm_ms = stopShm.tv_usec - startShm.tv_usec;
-		double elapsed = shm_sec + shm_ms*1e-6;
+		elapsed = shm_sec + shm_ms*1e-6;
 
-		cout << "Shm elapsed time: " << elapsed << endl;
+		//cout << "Shm elapsed time: " << elapsed << endl;
 	}
 
 	//If not shared is specified
@@ -173,10 +175,12 @@ int main(int argc, char** argv) {
 
 		long g_sec = stopG.tv_sec - startG.tv_sec;
 		long g_ms = stopG.tv_usec - startG.tv_usec;
-		double elapsed = g_sec + g_ms*1e-6;
+		elapsed = g_sec + g_ms*1e-6;
 
-		cout << "Global elapsed time: " << elapsed << endl;
+		//cout << "Global elapsed time: " << elapsed << endl;
 	}
+
+	cout << shared << "," << num_arrays << "," << array_size << "," << elapsed << endl;
 
 	/***Free variables***/
 	cudaFree(device_arrays);
