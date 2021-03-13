@@ -10,11 +10,11 @@
 #include <vector>
 #include <utility>
 #include <iostream>
-#include <ctime>
+#include <sys/time.h>
 
 using namespace std;
 
-int main() {
+int main(int argc, char** argv) {
 
 	/***Variable Declarations***/
 	int* host_arrays;
@@ -27,6 +27,7 @@ int main() {
 	int num_arrays;
 	int NUM_THREADS;
 	int NUM_BLOCKS;
+	int shared;
 
 	size_t one_t;
 	size_t array_set_bytes;
@@ -34,9 +35,19 @@ int main() {
 
 	cudaError cuda_err;
 
+	struct timeval startShm; 
+	struct timeval startG;
+	struct timeval stopShm;
+	struct timeval stopG;
+
+	if (argc < 4) {
+		cerr << "./main array_size num_arrays shared(y/n)" << endl;
+	}
+
 	/***Initialization***/
-	cin >> array_size;
-	cin >> num_arrays;
+	array_size = atoi(argv[1]);
+	num_arrays = atoi(argv[2]);
+	shared = atoi(argv[3]);
 	match_size = num_arrays;
 	NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
@@ -75,8 +86,14 @@ int main() {
 		return -1;
 	}
 
+	if (shared) {
+	//Start timer shm
+	gettimeofday(&startShm, 0);
+
 	/*** Search arrays and copy result back to host using shared memory***/
 	shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
+
+	gettimeofday(&stopShm, 0);
 
 	//Copy match back to host
 	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
@@ -85,7 +102,7 @@ int main() {
 	cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 	//Print arrays
-	cout << "Original arrays:" << endl;
+	/*cout << "Original arrays:" << endl;
 	for (int i = 0; i < num_arrays; i++) {
 		int step = i * array_size;
 		cout << "[";
@@ -103,14 +120,25 @@ int main() {
 		cout << host_match[i] << " ";
 	}
 	cout << "]" << endl;
+	*/
+	
+	long shm_sec = stopShm.tv_sec - startShm.tv_sec;
+	long shm_ms = stopShm.tv_usec - startShm.tv_usec;
+	double elapsed = shm_sec + shm_ms*1e-6;
+
+	cout << "Shm elapsed time: " << elapsed << endl;
+	}
 
 	//Zero out device memory
-	cudaMemset(device_arrays, 0, array_set_bytes);
-	cudaMemset(device_match, 0, match_bytes);
+	if (!shared) {
+
+	gettimeofday(&startG, 0);
 
 	/*** Search arrays and copy back to host using global memory ***/
 	array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
 
+	gettimeofday(&stopG, 0);
+
 	//Copy match back to host
 	cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
 
@@ -118,7 +146,7 @@ int main() {
 	cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 	//Print arrays
-	cout << "Original arrays:" << endl;
+	/*cout << "Original arrays:" << endl;
 	for (int i = 0; i < num_arrays; i++) {
 		int step = i * array_size;
 		cout << "[";
@@ -135,7 +163,14 @@ int main() {
 	for (int i = 0; i < match_size; i++) {
 		cout << host_match[i] << " ";
 	}
-	cout << "]" << endl;
+	cout << "]" << endl;*/ 
+
+	long g_sec = stopG.tv_sec - startG.tv_sec;
+	long g_ms = stopG.tv_usec - startG.tv_usec;
+	double elapsed = g_sec + g_ms*1e-6;
+
+	cout << "Global elapsed time: " << elapsed << endl;
+	}
 
 	/***Free variables***/
 	cudaFree(device_arrays);

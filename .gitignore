@@ -12,3 +12,4 @@
 !.gitignore
 !makefile
 !*.sh
+!*.csv
