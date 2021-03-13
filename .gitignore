@@ -1,3 +1,4 @@
 *.o
 *.RData
 *.Rhistory
+main
