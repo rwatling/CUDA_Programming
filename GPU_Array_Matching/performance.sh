@@ -16,28 +16,28 @@ cp $empty $file4
 cp $empty $file5
 cp $empty $file6
 
-# array_size goes from 8 to 8096
-for i in {3..13}
+# array_size goes from 8 to 8192 in increments of 8
+for i in {8..8192..8}
 do	
-	./main $((2**i)) 8 1 >> $file1
-	./main $((2**i)) 8 0 >> $file1
+	./main $(i) 8 1 >> $file1
+	./main $(i) 8 0 >> $file1
 
-	./main $((2**i)) 512 1 >> $file2
-	./main $((2**i)) 512 0 >> $file2
+	./main $(i) 512 1 >> $file2
+	./main $(i) 512 0 >> $file2
 
-	./main $((2**i)) 1024 1 >> $file3
-	./main $((2**i)) 1024 0 >> $file3
+	./main $(i) 1024 1 >> $file3
+	./main $(i) 1024 0 >> $file3
 done
 
-# num_arrays goes from 8 to 1024
-for j in {3..10}
+# num_arrays goes from 8 to 1024 in increments of 8
+for j in {8..1024..8}
 do		
-	./main 8 $((2**j)) 1 >> $file4
-	./main 8 $((2**j)) 0 >> $file4
+	./main 8 $(j) 1 >> $file4
+	./main 8 $(j) 0 >> $file4
 	
-	./main 512 $((2**j)) 1 >> $file5
-	./main 512 $((2**j)) 0 >> $file5
+	./main 512 $(j) 1 >> $file5
+	./main 512 $(j) 0 >> $file5
 
-	./main 8096 $((2**j)) 1 >> $file6
-	./main 8096 $((2**j)) 0 >> $file6
+	./main 8192 $(j) 1 >> $file6
+	./main 8192 $(j) 0 >> $file6
 done
