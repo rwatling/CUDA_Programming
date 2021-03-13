@@ -1,16 +1,3 @@
-# Ignore everything
-*
-# Keep these
-!*.cu
-!*.cuh
-!*.cpp
-!*.c
-!*.h
-!*.txt
-!*.dir
-!GPU_Array_Matching
-!.gitignore
-!makefile
-!*.sh
-!*.csv
-!*.R
+*.o
+*.RData
+*.Rhistory
