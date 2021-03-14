@@ -63,4 +63,6 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 			}
 		}
 	}
+
+	__syncthreads();
 }

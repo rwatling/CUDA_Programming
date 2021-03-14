@@ -45,4 +45,6 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 			break;
 		}
 	}
+
+	__syncthreads();
 }
