@@ -127,14 +127,12 @@ int main(int argc, char** argv) {
 		for (int i = 0; i < match_size; i++) {
 			cout << host_match[i] << " ";
 		}
-		cout << "]" << endl;
-		*/
+		cout << "]" << endl;*/
+		
 
 		long shm_sec = stopShm.tv_sec - startShm.tv_sec;
 		long shm_ms = stopShm.tv_usec - startShm.tv_usec;
 		elapsed = shm_sec + shm_ms*1e-6;
-
-		//cout << "Shm elapsed time: " << elapsed << endl;
 	}
 
 	//If not shared is specified
@@ -176,8 +174,6 @@ int main(int argc, char** argv) {
 		long g_sec = stopG.tv_sec - startG.tv_sec;
 		long g_ms = stopG.tv_usec - startG.tv_usec;
 		elapsed = g_sec + g_ms*1e-6;
-
-		//cout << "Global elapsed time: " << elapsed << endl;
 	}
 
 	cout << shared << "," << num_arrays << "," << array_size << "," << elapsed << endl;
