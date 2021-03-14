@@ -22,7 +22,10 @@ lines(globalChangeArrSizeDf$array_size, globalChangeArrSizeDf$time, col="red")
 fit <- lm(globalChangeArrSizeDf$time ~ globalChangeArrSizeDf$array_size)
 abline(fit)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), inset = c(0.1, 0.1), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), pch = c(19, 19, 19))
+
+#speed up
+mean(globalChangeArrSizeDf$time / sharedChangeArrSizeDf$time)
 
 ### File 2: Average number of arrays, change array size###
 changeArrSizeDf <- read.csv(file2)
@@ -39,7 +42,10 @@ lines(globalChangeArrSizeDf$array_size, globalChangeArrSizeDf$time, col="red")
 fit <- lm(globalChangeArrSizeDf$time ~ globalChangeArrSizeDf$array_size)
 abline(fit)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), inset = c(0.1, 0.1), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), pch = c(19, 19, 19))
+
+#speed up
+mean(globalChangeArrSizeDf$time / sharedChangeArrSizeDf$time)
 
 ### File 3: Large number of arrays, change array size###
 changeArrSizeDf <- read.csv(file3)
@@ -56,7 +62,10 @@ lines(globalChangeArrSizeDf$array_size, globalChangeArrSizeDf$time, col="red")
 fit <- lm(globalChangeArrSizeDf$time ~ globalChangeArrSizeDf$array_size)
 abline(fit)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), inset = c(0.1, 0.1), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), pch = c(19, 19, 19))
+
+#speed up
+mean(globalChangeArrSizeDf$time / sharedChangeArrSizeDf$time)
 
 ### File 4: Small array size, change number of arrays ###
 changeArrNumDf <- read.csv(file4)
@@ -73,7 +82,10 @@ lines(globalChangeArrNumDf$array_size, globalChangeArrNumDf$time, col="red")
 fit <- lm(globalChangeArrNumDf$time ~ globalChangeArrNumDf$array_num)
 abline(fit)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), inset = c(0.1, 0.1), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), pch = c(19, 19, 19))
+
+#speed up
+mean(globalChangeArrNumDf$time / sharedChangeArrNumDf$time)
 
 ### File 5: Average array size, change number of arrays ###
 changeArrNumDf <- read.csv(file5)
@@ -90,7 +102,10 @@ lines(globalChangeArrNumDf$array_size, globalChangeArrNumDf$time, col="red")
 fit <- lm(globalChangeArrNumDf$time ~ globalChangeArrNumDf$array_num)
 abline(fit)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), inset = c(0.1, 0.1), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), pch = c(19, 19, 19))
+
+#speed up
+mean(globalChangeArrNumDf$time / sharedChangeArrNumDf$time)
 
 ### File 6: Large array size, change number of arrays ###
 changeArrNumDf <- read.csv(file6)
@@ -107,5 +122,7 @@ lines(globalChangeArrNumDf$array_size, globalChangeArrNumDf$time, col="red")
 fit <- lm(globalChangeArrNumDf$time ~ globalChangeArrNumDf$array_num)
 abline(fit)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), inset = c(0.1, 0.1), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red", "blue", "black"), pch = c(19, 19, 19))
 
+#speed up
+mean(globalChangeArrNumDf$time / sharedChangeArrNumDf$time)
