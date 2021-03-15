@@ -126,3 +126,4 @@ legend("topleft", legend=c("Global Mem", "Shared Mem", "Global Fit"),col=c("red"
 
 #speed up
 mean(globalChangeArrNumDf$time / sharedChangeArrNumDf$time)
+
