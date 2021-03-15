@@ -1,4 +1,5 @@
 *.o
 *.RData
 *.Rhistory
+*.png
 main
