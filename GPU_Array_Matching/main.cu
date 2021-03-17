@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
 
 		/*** Search arrays and copy result back to host using shared memory***/
 		//get maximum size of shared memory I can use
-		shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size); //specify size of shared memory
+		shm_array_match <<<NUM_BLOCKS, NUM_THREADS, num_arrays * array_size * sizeof(int) >>> (device_arrays, device_match, num_arrays, array_size);
 
 		gettimeofday(&stopShm, 0);
 
@@ -123,10 +123,10 @@ int main(int argc, char** argv) {
 		/*** Search arrays and copy back to host using global memory ***/
 		array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
 
+		gettimeofday(&stopG, 0);
+
 		//Copy match back to host
 		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
-
-		gettimeofday(&stopG, 0);
 
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
 
 	cout << shared << "," << num_arrays << "," << array_size << "," << elapsed << endl;
 
-	//Check arrays
+	/*** Check arrays ***/
 	int* temp_match = (int*) calloc(one_t, match_bytes);
 
 	if (temp_match == NULL) {
@@ -146,21 +146,30 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	int bool_match;
 	for (int i = 1; i < num_arrays; i++) {
 		int step = i * array_size;
 		int step2 = (i-1) * array_size;
 
+		bool_match = 0;
+
 		for (int k = 0; k < array_size; k++) {
 			int i_element = host_arrays[step + k];
 
-				for (int l = 0; l < array_size; l++) {
-					int j_element = host_arrays[step2 + l];
+			for (int l = 0; l < array_size; l++) {
+				int j_element = host_arrays[step2 + l];
 
-					if (i_element == j_element) {
-						temp_match[i] = 1;
-					}
-
+				if (i_element == j_element) {
+					temp_match[i] = 1;
+					bool_match = 1;
+					break;
 				}
+
+			}
+
+			if (bool_match) {
+				break;
+			}
 		}
 	}
 
@@ -168,9 +177,35 @@ int main(int argc, char** argv) {
 	for (int i = 0; i < match_size; i++) {
 		if(host_match[i] != temp_match[i]) {
 			cerr << "Incorrect answer" << endl;
+			cerr << "host_match[i]: " << host_match[i] << " at index " << i << endl;
+			cerr << "temp_match[i]: " << temp_match[i] << endl;
+			
+			cerr << "all arrays: " << endl;
+			for (int j = 0; j < num_arrays; j++) {
+				int step = j * array_size;
+
+				cerr << "[ ";
+				for (int k = 0; k < array_size; k++) {
+					cerr << host_arrays[step + k] << " ";
+				}
+				cerr << "]" << endl;
+			}
+
+			break;
 		}
 	}
 
+	cout << "host_match: [";
+	for (int i = 0; i < match_size; i++) {
+		cout << host_match[i] << " ";
+	}
+	cout << "]" << endl;
+
+	cout << "temp_match: [";
+	for (int i = 0; i < match_size; i++) {
+		cout << temp_match[i] << " ";
+	}
+	cout << "]" << endl;
 
 	/***Free variables***/
 	cudaFree(device_arrays);

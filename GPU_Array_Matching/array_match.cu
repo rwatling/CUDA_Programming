@@ -14,37 +14,31 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 
 	int* current_array = all_arrays + (thread_id * size); //Pointer arithmetic
 	int* prev_array = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
-	int match = 0;
 
-	if (thread_id > 0) {
-
-		for (int i = 0; i < size; i++) {
-				//At runtime moment, generate random number
-				int rand_num = (int) (curand_uniform(&state) * maxRand);;
-				current_array[i] = rand_num;		
-		}
-	} else if (thread_id == 0) {
-		for (int i = 0; i < size; i++) {
+	for (int i = 0; i < size; i++) {
 			//At runtime moment, generate random number
 			current_array[i] = (int) (curand_uniform(&state) * maxRand);
-		}
 	}
 
 	__syncthreads();
 
-	for (int i = 0; i < size; i++) {
-		for (int j = 0; j < size; j++) {
-			if (current_array[i] == prev_array[j]) {
-				match = 1;
+	match_array[thread_id] = 0;
+
+	if (thread_id > 0) {
+		int match = 0;
+
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				if (current_array[i] == prev_array[j]) {
+					match_array[thread_id] = 1;
+					match = 1;
+					break;
+				}
+			}
+
+			if (match) {
 				break;
 			}
 		}
-
-		if (match) {
-			match_array[thread_id] = 1;
-			break;
-		}
-	}
-
-	__syncthreads();
+	} 
 }
