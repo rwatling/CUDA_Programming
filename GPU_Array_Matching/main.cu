@@ -94,12 +94,13 @@ int main(int argc, char** argv) {
 
 	//If shared is specified
 	if (shared) {
-		
+
 		//Start timer shm
 		gettimeofday(&startShm, 0);
 
 		/*** Search arrays and copy result back to host using shared memory***/
-		shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
+		//get maximum size of shared memory I can use
+		shm_array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size); //specify size of shared memory
 
 		gettimeofday(&stopShm, 0);
 
@@ -108,27 +109,6 @@ int main(int argc, char** argv) {
 
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
-
-		//Print arrays
-		/*cout << "Original arrays:" << endl;
-		for (int i = 0; i < num_arrays; i++) {
-			int step = i * array_size;
-			cout << "[";
-
-			for (int j = 0; j < array_size; j++) {
-				cout << host_arrays[step + j] << " " ;
-			}
-
-			cout << "]" << endl;
-		}
-
-		//Print match array
-		cout << "Match array: [";
-		for (int i = 0; i < match_size; i++) {
-			cout << host_match[i] << " ";
-		}
-		cout << "]" << endl;*/
-		
 
 		long shm_sec = stopShm.tv_sec - startShm.tv_sec;
 		long shm_ms = stopShm.tv_usec - startShm.tv_usec;
@@ -151,32 +131,46 @@ int main(int argc, char** argv) {
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-		//Print arrays
-		/*cout << "Original arrays:" << endl;
-		for (int i = 0; i < num_arrays; i++) {
-			int step = i * array_size;
-			cout << "[";
-
-			for (int j = 0; j < array_size; j++) {
-				cout << host_arrays[step + j] << " " ;
-			}
-
-			cout << "]" << endl;
-		}
-
-		//Print match array
-		cout << "Match array: [";
-		for (int i = 0; i < match_size; i++) {
-			cout << host_match[i] << " ";
-		}
-		cout << "]" << endl;*/
-
 		long g_sec = stopG.tv_sec - startG.tv_sec;
 		long g_ms = stopG.tv_usec - startG.tv_usec;
 		elapsed = g_sec + g_ms*1e-6;
 	}
 
 	cout << shared << "," << num_arrays << "," << array_size << "," << elapsed << endl;
+
+	//Check arrays
+	int* temp_match = (int*) calloc(one_t, match_bytes);
+
+	if (temp_match == NULL) {
+		cerr << "Temp match allocation failed" << endl;
+		return -1;
+	}
+
+	for (int i = 1; i < num_arrays; i++) {
+		int step = i * array_size;
+		int step2 = (i-1) * array_size;
+
+		for (int k = 0; k < array_size; k++) {
+			int i_element = host_arrays[step + k];
+
+				for (int l = 0; l < array_size; l++) {
+					int j_element = host_arrays[step2 + l];
+
+					if (i_element == j_element) {
+						temp_match[i] = 1;
+					}
+
+				}
+		}
+	}
+
+	//verify match arrays
+	for (int i = 0; i < match_size; i++) {
+		if(host_match[i] != temp_match[i]) {
+			cerr << "Incorrect answer" << endl;
+		}
+	}
+
 
 	/***Free variables***/
 	cudaFree(device_arrays);
