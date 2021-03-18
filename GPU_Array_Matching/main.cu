@@ -21,6 +21,7 @@ int main(int argc, char** argv) {
 	int* device_arrays;
 	int* host_match;
 	int* device_match;
+	int* temp_match;
 
 	int array_size;
 	int match_size;
@@ -43,11 +44,12 @@ int main(int argc, char** argv) {
 
 	double elapsed;
 
+	/*** Read args ***/
 	if (argc < 4) {
-		cerr << "./main array_size num_arrays shared(1 or 0) (optional debug)" << endl;
+		cerr << "./main array_size num_arrays shared(1 or 0) debug_opt(1 or 2 for verbose)" << endl;
 		return -1;
 	} else if (argc >= 5) {
-		debug = 1;
+		debug = atoi(argv[4]);
 	}
 
 	/***Initialization***/
@@ -58,7 +60,7 @@ int main(int argc, char** argv) {
 	NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
 
-	// Host allocation
+	//Host allocation
 	one_t = (size_t) 1;
 	array_set_bytes = (size_t) num_arrays * array_size * sizeof(int);
 	match_bytes = (size_t) match_size * sizeof(int);
@@ -95,6 +97,7 @@ int main(int argc, char** argv) {
 	cudaMemset(device_arrays, 0, array_size);
 	cudaMemset(device_match, 0, match_size);
 
+	/*** Problem execution ***/
 	//If shared is specified
 	if (shared) {
 
@@ -116,10 +119,9 @@ int main(int argc, char** argv) {
 		long shm_sec = stopShm.tv_sec - startShm.tv_sec;
 		long shm_ms = stopShm.tv_usec - startShm.tv_usec;
 		elapsed = shm_sec + shm_ms*1e-6;
-	}
 
-	//If not shared is specified
-	if (!shared) {
+		//If not shared is specified
+	}	else if (!shared) {
 
 		gettimeofday(&startG, 0);
 
@@ -139,45 +141,71 @@ int main(int argc, char** argv) {
 		elapsed = g_sec + g_ms*1e-6;
 	}
 
+	/*** Post Execution ***/
+	//Prints to csv if in batch
 	cout << shared << "," << num_arrays << "," << array_size << "," << elapsed << endl;
 
-	/*** Check arrays ***/
-	int* temp_match = (int*) calloc(one_t, match_bytes);
+	/*** Verification ***/
+	if (debug) {
+		temp_match = (int*) calloc(one_t, match_bytes);
 
-	if (temp_match == NULL) {
-		cerr << "Temp match allocation failed" << endl;
-		return -1;
-	}
+		if (temp_match == NULL) {
+			cerr << "Temp match allocation failed" << endl;
+			return -1;
+		}
 
-	int bool_match;
-	for (int i = 1; i < num_arrays; i++) {
-		int step = i * array_size;
-		int step2 = (i-1) * array_size;
+		int bool_match;
+		for (int i = 1; i < num_arrays; i++) {
+			int step = i * array_size;
+			int step2 = (i-1) * array_size;
 
-		bool_match = 0;
+			bool_match = 0;
 
-		for (int k = 0; k < array_size; k++) {
-			int i_element = host_arrays[step + k];
+			for (int k = 0; k < array_size; k++) {
+				int i_element = host_arrays[step + k];
 
-			for (int l = 0; l < array_size; l++) {
-				int j_element = host_arrays[step2 + l];
+				for (int l = 0; l < array_size; l++) {
+					int j_element = host_arrays[step2 + l];
 
-				if (i_element == j_element) {
-					temp_match[i] = 1;
-					bool_match = 1;
-					break;
+					if (i_element == j_element) {
+						temp_match[i] = 1;
+						bool_match = 1;
+						break;
+					}
+
 				}
 
+				if (bool_match) {
+					break;
+				}
 			}
+		}
 
-			if (bool_match) {
+		//Verify answer
+		for (int i = 0; i < match_size; i++) {
+			if(host_match[i] != temp_match[i]) {
+				cerr << "Incorrect answer" << endl;
+				cerr << "host_match[i]: " << host_match[i] << " at index " << i << endl;
+				cerr << "temp_match[i]: " << temp_match[i] << endl;
+
+				cerr << "all arrays: " << endl;
+				for (int j = 0; j < num_arrays; j++) {
+					int step = j * array_size;
+
+					cerr << "[ ";
+					for (int k = 0; k < array_size; k++) {
+						cerr << host_arrays[step + k] << " ";
+					}
+					cerr << "]" << endl;
+				}
+
 				break;
 			}
 		}
 	}
 
-	//print information if debug
-	if (debug) {
+	//Print all information if debug is >= 2
+	if (debug >= 2) {
 
 		//print all arrays
 		cout << "all arrays: " << endl;
@@ -205,33 +233,13 @@ int main(int argc, char** argv) {
 			cout << "]" << endl;
 	}
 
-	//Verify answer
-	for (int i = 0; i < match_size; i++) {
-		if(host_match[i] != temp_match[i]) {
-			cerr << "Incorrect answer" << endl;
-			cerr << "host_match[i]: " << host_match[i] << " at index " << i << endl;
-			cerr << "temp_match[i]: " << temp_match[i] << endl;
-
-			cerr << "all arrays: " << endl;
-			for (int j = 0; j < num_arrays; j++) {
-				int step = j * array_size;
-
-				cerr << "[ ";
-				for (int k = 0; k < array_size; k++) {
-					cerr << host_arrays[step + k] << " ";
-				}
-				cerr << "]" << endl;
-			}
-
-			break;
-		}
-	}
-
 	/***Free variables***/
 	cudaFree(device_arrays);
 	cudaFree(device_match);
 	free(host_arrays);
 	free(host_match);
+
+	if (debug) { free(temp_match);}
 
 	return 0;
 }
