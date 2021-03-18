@@ -188,16 +188,17 @@ int main(int argc, char** argv) {
 				cerr << "host_match[i]: " << host_match[i] << " at index " << i << endl;
 				cerr << "temp_match[i]: " << temp_match[i] << endl;
 
-				cerr << "all arrays: " << endl;
-				for (int j = 0; j < num_arrays; j++) {
-					int step = j * array_size;
+			cerr << "host_match: [";
+			for (int i = 0; i < match_size; i++) {
+				cerr << host_match[i] << " ";
+			}
+			cerr << "]" << endl;
 
-					cerr << "[ ";
-					for (int k = 0; k < array_size; k++) {
-						cerr << host_arrays[step + k] << " ";
-					}
-					cerr << "]" << endl;
-				}
+			cerr << "temp_match: [";
+			for (int i = 0; i < match_size; i++) {
+				cerr << temp_match[i] << " ";
+			}
+			cerr << "]" << endl;
 
 				break;
 			}
@@ -218,19 +219,6 @@ int main(int argc, char** argv) {
 			}
 			cout << "]" << endl;
 		}
-
-
-			cout << "host_match: [";
-			for (int i = 0; i < match_size; i++) {
-				cout << host_match[i] << " ";
-			}
-			cout << "]" << endl;
-
-			cout << "temp_match: [";
-			for (int i = 0; i < match_size; i++) {
-				cout << temp_match[i] << " ";
-			}
-			cout << "]" << endl;
 	}
 
 	/***Free variables***/
