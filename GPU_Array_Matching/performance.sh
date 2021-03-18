@@ -16,28 +16,30 @@ cp $empty $file4
 cp $empty $file5
 cp $empty $file6
 
+#Current maximum size is 1024 * 1024
+
 # array_size goes from 4 to 256 in increments of 4
-for i in {4..256..4}
-do	
+for i in {4..1024..4}
+do
 	./main $((i)) 4 1 >> $file1
 	./main $((i)) 4 0 >> $file1
 
-	./main $((i)) 128 1 >> $file2
-	./main $((i)) 128 0 >> $file2
+	./main $((i)) 512 1 >> $file2
+	./main $((i)) 512 0 >> $file2
 
-	./main $((i)) 256 1 >> $file3
-	./main $((i)) 256 0 >> $file3
+	./main $((i)) 1024 1 >> $file3
+	./main $((i)) 1024 0 >> $file3
 done
 
-# num_arrays goes from 4 to 256 in increments of 4
-for j in {4..256..4}
-do		
+# num_arrays goes from 4 to 1024 in increments of 4
+for j in {4..1024..4}
+do
 	./main 4 $((j)) 1 >> $file4
 	./main 4 $((j)) 0 >> $file4
-	
-	./main 128 $((j)) 1 >> $file5
-	./main 128 $((j)) 0 >> $file5
 
-	./main 256 $((j)) 1 >> $file6
-	./main 256 $((j)) 0 >> $file6
+	./main 512 $((j)) 1 >> $file5
+	./main 512 $((j)) 0 >> $file5
+
+	./main 1024 $((j)) 1 >> $file6
+	./main 1024 $((j)) 0 >> $file6
 done

@@ -11,6 +11,7 @@
 #include <utility>
 #include <iostream>
 #include <sys/time.h>
+#include <iomanip>
 
 using namespace std;
 
@@ -28,6 +29,7 @@ int main(int argc, char** argv) {
 	int num_arrays;
 	int NUM_THREADS;
 	int NUM_BLOCKS;
+	int SHARE_SIZE;
 	int shared;
 	int debug = 0;
 
@@ -101,12 +103,18 @@ int main(int argc, char** argv) {
 	//If shared is specified
 	if (shared) {
 
+		//get maximum size of shared memory I can use
+		if (array_set_bytes > MAX_SHM) {
+			SHARE_SIZE = MAX_SHM;
+		} else {
+			SHARE_SIZE = array_set_bytes;
+		}
+
 		//Start timer shm
 		gettimeofday(&startShm, 0);
 
 		/*** Search arrays and copy result back to host using shared memory***/
-		//get maximum size of shared memory I can use
-		shm_array_match <<<NUM_BLOCKS, NUM_THREADS, num_arrays * array_size * sizeof(int) >>> (device_arrays, device_match, num_arrays, array_size);
+		shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, device_match, num_arrays, array_size);
 
 		gettimeofday(&stopShm, 0);
 
@@ -116,8 +124,8 @@ int main(int argc, char** argv) {
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-		long shm_sec = stopShm.tv_sec - startShm.tv_sec;
-		long shm_ms = stopShm.tv_usec - startShm.tv_usec;
+		double shm_sec = stopShm.tv_sec - startShm.tv_sec;
+		double shm_ms = stopShm.tv_usec - startShm.tv_usec;
 		elapsed = shm_sec + shm_ms*1e-6;
 
 		//If not shared is specified
@@ -136,14 +144,14 @@ int main(int argc, char** argv) {
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-		long g_sec = stopG.tv_sec - startG.tv_sec;
-		long g_ms = stopG.tv_usec - startG.tv_usec;
+		double g_sec = stopG.tv_sec - startG.tv_sec;
+		double g_ms = stopG.tv_usec - startG.tv_usec;
 		elapsed = g_sec + g_ms*1e-6;
 	}
 
 	/*** Post Execution ***/
 	//Prints to csv if in batch
-	cout << shared << "," << num_arrays << "," << array_size << "," << elapsed << endl;
+	cout << shared << "," << num_arrays << "," << array_size << "," << std::setprecision(20) << elapsed << endl;
 
 	/*** Verification ***/
 	if (debug) {

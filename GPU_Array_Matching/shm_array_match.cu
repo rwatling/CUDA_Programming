@@ -1,6 +1,6 @@
 #include "shm_array_match.h"
 
-__global__ void shm_array_match(int* all_arrays, int* match_array, int num_arrays,  int size) {
+__global__ void shm_array_match(int* all_arrays, int* match_array, int num_arrays, int size) {
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 
 	//Declare current and previous arrays
@@ -19,31 +19,30 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 
 	if (thread_id >= num_arrays) { return; }
 
-	//48 Kb of memory is the max shared memory size
-	// ~12000 integers assuming sizeof(int) = 4
-	int total_shm_space = MAX_SHM / sizeof(int);
-
-	//Step -> ints before start of thread array
-	//(Step+size)-> ints at end of start array
+	// MAX_SHM = 48 Kb of memory is the max shared memory size
+	// MAX_INT = ~12000 integers assuming sizeof(int) = 4
+	int my_pass = ((thread_id + 1) * size) / MAX_INTS;
+	int total_pass = (num_arrays * size) / MAX_INTS;
 	int step = thread_id * size;
-	int turn = ((step + size) / total_shm_space); //Number of times we will overwrite shared memory
-	int loop = 0;
 
-	//For small arrays, pass = 0
-	//For larger arrays we will overwrite previously used shared memory
-	while (loop <= turn) {
+	for (int pass = 0; pass <= total_pass; pass++) {
 
-		if (loop == turn) {
+		__syncthreads();
+
+		if (pass == my_pass) {
 
 			for (int i = 0; i < size; i++) {
 				int rand_num = (int) (curand_uniform(&state) * maxRand);
 
-				current_arr[(step+i) % total_shm_space] = rand_num;
+				current_arr[(step+i) % MAX_INTS] = rand_num;
 				g_current_arr[i] = rand_num;
 			}
+		}
 
-			__syncthreads();
+		//Wait for threads in my block to write to global
+		__syncthreads();
 
+		if (pass == my_pass) {
 			match_array[thread_id] = 0;
 
 			//find matches using shared current and global previous
@@ -53,24 +52,18 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 				for (int i = 0; i < size; i++) {
 					for (int j = 0; j < size; j++) {
 
-						if (current_arr[(step+i) % total_shm_space] == prev_arr[j]) {
+						if (current_arr[(step+i) % MAX_INTS] == prev_arr[j]) {
 							match_array[thread_id] = 1;
 							match = 1;
 							break;
 						}
 
 					}
-
 					if (match) { break; }
 				}
+
 			}
 
 		}
-
-		loop++;
-
-		//Wait for others to finish writing to shared memory before current threads turn
-		__syncthreads();
 	}
-
 }
