@@ -18,7 +18,7 @@ cp $empty $file6
 
 #Current maximum size is 1024 * 1024
 
-# array_size goes from 4 to 256 in increments of 4
+# array_size goes from 4 to 1024 in increments of 4
 for i in {4..1024..4}
 do
 	./main $((i)) 4 1 >> $file1
