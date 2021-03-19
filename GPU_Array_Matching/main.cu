@@ -96,6 +96,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	//Set all memory to zero prior to execution
 	cudaMemset(device_arrays, 0, array_size);
 	cudaMemset(device_match, 0, match_size);
 
