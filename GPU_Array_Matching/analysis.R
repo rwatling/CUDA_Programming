@@ -44,7 +44,7 @@ speedup <- paste("Global Time / Shared Time =", toString(mean(globalChangeArrSiz
 mtext(speedup, side = 3)
 
 ### Change number of arrays: files 4-6 ###
-changeArrNumDf <- read.csv(file4)
+changeArrNumDf <- read.csv(file6)
 sharedChangeArrNumDf <- changeArrNumDf[which(changeArrNumDf$type == 1),]
 globalChangeArrNumDf <- changeArrNumDf[which(changeArrNumDf$type == 0),]
 

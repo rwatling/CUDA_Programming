@@ -4,7 +4,7 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 
 	//For random number generation
-	int maxRand = 512;
+	int maxRand = 100;
 	curandState state;
 	unsigned long long seed = clock();
 
