@@ -34,7 +34,7 @@ which will output a series to the `data` folder
 * To run a single run of the program:
 `./main arg1 arg2 arg3 arg4`
 
-Where the arugments are specified as follows:
+* Program arguments are specified as follows:
 1) Argument 1: The size of each array (up to 1024)
 2) Argument 2: The number of arrays of size arg1
 3) Argument 3: Memory type. 1 for GPU shared memory or 0 for global memory.
