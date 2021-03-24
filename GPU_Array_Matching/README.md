@@ -29,7 +29,7 @@ This project relies on the `nvcc` compiler and `make` commands.
 
 * To run a set of performance runs:
 `source performance.sh`
-which will output a series to the `data` folder
+which will output performance information to the `data` folder
 
 * To run a single run of the program:
 `./main arg1 arg2 arg3 arg4`

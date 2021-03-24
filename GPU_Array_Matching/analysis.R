@@ -22,14 +22,14 @@ file5 <- "data/change_num_arr_avg.csv"
 file6 <- "data/change_num_arr_lg.csv"
 
 ### Change Array Size: file1-3###
-changeArrSizeDf <- read.csv(file1)
+changeArrSizeDf <- read.csv(file3)
 sharedChangeArrSizeDf <- changeArrSizeDf[which(changeArrSizeDf$type == 1),]
 globalChangeArrSizeDf <- changeArrSizeDf[which(changeArrSizeDf$type == 0),]
 
 plot.new()
 plot(globalChangeArrSizeDf$array_size, globalChangeArrSizeDf$time, 
-     col="red", xlab="Array Size", ylab = "Time", main = "Time vs. Array Size", pch =19)
-points(sharedChangeArrSizeDf$array_size, sharedChangeArrSizeDf$time, col="blue", pch =19)
+     col="red", xlab="Array Size", ylab = "Time", main = "Time vs. Array Size", pch =20)
+points(sharedChangeArrSizeDf$array_size, sharedChangeArrSizeDf$time, col="blue", pch =20)
 
 fit1 <- lm(globalChangeArrSizeDf$time ~ globalChangeArrSizeDf$array_size)
 abline(fit1, col = "red", lwd=2)
@@ -37,7 +37,7 @@ abline(fit1, col = "red", lwd=2)
 fit2 <- lm(sharedChangeArrSizeDf$time ~ sharedChangeArrSizeDf$array_size)
 abline(fit2, col = "blue", lwd=2)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem"),col=c("red", "blue"), pch = c(19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem"),col=c("red", "blue"), pch = c(20, 20))
 
 #speed up
 speedup <- paste("Global Time / Shared Time =", toString(mean(globalChangeArrSizeDf$time / sharedChangeArrSizeDf$time)))
@@ -50,8 +50,8 @@ globalChangeArrNumDf <- changeArrNumDf[which(changeArrNumDf$type == 0),]
 
 plot.new()
 plot(globalChangeArrNumDf$number_of_arrays, globalChangeArrNumDf$time, 
-     col="red", xlab="Array Size", ylab = "Time", main = "Time vs. Array Number", pch =19)
-points(sharedChangeArrNumDf$number_of_arrays, sharedChangeArrNumDf$time, col="blue", pch =19)
+     col="red", xlab="Array Size", ylab = "Time", main = "Time vs. Array Number", pch =20)
+points(sharedChangeArrNumDf$number_of_arrays, sharedChangeArrNumDf$time, col="blue", pch =20)
 
 fit1 <- lm(globalChangeArrNumDf$time ~ globalChangeArrNumDf$array_size)
 if(gbutils::isNA(fit1$coefficients[2])) {
@@ -65,7 +65,7 @@ if(gbutils::isNA(fit2$coefficients[2] == "NA")) {
 }
 abline(fit2, col = "blue", lwd=2)
 
-legend("topleft", legend=c("Global Mem", "Shared Mem"),col=c("red", "blue"), pch = c(19, 19, 19))
+legend("topleft", legend=c("Global Mem", "Shared Mem"),col=c("red", "blue"), pch = c(20, 20, 20))
 
 #speed up
 speedup <- paste("Global Time / Shared Time =", toString(mean(globalChangeArrNumDf$time / sharedChangeArrNumDf$time)))

@@ -9,7 +9,7 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 	int* g_current_arr = all_arrays + (thread_id * size);
 
 	//For random number generation
-	int maxRand = 100;
+	int maxRand = 512;
 	curandState state;
 	unsigned long long seed;
 
