@@ -70,3 +70,4 @@ legend("topleft", legend=c("Global Mem", "Shared Mem"),col=c("red", "blue"), pch
 #speed up
 speedup <- paste("Global Time / Shared Time =", toString(mean(globalChangeArrNumDf$time / sharedChangeArrNumDf$time)))
 mtext(speedup, side = 3)
+

@@ -4,7 +4,7 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 
 	//Declare current and previous arrays
-	extern __shared__ int current_arr[];
+	extern __shared__ int shared_arrays[];
 	int* prev_arr = all_arrays + ((thread_id - 1) * size);
 	int* g_current_arr = all_arrays + (thread_id * size);
 
@@ -34,7 +34,7 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 			for (int i = 0; i < size; i++) {
 				int rand_num = (int) (curand_uniform(&state) * maxRand);
 
-				current_arr[(step+i) % MAX_INTS] = rand_num;
+				shared_arrays[(step+i) % MAX_INTS] = rand_num;
 				g_current_arr[i] = rand_num;
 			}
 		}
@@ -43,7 +43,6 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 		__syncthreads();
 
 		if (pass == my_pass) {
-			match_array[thread_id] = 0;
 
 			//find matches using shared current and global previous
 			if (thread_id > 0) {
@@ -52,18 +51,15 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 				for (int i = 0; i < size; i++) {
 					for (int j = 0; j < size; j++) {
 
-						if (current_arr[(step+i) % MAX_INTS] == prev_arr[j]) {
-							match_array[thread_id] = 1;
+						if (shared_arrays[(step+i) % MAX_INTS] == prev_arr[j]) {
 							match = 1;
-							break;
 						}
 
 					}
-					if (match) { break; }
 				}
 
+				match_array[thread_id] = match;
 			}
-
 		}
 	}
 }

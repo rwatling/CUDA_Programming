@@ -22,8 +22,6 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 
 	__syncthreads();
 
-	match_array[thread_id] = 0;
-
 	if (thread_id > 0) {
 		int match = 0;
 
@@ -32,12 +30,11 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 				if (current_array[i] == prev_array[j]) {
 					match_array[thread_id] = 1;
 					match = 1;
-					break;
 				}
 			}
-
-			if (match) { break; }
 		}
+
+		match_array[thread_id] = match;
 	}
 
 }
