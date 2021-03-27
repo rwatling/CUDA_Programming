@@ -1,6 +1,7 @@
 #include "array_match.h"
 
-__global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  int size) {
+__global__ void array_match(int* all_arrays, int* match_array, int num_arrays, int size, clock_t* elapsed) {
+
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 
 	//For random number generation
@@ -36,5 +37,4 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays,  
 
 		match_array[thread_id] = match;
 	}
-
 }

@@ -10,7 +10,6 @@
 #include <vector>
 #include <utility>
 #include <iostream>
-#include <sys/time.h>
 #include <iomanip>
 
 using namespace std;
@@ -38,13 +37,8 @@ int main(int argc, char** argv) {
 	size_t match_bytes;
 
 	cudaError cuda_err;
-
-	struct timeval startShm;
-	struct timeval startG;
-	struct timeval stopShm;
-	struct timeval stopG;
-
-	double elapsed;
+	clock_t* host_elapsed;
+	clock_t* device_elapsed;
 
 	/*** Read args ***/
 	if (argc < 4) {
@@ -69,7 +63,7 @@ int main(int argc, char** argv) {
 
 	host_arrays = (int*) calloc(one_t, array_set_bytes);
 	host_match = (int*) calloc(one_t, match_bytes);
-
+	host_elapsed = (clock_t*) calloc(one_t, sizeof(clock_t));
 
 	if (host_arrays == NULL) {
 		cerr << "Host arrays calloc failed\n" << endl;
@@ -78,6 +72,11 @@ int main(int argc, char** argv) {
 
 	if (host_match == NULL) {
 		cerr << "Host match calloc failed\n" << endl;
+		return -1;
+	}
+
+	if (host_elapsed == NULL) {
+		cerr << "Host elapsed calloc failed\n" << endl;
 		return -1;
 	}
 
@@ -96,6 +95,13 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
+	cuda_err = cudaMalloc((void**)&device_elapsed, sizeof(clock_t));
+
+	if (cuda_err != cudaSuccess) {
+		cerr << "Device allocation for device elapsed failed" << endl;
+		return -1;
+	}
+
 	//Set all memory to zero prior to execution
 	cudaMemset(device_arrays, 0, array_size);
 	cudaMemset(device_match, 0, match_size);
@@ -105,19 +111,14 @@ int main(int argc, char** argv) {
 	if (shared) {
 
 		//get maximum size of shared memory I can use
-		if (array_set_bytes > MAX_SHM) {
+		if ((array_set_bytes + (array_size * sizeof(int))) > MAX_SHM) {
 			SHARE_SIZE = MAX_SHM;
 		} else {
 			SHARE_SIZE = array_set_bytes;
 		}
 
-		//Start timer shm
-		gettimeofday(&startShm, 0);
-
 		/*** Search arrays and copy result back to host using shared memory***/
-		shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, device_match, num_arrays, array_size);
-
-		gettimeofday(&stopShm, 0);
+		shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, device_match, num_arrays, array_size, debug, device_elapsed);
 
 		//Copy match back to host
 		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
@@ -125,19 +126,13 @@ int main(int argc, char** argv) {
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-		double shm_sec = stopShm.tv_sec - startShm.tv_sec;
-		double shm_ms = stopShm.tv_usec - startShm.tv_usec;
-		elapsed = shm_sec + shm_ms*1e-6;
+		//Copy back elapsed
+		cudaMemcpy(host_elapsed, device_elapsed, sizeof(float), cudaMemcpyDeviceToHost);
 
 		//If not shared is specified
 	}	else if (!shared) {
-
-		gettimeofday(&startG, 0);
-
 		/*** Search arrays and copy back to host using global memory ***/
-		array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size);
-
-		gettimeofday(&stopG, 0);
+		array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size, device_elapsed);
 
 		//Copy match back to host
 		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
@@ -145,14 +140,13 @@ int main(int argc, char** argv) {
 		//Copy gpu arrays to host for verification
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-		double g_sec = stopG.tv_sec - startG.tv_sec;
-		double g_ms = stopG.tv_usec - startG.tv_usec;
-		elapsed = g_sec + g_ms*1e-6;
+		//Copy back elapsed
+		cudaMemcpy(host_elapsed, device_elapsed, sizeof(float), cudaMemcpyDeviceToHost);
 	}
 
 	/*** Post Execution ***/
 	//Prints to csv if in batch
-	cout << shared << "," << num_arrays << "," << array_size << "," << std::setprecision(20) << elapsed << endl;
+	//cout << shared << "," << num_arrays << "," << array_size << "," << std::setprecision(20) << host_elapsed << endl;
 
 	/*** Verification ***/
 	if (debug) {
