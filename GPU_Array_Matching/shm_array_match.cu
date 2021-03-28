@@ -1,11 +1,12 @@
 #include "shm_array_match.h"
 
-__global__ void shm_array_match(int* all_arrays, int* match_array, int num_arrays, int size, int debug, clock_t* elapsed) {
+__global__ void shm_array_match(int* all_arrays, int* match_array, int num_arrays, int size, int debug, unsigned long long* elapsed) {
 
 	//Essential variables
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int match;
-	clock_t start;
+	unsigned long long start;
+	unsigned long long stop;
 
 	//Declare current and previous arrays
 	extern __shared__ int shared_arrays[];
@@ -92,7 +93,8 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 				match_array[thread_id] = match;
 
 			} else if (thread_id == 0) {
-				*elapsed += (clock() - start);
+				stop = clock();
+				*elapsed += (stop - start);
 			}
 		}
 

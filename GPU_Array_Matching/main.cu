@@ -38,13 +38,15 @@ int main(int argc, char** argv) {
 	size_t one_t;
 	size_t array_set_bytes;
 	size_t match_bytes;
+	size_t clock_bytes;
 
-	// Timing and error checkign variables
+	// Timing and error checking variables
+	cudaDeviceProp device_prop;
 	cudaError cuda_err;
-	clock_t* host_elapsed;
-	clock_t* device_elapsed;
-	double time_seconds;
-	double time_ms;
+	unsigned long long *host_elapsed;
+	unsigned long long *device_elapsed;
+	double time;	//in ms
+	int clock_rate; // in KHz
 
 	/*** Read args ***/
 	if (argc < 4) {
@@ -66,10 +68,11 @@ int main(int argc, char** argv) {
 	one_t = (size_t) 1;
 	array_set_bytes = (size_t) num_arrays * array_size * sizeof(int);
 	match_bytes = (size_t) match_size * sizeof(int);
+	clock_bytes = sizeof(unsigned long long);
 
 	host_arrays = (int*) calloc(one_t, array_set_bytes);
 	host_match = (int*) calloc(one_t, match_bytes);
-	host_elapsed = (clock_t*) calloc(one_t, sizeof(clock_t));
+	host_elapsed = (unsigned long long*) calloc(one_t, clock_bytes);
 
 	if (host_arrays == NULL) {
 		cerr << "Host arrays calloc failed\n" << endl;
@@ -101,7 +104,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	cuda_err = cudaMalloc((void**)&device_elapsed, sizeof(clock_t));
+	cuda_err = cudaMalloc((void**)&device_elapsed, clock_bytes);
 
 	if (cuda_err != cudaSuccess) {
 		cerr << "Device allocation for device elapsed failed" << endl;
@@ -111,7 +114,7 @@ int main(int argc, char** argv) {
 	//Set all memory to zero prior to execution
 	cudaMemset(device_arrays, 0, array_size);
 	cudaMemset(device_match, 0, match_size);
-	cudaMemset(device_elapsed, 0, sizeof(clock_t));
+	cudaMemset(device_elapsed, 0, clock_bytes);
 
 	/*** Problem execution ***/
 	//If shared is specified
@@ -134,7 +137,7 @@ int main(int argc, char** argv) {
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 		//Copy back elapsed
-		cudaMemcpy(host_elapsed, device_elapsed, sizeof(clock_t), cudaMemcpyDeviceToHost);
+		cudaMemcpy(host_elapsed, device_elapsed, clock_bytes, cudaMemcpyDeviceToHost);
 
 		//If not shared is specified
 	}	else if (!shared) {
@@ -149,13 +152,15 @@ int main(int argc, char** argv) {
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 		//Copy back elapsed
-		cudaMemcpy(host_elapsed, device_elapsed, sizeof(clock_t), cudaMemcpyDeviceToHost);
+		cudaMemcpy(host_elapsed, device_elapsed, clock_bytes, cudaMemcpyDeviceToHost);
 	}
 
 	/*** Post Execution ***/
 	//Prints to csv if in batch
-
-	cout << shared << "," << num_arrays << "," << array_size << "," << *host_elapsed << endl;
+	cudaGetDeviceProperties(&device_prop, 0);
+	clock_rate = device_prop.memoryClockRate;
+	time = ((double) *host_elapsed) / ((double) clock_rate);
+	cout << shared << "," << num_arrays << "," << array_size << "," << time << endl;
 
 	/*** Verification ***/
 	if (debug) {
