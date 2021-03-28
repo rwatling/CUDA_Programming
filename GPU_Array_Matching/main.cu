@@ -63,6 +63,7 @@ int main(int argc, char** argv) {
 	match_size = num_arrays;
 	NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
+	host_elapsed = 0;
 
 	//Host allocation
 	one_t = (size_t) 1;
