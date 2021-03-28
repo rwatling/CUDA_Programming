@@ -23,8 +23,8 @@ file6 <- "data/change_num_arr_lg.csv"
 all_files <- c(file1, file2, file3, file4, file5, file6)
 
 ### Change Array Size: file1-3###
-allPerfDf <- read.csv(all_files[4])
-allPerfDf <- allPerfDf[which(allPerfDf$time < 1000000),]
+allPerfDf <- read.csv(all_files[2])
+allPerfDf <- allPerfDf[which(allPerfDf$time < 10000000),]
 
 # For speedup
 sharedChangeDf <-  allPerfDf[which(allPerfDf$type == 1),]
