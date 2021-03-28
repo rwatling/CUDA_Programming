@@ -17,12 +17,14 @@ using namespace std;
 int main(int argc, char** argv) {
 
 	/***Variable Declarations***/
+	//Host and device variables
 	int* host_arrays;
 	int* device_arrays;
 	int* host_match;
 	int* device_match;
 	int* temp_match;
 
+	//Host and device detail variables
 	int array_size;
 	int match_size;
 	int num_arrays;
@@ -32,13 +34,17 @@ int main(int argc, char** argv) {
 	int shared;
 	int debug = 0;
 
+	// Byte size variables
 	size_t one_t;
 	size_t array_set_bytes;
 	size_t match_bytes;
 
+	// Timing and error checkign variables
 	cudaError cuda_err;
 	clock_t* host_elapsed;
 	clock_t* device_elapsed;
+	double time_seconds;
+	double time_ms;
 
 	/*** Read args ***/
 	if (argc < 4) {
@@ -105,6 +111,7 @@ int main(int argc, char** argv) {
 	//Set all memory to zero prior to execution
 	cudaMemset(device_arrays, 0, array_size);
 	cudaMemset(device_match, 0, match_size);
+	cudaMemset(device_elapsed, 0, sizeof(clock_t));
 
 	/*** Problem execution ***/
 	//If shared is specified
@@ -127,10 +134,11 @@ int main(int argc, char** argv) {
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 		//Copy back elapsed
-		cudaMemcpy(host_elapsed, device_elapsed, sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(host_elapsed, device_elapsed, sizeof(clock_t), cudaMemcpyDeviceToHost);
 
 		//If not shared is specified
 	}	else if (!shared) {
+
 		/*** Search arrays and copy back to host using global memory ***/
 		array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size, device_elapsed);
 
@@ -141,12 +149,13 @@ int main(int argc, char** argv) {
 		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 		//Copy back elapsed
-		cudaMemcpy(host_elapsed, device_elapsed, sizeof(float), cudaMemcpyDeviceToHost);
+		cudaMemcpy(host_elapsed, device_elapsed, sizeof(clock_t), cudaMemcpyDeviceToHost);
 	}
 
 	/*** Post Execution ***/
 	//Prints to csv if in batch
-	//cout << shared << "," << num_arrays << "," << array_size << "," << std::setprecision(20) << host_elapsed << endl;
+
+	cout << shared << "," << num_arrays << "," << array_size << "," << *host_elapsed << endl;
 
 	/*** Verification ***/
 	if (debug) {
@@ -227,8 +236,10 @@ int main(int argc, char** argv) {
 	/***Free variables***/
 	cudaFree(device_arrays);
 	cudaFree(device_match);
+	cudaFree(device_elapsed);
 	free(host_arrays);
 	free(host_match);
+	free(host_elapsed);
 
 	if (debug) { free(temp_match);}
 

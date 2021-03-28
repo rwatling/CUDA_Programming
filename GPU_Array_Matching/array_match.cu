@@ -2,7 +2,9 @@
 
 __global__ void array_match(int* all_arrays, int* match_array, int num_arrays, int size, clock_t* elapsed) {
 
+	// Essential variables
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
+	clock_t start;
 
 	//For random number generation
 	int maxRand = 100;
@@ -23,6 +25,8 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays, i
 
 	__syncthreads();
 
+	if (thread_id == 0) { start = clock(); }
+
 	if (thread_id > 0) {
 		int match = 0;
 
@@ -37,4 +41,7 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays, i
 
 		match_array[thread_id] = match;
 	}
+	__syncthreads();
+
+	if (thread_id == 0) { *elapsed = clock() - start; }
 }

@@ -1,23 +1,27 @@
 #include "shm_array_match.h"
 
 __global__ void shm_array_match(int* all_arrays, int* match_array, int num_arrays, int size, int debug, clock_t* elapsed) {
+
+	//Essential variables
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 	int match;
+	clock_t start;
 
 	//Declare current and previous arrays
 	extern __shared__ int shared_arrays[];
 	extern __shared__ int boundary_prev[];
 	int* g_current_arr = all_arrays + (thread_id * size);
 
-	// MAX_SHM = 48 Kb of memory is the max shared memory size
-	// MAX_INT = ~12000 integers assuming sizeof(int) = 4
-	int my_pass = ((thread_id) * size) / MAX_INTS;
-	int next_thread_id_pass = ((thread_id + 1) * size) / MAX_INTS;
-	int total_pass = (num_arrays * size) / MAX_INTS;
-
 	//Row of 2D array represented as 1D array
 	int my_step = thread_id * size;
 	int prev_step = (thread_id - 1) * size;
+
+	// MAX_SHM = 48 Kb of memory is the max shared memory size
+	// MAX_INT = ~12000 integers assuming sizeof(int) = 4
+	// Defined in shm_array_match.h
+	int my_pass = ((thread_id) * size) / MAX_INTS;
+	int next_thread_id_pass = ((thread_id + 1) * size) / MAX_INTS;
+	int total_pass = (num_arrays * size) / MAX_INTS;
 
 	//If I am a thread that is right next to boundary
 	//This allows the next pass to read my information for matching
@@ -31,9 +35,6 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 	//Initialize random numbers
 	seed = clock();
 	curand_init(seed + thread_id, 0, 0, &state);
-
-	clock_t start;
-	clock_t end;
 
 	if (thread_id >= num_arrays) { return; }
 
@@ -61,6 +62,8 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 			//Wait for threads to write
 			__syncthreads();
 
+			if (thread_id == 0) { start = clock(); }
+
 			//Find match
 			match = 0;
 
@@ -89,11 +92,11 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 				match_array[thread_id] = match;
 
 			} else if (thread_id == 0) {
-				match_array[thread_id] = 0;
+				*elapsed += (clock() - start);
 			}
 		}
 
-	//If debug use global and don't report time
+	//If debug use global
 	} else if (debug) {
 		for (int pass = 0; pass <= total_pass; pass++) {
 
@@ -119,6 +122,8 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 			//Wait for threads to write
 			__syncthreads();
 
+			if (thread_id == 0) { start = clock(); }
+
 			//Find match
 			match = 0;
 
@@ -147,8 +152,9 @@ __global__ void shm_array_match(int* all_arrays, int* match_array, int num_array
 				match_array[thread_id] = match;
 
 			} else if (thread_id == 0) {
-				match_array[thread_id] = 0;
+				*elapsed += (clock() - start);
 			}
 		}
+
 	}
 }

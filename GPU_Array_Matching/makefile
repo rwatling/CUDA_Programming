@@ -2,7 +2,7 @@ NVCC = nvcc
 CFLAGS =
 OBJ = main.o array_match.o shm_array_match.o
 EXEC = main
-LFLAGS=-lcurand
+LFLAGS= -lcurand
 
 all: main
 
