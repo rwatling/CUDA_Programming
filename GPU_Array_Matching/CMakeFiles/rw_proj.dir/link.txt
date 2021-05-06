@@ -1,0 +1,1 @@
+/usr/bin/g++  CMakeFiles/rw_proj.dir/src/array_match.cu.o CMakeFiles/rw_proj.dir/src/main.cu.o CMakeFiles/rw_proj.dir/src/shm_array_match.cu.o -o rw_proj  -L"/usr/lib/cuda/targets/x86_64-linux/lib/stubs" -L"/usr/lib/cuda/targets/x86_64-linux/lib" -lcudadevrt -lcudart_static -lrt -lpthread -ldl

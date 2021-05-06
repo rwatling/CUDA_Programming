@@ -2,4 +2,6 @@
 *.RData
 *.Rhistory
 *.png
-main
+CMakeCache.txt
+cmake_install.cmake
+gpu_matching
