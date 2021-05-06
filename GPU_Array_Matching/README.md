@@ -14,20 +14,20 @@ The size of the arrays must be less than 1024.
 
 ## Requirements
 * NVIDIA Capable GPU
+* CMake version >= 3.8
 * Unix Enviroment (bash, make)
 * CUDA library (nvcc)
 * (Optional) R for analysis script
 
 ## Build instructions
-This project relies on the `nvcc` compiler and `make` commands.
+This project relies on the `nvcc` compiler and `cmake` commands.
 
-* To make the executable `main`:
-`make`
-
-* To clean the directory of object files:
-`make clean`
+* To make the executable `gpu_matching`:
+`cmake .' in the base directory
+'make'
 
 * To run a set of performance runs:
+(Needs to be reconfigured)
 `source performance.sh`
 which will output performance information to the `data` folder
 
@@ -43,6 +43,7 @@ which will output performance information to the `data` folder
 * To run `analysis.R` it is recommended to install and use RStudio to run the script
 
 ## Edit instructions
+Source files are in the 'src/' folder
 * `main.cu`: main function that coordinates calls to the GPU
 * `array_match.cu`: function that conducts the array matching via global memory
 
