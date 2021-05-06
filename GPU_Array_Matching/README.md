@@ -20,16 +20,15 @@ The size of the arrays must be less than 1024.
 ## Build instructions
 This project relies on the `nvcc` compiler and `cmake` commands.
 
-* To make the executable `gpu_matching`:
-`cmake .` in the base directory
-`make`
+* Make the executable `gpu_matching`:<br>
+`cmake .` in the base directory<br>
+`make`<br>
 
-* To run a set of performance runs:
-(Needs to be reconfigured)
-`source analysis/performance.sh`
-which will output performance information to the `analysis/data` folder
+* Run a set of performance runs:<br>
+(Needs to be reconfigured)<br>
+`source analysis/performance.sh` which will output performance information to the `analysis/data` folder
 
-* To run a single run of the program:
+* Run a single run of the program:<br>
 `./gpu_matching arg1 arg2 arg3 arg4` in the base directory
 
 * Program arguments are specified as follows:
@@ -41,10 +40,9 @@ which will output performance information to the `analysis/data` folder
 * To run `analysis.R` it is recommended to install and use RStudio to run the script
 
 ## Edit instructions
-Source files are in the 'src/' folder
+Source files are in the `src/` folder
+
 * `main.cu`: main function that coordinates calls to the GPU
 * `array_match.cu`: function that conducts the array matching via global memory
-
 * `shm_array_match.cu`: function that conducts the array matching via shared memory
-
 * `anaylsis.R`: Analysis R script to create graphs of performance data.
