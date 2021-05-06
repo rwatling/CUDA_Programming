@@ -32,10 +32,10 @@ This project relies on the `nvcc` compiler and `cmake` commands.
 `./gpu_matching arg1 arg2 arg3 arg4` in the base directory
 
 * Program arguments are specified as follows:<br>
-'arg1': The size of each array (up to 1024)<br>
-'arg2': The number of arrays of size arg1<br>
-'arg3': Memory type. 1 for GPU shared memory or 0 for global memory.<br>
-'arg4': Debug option. 0 for no debugging, 1 for simple debug check, 2 or more for verbose check.<br>
+`arg1`: The size of each array (up to 1024)<br>
+`arg2`: The number of arrays of size arg1<br>
+`arg3`: Memory type. 1 for GPU shared memory or 0 for global memory.<br>
+`arg4`: Debug option. 0 for no debugging, 1 for simple debug check, 2 or more for verbose check.<br>
 
 * To run `analysis.R` it is recommended to install and use RStudio to run the script
 
