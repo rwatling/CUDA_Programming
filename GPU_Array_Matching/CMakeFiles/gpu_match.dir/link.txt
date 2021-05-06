@@ -1,1 +1,0 @@
-/usr/bin/g++  CMakeFiles/gpu_match.dir/src/array_match.cu.o CMakeFiles/gpu_match.dir/src/main.cu.o CMakeFiles/gpu_match.dir/src/shm_array_match.cu.o -o gpu_match  -L"/usr/lib/cuda/targets/x86_64-linux/lib/stubs" -L"/usr/lib/cuda/targets/x86_64-linux/lib" -lcudadevrt -lcudart_static -lrt -lpthread -ldl
