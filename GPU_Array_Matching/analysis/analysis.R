@@ -34,7 +34,7 @@ globalChangeDf <-  allPerfDf[which(allPerfDf$type == 0),]
 allPerfDf[which(allPerfDf$type == 1),]$type = "shared"
 allPerfDf[which(allPerfDf$type == 0),]$type = "global"
 
-# Plot 
+# Plot
 plot.new()
 ggplot(data = allPerfDf) +
   geom_smooth(mapping = aes(x = array_size, y = time, group = type, color=type)) +
@@ -67,7 +67,7 @@ globalChangeDf <-  allPerfDf[which(allPerfDf$type == 0),]
 allPerfDf[which(allPerfDf$type == 1),]$type = "shared"
 allPerfDf[which(allPerfDf$type == 0),]$type = "global"
 
-# Plot 
+# Plot
 plot.new()
 ggplot(data = allPerfDf) +
   geom_smooth(mapping = aes(x = number_of_arrays, y = time, group = type, color=type)) +
