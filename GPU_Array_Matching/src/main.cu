@@ -6,6 +6,7 @@
 #include "cuda_includes.h"
 #include "array_match.h"
 #include "shm_array_match.h"
+#include "shfl_match.h"
 #include <iostream>
 #include <vector>
 #include <utility>
@@ -31,7 +32,7 @@ int main(int argc, char** argv) {
 	int NUM_THREADS;
 	int NUM_BLOCKS;
 	int SHARE_SIZE;
-	int shared;
+	int experiment_type;
 	int debug = 0;
 
 	// Byte size variables
@@ -50,7 +51,7 @@ int main(int argc, char** argv) {
 
 	/*** Read args ***/
 	if (argc < 4) {
-		cerr << "./main array_size num_arrays shared(1 or 0) debug_opt(1 or 2 for verbose)" << endl;
+		cerr << "./gpu_match array_size num_arrays experiment_type debug_opt" << endl;
 		return -1;
 	} else if (argc >= 5) {
 		debug = atoi(argv[4]);
@@ -59,7 +60,7 @@ int main(int argc, char** argv) {
 	/***Initialization***/
 	array_size = atoi(argv[1]);
 	num_arrays = atoi(argv[2]);
-	shared = atoi(argv[3]);
+	experiment_type = atoi(argv[3]);
 	match_size = num_arrays;
 	NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
@@ -118,8 +119,18 @@ int main(int argc, char** argv) {
 	cudaMemset(device_elapsed, 0, clock_bytes);
 
 	/*** Problem execution ***/
+	if (experiment_type == 2) {
+		SHARE_SIZE = WARP_SIZE * sizeof(int);
+		shfl_match<<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>>(device_match, num_arrays, array_size, device_elapsed);
+
+		//Copy match back to host
+		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
+
+		//Copy back elapsed
+		cudaMemcpy(host_elapsed, device_elapsed, clock_bytes, cudaMemcpyDeviceToHost);
+
 	//If shared is specified
-	if (shared) {
+} else if (experiment_type == 1) {
 
 		//get maximum size of shared memory I can use
 		if ((array_set_bytes + (array_size * sizeof(int))) > MAX_SHM) {
@@ -141,10 +152,10 @@ int main(int argc, char** argv) {
 		cudaMemcpy(host_elapsed, device_elapsed, clock_bytes, cudaMemcpyDeviceToHost);
 
 		//If not shared is specified
-	}	else if (!shared) {
+	}	else if (experiment_type == 0) {
 
 		/*** Search arrays and copy back to host using global memory ***/
-		array_match <<<NUM_BLOCKS, NUM_THREADS >>> (device_arrays, device_match, num_arrays, array_size, device_elapsed);
+		array_match <<<NUM_BLOCKS, NUM_THREADS>>> (device_arrays, device_match, num_arrays, array_size, device_elapsed);
 
 		//Copy match back to host
 		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
@@ -161,7 +172,7 @@ int main(int argc, char** argv) {
 	cudaGetDeviceProperties(&device_prop, 0);
 	clock_rate = device_prop.memoryClockRate;
 	time = ((double) *host_elapsed) / ((double) clock_rate);
-	cout << shared << "," << num_arrays << "," << array_size << "," << time << endl;
+	//cout << experiment_type << "," << num_arrays << "," << array_size << "," << time << endl;
 
 	/*** Verification ***/
 	if (debug) {
@@ -227,15 +238,18 @@ int main(int argc, char** argv) {
 	if (debug >= 2) {
 
 		//print all arrays
-		cout << "all arrays: " << endl;
+		//cout << "all arrays: " << endl;
 		for (int j = 0; j < num_arrays; j++) {
 			int step = j * array_size;
 
-			cout << "[ ";
+			//cout << "[ ";
 			for (int k = 0; k < array_size; k++) {
-				cout << host_arrays[step + k] << " ";
+				if (k < (array_size - 1)) {
+					cout << host_arrays[step + k] << ",";
+				} else if (k == (array_size - 1)) {
+					cout << host_arrays[step + k] << endl;
+				}
 			}
-			cout << "]" << endl;
 		}
 	}
 
