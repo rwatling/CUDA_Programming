@@ -1,6 +1,6 @@
 #include "shfl_match.h"
 
-__global__ void shfl_match(int* match_array, int num_arrays, int size, unsigned long long* elapsed) {
+__global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, int size, unsigned long long* elapsed) {
 
 	// Essential variables
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
@@ -10,7 +10,10 @@ __global__ void shfl_match(int* match_array, int num_arrays, int size, unsigned 
 	unsigned long long start;
 	unsigned long long stop;
 
-	//For lane0 to get lane31 data
+	//For verification
+	int* current_array = all_arrays + (thread_id * size);
+
+	//For lane0 to get lane31 data???
 	//__shared__ int shared_arrays[WARP_SIZE];
 
 	//For random number generation
@@ -26,25 +29,19 @@ __global__ void shfl_match(int* match_array, int num_arrays, int size, unsigned 
 		start = clock();
 	}
 
-		int match = 0;
+	int match = 0;
 
 	for (int i = 0; i < size; i++) {
-		__syncthreads();
-
 		current_num = (int) (curand_uniform(&state) * maxRand);
+		current_array[i] = current_num; //for verification
 		prev_num = __shfl_sync(0xffffffff, current_num, lane_id - 1);
 
-		//if (lane_id == WARP_SIZE - 1) {
-			//shared_arrays[thread_id / WARP_SIZE] = currentNum;
-		//}
-
 		if (current_num == prev_num) {
-			match_array[thread_id] = 1;
 			match = 1;
 		}
-
-		match_array[thread_id] = match;
 	}
+
+	match_array[thread_id] = match;
 
 	__syncthreads();
 

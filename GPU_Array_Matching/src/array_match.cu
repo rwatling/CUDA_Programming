@@ -36,7 +36,6 @@ __global__ void array_match(int* all_arrays, int* match_array, int num_arrays, i
 		for (int i = 0; i < size; i++) {
 			for (int j = 0; j < size; j++) {
 				if (current_array[i] == prev_array[j]) {
-					match_array[thread_id] = 1;
 					match = 1;
 				}
 			}

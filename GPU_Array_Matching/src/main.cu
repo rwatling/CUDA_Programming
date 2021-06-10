@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 
 	/*** Read args ***/
 	if (argc < 4) {
-		cerr << "./gpu_match array_size num_arrays experiment_type debug_opt" << endl;
+		cerr << "./gpu_match array_size num_arrays experiment_type debug" << endl;
 		return -1;
 	} else if (argc >= 5) {
 		debug = atoi(argv[4]);
@@ -121,10 +121,13 @@ int main(int argc, char** argv) {
 	/*** Problem execution ***/
 	if (experiment_type == 2) {
 		SHARE_SIZE = WARP_SIZE * sizeof(int);
-		shfl_match<<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>>(device_match, num_arrays, array_size, device_elapsed);
+		shfl_match<<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>>(device_arrays, device_match, num_arrays, array_size, device_elapsed);
 
 		//Copy match back to host
 		cudaMemcpy(host_match, device_match, match_bytes, cudaMemcpyDeviceToHost);
+
+		//Copy gpu arrays to host for verification
+		cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
 		//Copy back elapsed
 		cudaMemcpy(host_elapsed, device_elapsed, clock_bytes, cudaMemcpyDeviceToHost);
@@ -172,7 +175,7 @@ int main(int argc, char** argv) {
 	cudaGetDeviceProperties(&device_prop, 0);
 	clock_rate = device_prop.memoryClockRate;
 	time = ((double) *host_elapsed) / ((double) clock_rate);
-	//cout << experiment_type << "," << num_arrays << "," << array_size << "," << time << endl;
+	cout << experiment_type << "," << num_arrays << "," << array_size << "," << time << endl;
 
 	/*** Verification ***/
 	if (debug) {
@@ -238,7 +241,7 @@ int main(int argc, char** argv) {
 	if (debug >= 2) {
 
 		//print all arrays
-		//cout << "all arrays: " << endl;
+		cout << "all arrays: " << endl;
 		for (int j = 0; j < num_arrays; j++) {
 			int step = j * array_size;
 
