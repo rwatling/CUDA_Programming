@@ -119,6 +119,7 @@ int main(int argc, char** argv) {
 	cudaMemset(device_elapsed, 0, clock_bytes);
 
 	/*** Problem execution ***/
+	//Shfl version
 	if (experiment_type == 2) {
 		SHARE_SIZE = WARP_SIZE * sizeof(int);
 		shfl_match<<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>>(device_arrays, device_match, num_arrays, array_size, device_elapsed);
