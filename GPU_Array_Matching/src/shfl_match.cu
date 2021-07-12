@@ -8,9 +8,12 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 	int match = 0;
 	int prev_num = 0;
 	int current_num = 0;
+	int mask = 0xfffffff;
 
 	int* g_current_arr = all_arrays + (thread_id * size); //Pointer arithmetic
 	int* g_prev_arr = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
+
+	int local_arr[64];
 
 	// Timing information
 	//unsigned long long start;
@@ -37,7 +40,7 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 	*/
 
 	// Current just psuedo code
-	/*for (int i = 0; i < 2; i ++) {
+	for (int i = 0; i < 2; i ++) {
 		if (thread_id % 2 == 0) {
 			if (i == 0) {
 				//Comparison
@@ -46,7 +49,7 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 						current_num = (int) (curand_uniform(&state) * maxRand);
 						local_arr[j] = current_num;
 
-						prev_num = shufl_sync(mask, current_num, lane_id - 1);
+						prev_num = __shfl_sync(mask, current_num, lane_id - 1);
 
 						//ignore result
 					}
@@ -57,10 +60,10 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 					current_num = local_arr[i];
 
 					for (int j = 0; j < size; j++) {
-						prev_num = shufl_sync(mask, current_num, lane_id - 1);
+						prev_num = __shfl_sync(mask, current_num, lane_id - 1);
 
 						if (current_num == prev_num) {
-							match[thread_id] = 1;
+							match_array[thread_id] = 1;
 						}
 					}
 				}
@@ -70,14 +73,14 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 
 				//Comparison
 				for (int i = 0; i < size; i++) {
-					local_arr[i] = rand();
+					local_arr[i] = (int) (curand_uniform(&state) * maxRand);;
 					current_num = local_arr[i];
 
 					for (int j = 0; j < size; j++) {
-						prev_num = shufl_sync(mask, current_num, lane_id - 1);
+						prev_num = __shfl_sync(mask, current_num, lane_id - 1);
 
 						if (current_num == prev_num) {
-							match[thread_id] = 1;
+							match_array[thread_id] = 1;
 						}
 					}
 				}
@@ -87,14 +90,14 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 					for (int j = 0; j < size; j++) {
 						current_num = local_arr[j];
 
-						prev_num = shufl_sync(mask, current_num, lane_id - 1);
+						prev_num = __shfl_sync(mask, current_num, lane_id - 1);
 
 						//ignore result
 					}
 				}
 			}
 		}
-	}*/
+	}
 
 	//Old code
 	/*match_array[thread_id] = 0;
