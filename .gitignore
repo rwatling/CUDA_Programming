@@ -2,6 +2,7 @@
 *.RData
 *.Rhistory
 *.png
+*.a
 CMakeFiles/*
 CMakeFiles
 CMakeCache.txt
