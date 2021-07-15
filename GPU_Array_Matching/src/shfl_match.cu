@@ -35,7 +35,7 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 
 	/* Needs:
 	-zero boundary
-	-global memory write
+	-global memory write X
 	-compilation
 	*/
 
@@ -47,6 +47,7 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 				for (int i = 0; i < size; i++) {
 					for (int j = 0; j < size; j++) {
 						current_num = (int) (curand_uniform(&state) * maxRand);
+						g_current_arr[j] = current_num;
 						local_arr[j] = current_num;
 
 						prev_num = __shfl_sync(mask, current_num, lane_id - 1);
@@ -73,8 +74,9 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 
 				//Comparison
 				for (int i = 0; i < size; i++) {
-					local_arr[i] = (int) (curand_uniform(&state) * maxRand);;
+					local_arr[i] = (int) (curand_uniform(&state) * maxRand);
 					current_num = local_arr[i];
+					g_current_arr[i] = current_num;
 
 					for (int j = 0; j < size; j++) {
 						prev_num = __shfl_sync(mask, current_num, lane_id - 1);
