@@ -11,7 +11,7 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 	int mask = 0xfffffff;
 
 	int* g_current_arr = all_arrays + (thread_id * size); //Pointer arithmetic
-	//int* g_prev_arr = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
+	int* g_prev_arr = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
 
 	int local_arr[64];
 
@@ -34,9 +34,8 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 
 
 	/* Needs:
-	-zero boundary
-	-global memory write X
-	-mismatch at odd thread compare to even thread
+	-zero boundary warp_size - 1 thread and 0
+	-Larger problem sizes -> registers
 	-timing information
 	*/
 
