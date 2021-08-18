@@ -9,9 +9,10 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 	int prev_num = 0;
 	int current_num = 0;
 	int mask = 0xfffffff;
+	int limit;
 
 	int* g_current_arr = all_arrays + (thread_id * size); //Pointer arithmetic
-	int* g_prev_arr = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
+	//int* g_prev_arr = all_arrays + ((thread_id - 1) * size); //Pointer arithmetic
 
 	int local_arr[64];
 
@@ -40,10 +41,10 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 	*/
 
 	// Variation of even odd sort
-	for (int i = 0; i < 2; i++) {
+	for (int pass = 0; pass < 2; pass++) {
 
 		// Even pass
-		if (i == 0) {
+		if (pass == 0) {
 
 			/* Even thread generates its random numbers in local array
 			*  It participates in the shuffle for synchronization but ignores the result
@@ -97,7 +98,7 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 			}
 
 		// Odd pass
-		} else if (i == 1) {
+	} else if (pass == 1) {
 
 			// Even thread
 			if (thread_id % 2 == 0) {
@@ -136,9 +137,78 @@ __global__ void shfl_match(int* all_arrays, int* match_array, int num_arrays, in
 		}
 	}
 
+	//Thread limit idea
+	/*for (int pass = 0; pass < 2; pass++) {
+
+		// Even pass
+		if (pass == 0) {
+
+			if (thread_id % 2 == 0) {
+
+				for (int i = 0; i < size; i++) {
+
+					for (int j = 0; j < size/limit; j++) {
+
+						for (int k = 0; k < limit; k ++) {
+							//random
+							//to global
+							//local[k] = current_num
+						}
+
+					}
+				}
+
+
+			} else if (thread_id % 2 == 1) {
+				for (int i = 0; i < size; i++) {
+					//curand_uniform
+					//to __global__
+					//local[k] = current
+					for (int j = 0; j < size/limit; j++) {
+
+						for (int k = 0; k < limit; k++) {
+							//shuffle match
+						}
+
+					}
+				}
+			}
+
+		// Odd pass
+	} else if (pass == 1) {
+
+			// Even thread
+			if (thread_id % 2 == 0) {
+
+				for (int i = 0; i < size; i++) {
+					//get global -> current
+					for (int j = 0; j < size/limit; j++) {
+						for (int k = 0; k < limit; k++) {
+							//shuffle match
+						}
+					}
+				}
+
+			// Odd thread
+			} else if (thread_id % 2 == 1) {
+
+				for (int i = 0; i < size; i++) {
+
+					for (int j = 0; j < size/limit; j++) {
+
+						for (int k = 0; k < limit; k ++) {
+							//random
+							//to global
+							//local[k] = current_num
+						}
+
+					}
+				}
+			}
+		}
+	}*/
+
 	__syncthreads();
-
-
 
 	if (thread_id == 0) {
 		*elapsed = 0;
