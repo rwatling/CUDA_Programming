@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
 	int* device_arrays;
 	int* host_match;
 	int* device_match;
-  int* prev_end;
-  int* current_start;
+  int* reg_arr1;
+  int* reg_arr2;
 
 	//Host and device detail variables
 	int array_size;
@@ -50,8 +50,9 @@ int main(int argc, char** argv) {
 	int NUM_BLOCKS;
 	int SHARE_SIZE;
 	cudaError_t cuda_err;
+  //cudaFuncAttribute* attributes;
 
-	// Byte size variables
+	//Byte size variables
 	size_t one_t;
 	size_t array_set_bytes;
 	size_t match_bytes;
@@ -63,7 +64,7 @@ int main(int argc, char** argv) {
 	}
 
 	/***Initialization***/
-	array_size = 8; //Ignoring array size right now
+	array_size = ARRAY_SIZE; //Ignoring array size right now
 	num_operating_threads = atoi(argv[2]); //One start array and one end array
 	match_size = num_operating_threads;
 	NUM_THREADS = num_operating_threads;
@@ -102,17 +103,17 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-  cuda_err = cudaMalloc((void**)&prev_end, array_size * sizeof(int));
+  cuda_err = cudaMalloc((void**)&reg_arr1, array_size * sizeof(int));
 
   if (cuda_err != cudaSuccess) {
-		cerr << "Device allcoation for prev_end failed" << endl;
+		cerr << "Device allcoation for reg_arr1 failed" << endl;
 		return -1;
 	}
 
-  cuda_err = cudaMalloc((void**) &current_start, array_size * sizeof(int));
+  cuda_err = cudaMalloc((void**) &reg_arr2, array_size * sizeof(int));
 
   if (cuda_err != cudaSuccess) {
-		cerr << "Device allcoation for current_start failed" << endl;
+		cerr << "Device allcoation for reg_arr2 failed" << endl;
 		return -1;
 	}
 
@@ -151,16 +152,19 @@ int main(int argc, char** argv) {
 
   //cuda memcopy
   //cuda shared memory
+  //cudaFuncGetAttributes(&attributes, shm_array_match);
+  //cudaFuncSetAttribue(shm_array_match, maxDynamicSharedSizeBytes)
 
   /*Questions:
-  prev_end and current_start?
-  how to denote match?
+  1) number of threads not power of 2?
+  2) Shared memory max size
+  */
 
 	/***Free variables***/
 	cudaFree(device_arrays);
 	cudaFree(device_match);
-  cudaFree(prev_end);
-  cudaFree(current_start);
+  cudaFree(reg_arr1);
+  cudaFree(reg_arr2);
 	free(host_arrays);
 	free(host_match);
 
