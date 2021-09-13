@@ -37,54 +37,38 @@ int main(int argc, char** argv) {
 	//Host and device variables
 	int* host_arrays;
 	int* device_arrays;
-	int* host_match;
-	int* device_match;
-  int* reg_arr1;
-  int* reg_arr2;
 
 	//Host and device detail variables
 	int array_size;
-	int match_size;
 	int num_operating_threads;
 	int NUM_THREADS;
 	int NUM_BLOCKS;
 	int SHARE_SIZE;
 	cudaError_t cuda_err;
-  //cudaFuncAttribute* attributes;
 
 	//Byte size variables
 	size_t one_t;
 	size_t array_set_bytes;
-	size_t match_bytes;
 
 	/*** Read args ***/
-	if (argc < 3) {
-		cerr << "./gpu_match array_size num_operating_threads" << endl;
+	if (argc < 2) {
+		cerr << "./gpu_match num_operating_threads" << endl;
 		return -1;
 	}
 
 	/***Initialization***/
 	array_size = ARRAY_SIZE; //Ignoring array size right now
-	num_operating_threads = atoi(argv[2]); //One start array and one end array
-	match_size = num_operating_threads;
+	num_operating_threads = atoi(argv[1]);
 	NUM_THREADS = num_operating_threads;
 	NUM_BLOCKS = 1;
 
 	//Host allocation
 	one_t = (size_t) 1;
 	array_set_bytes = (size_t) num_operating_threads * array_size * 2 * sizeof(int);
-	match_bytes = (size_t) match_size * sizeof(int);
-
-	host_arrays = (int*) calloc(one_t, array_set_bytes);
-	host_match = (int*) calloc(one_t, match_bytes);
+  host_arrays = (int*) calloc(one_t, array_set_bytes);
 
 	if (host_arrays == NULL) {
 		cerr << "Host arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-	if (host_match == NULL) {
-		cerr << "Host match calloc failed\n" << endl;
 		return -1;
 	}
 
@@ -96,27 +80,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-	cuda_err = cudaMalloc((void**)&device_match, match_bytes);
-
-	if (cuda_err != cudaSuccess) {
-		cerr << "Device allcoation for match array failed" << endl;
-		return -1;
-	}
-
-  cuda_err = cudaMalloc((void**)&reg_arr1, array_size * sizeof(int));
-
-  if (cuda_err != cudaSuccess) {
-		cerr << "Device allcoation for reg_arr1 failed" << endl;
-		return -1;
-	}
-
-  cuda_err = cudaMalloc((void**) &reg_arr2, array_size * sizeof(int));
-
-  if (cuda_err != cudaSuccess) {
-		cerr << "Device allcoation for reg_arr2 failed" << endl;
-		return -1;
-	}
-
+  //Fill in host arrays to emulate major operation
   for(int i = 0; i < num_operating_threads; i++) {
 
     //Start array
@@ -158,15 +122,13 @@ int main(int argc, char** argv) {
   /*Questions:
   1) number of threads not power of 2?
   2) Shared memory max size
+  3) Confirming matches
+    -> 2d array?
   */
 
 	/***Free variables***/
 	cudaFree(device_arrays);
-	cudaFree(device_match);
-  cudaFree(reg_arr1);
-  cudaFree(reg_arr2);
 	free(host_arrays);
-	free(host_match);
 
 	return 0;
 }

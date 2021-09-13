@@ -1,58 +1,59 @@
 #include "shm_array_match.h"
 
-__global__ void shm_array_match(int* all_arrays, int* match_array, int* global_arr1, int* global_arr2, int num_arrays, int size) {
+__global__ void shm_array_match(int* global_arrays, int num_arrays) {
 
 	//Essential variables
 	int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
-	int log_num_arrays = (int) log2((float) num_arrays);
-	int match;
-	int next_reg_arr1[ARRAY_SIZE];
+	extern __shared__ int shared_arrays[];
 	int local_reg_arr1[ARRAY_SIZE];
 	int local_reg_arr2[ARRAY_SIZE];
-	extern __shared__ int shared_arrays[];
+	int next_reg_arr1[ARRAY_SIZE];
+	int next_reg_arr2[ARRAY_SIZE];
+	int size = ARRAY_SIZE;
 
-	for (int group_size = 2; group_size < log_num_arrays; group_size = group_size * 2) {
+	//Retrieve global values from major operation
+	//Assign the global values to registers for array_1 and array_2
+	//Assign the initial global values to shared memory
+	for (int i = 0; i < size; i++) {
+		int arr1_index = (thread_id * size) + i;
+		int arr2_index = (thread_id * size) + size + i;
+
+		local_reg_arr1[i] = global_arrays[arr1_index];
+		local_reg_arr2[i] = global_arrays[arr2_index];
+		shared_arrays[arr1_index] = local_reg_arr1[i];
+		shared_arrays[arr2_index] = local_reg_arr2[i];
+	}
+
+	__syncthreads();
+
+	//Tree like grouping for matching operations
+	for (int group_size = 2; group_size < num_arrays; group_size *= 2) {
+
+		//Load "next" arrays from shared memory
 		for (int i = 0; i < size; i++) {
-			local_reg_arr1[i] = global_arr1[i];
+			int shm_next_arr1_index = (thread_id + group_size) * size + i;
+			int shm_next_arr2_index = (thread_id + group_size) * size + size + i;
+
+			next_reg_arr1[i] = shared_arrays[shm_next_arr1_index];
+			next_reg_arr2[i] = shared_arrays[shm_next_arr2_index];
 		}
 
-		if (group_size == 2) {
-			for (int i = 0; i < size; i++) {
-				local_reg_arr2[i] = global_arr2[i];
-			}
-		}
+		//Matching operation
+		for (int i = 0; i < size; i++) {
+			int match = 0;
 
-		if ((thread_id % group_size) == (group_size - 1)) {
-			for (int i = 0; i < size; i++) {
-				shared_arrays[(thread_id * size) + i] = local_reg_arr1[i];
+			for (int j = 0; j < size; j++) {
+				if (local_reg_arr2[i] == next_reg_arr1[j]) {
+					local_reg_arr2[i] = next_reg_arr2[j];
+					match = 1;
+				}
 			}
 
-			for (int i = 0; i < size; i++) {
-				shared_arrays[((thread_id + size) * size) + i] = local_reg_arr2[i];
+			if (!match) {
+				local_reg_arr2[i] *= -1;
 			}
 		}
 
 		__syncthreads();
-
-		if ((thread_id % group_size) == 0) {
-			for (int i = 0; i < size; i++) {
-				next_reg_arr1[i] = shared_arrays[(thread_id + group_size) * size + i];
-			}
-
-			for (int i = 0; i < size; i++) {
-				for (int j = 0; j < size; j++) {
-					if (local_reg_arr2[i] == next_reg_arr1[j]) {
-						local_reg_arr2[i] = next_reg_arr1[j];
-						match = 1;
-					}
-				}
-			}
-
-			if (match == 0) {
-				//then stop?
-			}
-
-			__syncthreads();
-		}
 	}
 }
