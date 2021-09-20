@@ -5,5 +5,5 @@
 #define ARRAY_SIZE 8
 #include "cuda_includes.h"
 #include <time.h>
-__global__ void shm_array_match(int* global_arrays, int num_arrays);
+__global__ void shm_array_match(int* global_arrays, int num_threads);
 #endif
