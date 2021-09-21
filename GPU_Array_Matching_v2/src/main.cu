@@ -120,7 +120,20 @@ int main(int argc, char** argv) {
 	}
 
   //cudaFuncGetAttributes(&attributes, shm_array_match);
-  //cudaFuncSetAttribue(shm_array_match, maxDynamicSharedSizeBytes)
+
+  cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, 98304);
+
+  if (cuda_err != cudaSuccess) {
+		cerr << "Dynamic shared memory size of 98304 for array set failed, trying 64kb" << endl;
+
+    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, 64000);
+
+    if (cuda_err != cudaSuccess) {
+      cerr << "Dynamic shared memory size of 64000 for array set failed" << endl;
+
+      return -1;
+    }
+	}
 
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
