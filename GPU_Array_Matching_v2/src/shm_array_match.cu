@@ -29,6 +29,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 
 	__syncthreads();
 
+	//Tree style grouping for threads
 	for (int k = 1; k < num_threads; k *= 2) {
 
 		//Condition: thread_id % 2^k+1
@@ -37,25 +38,28 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 			//Step 1: Read next_arr1 and next_arr2 from shared memory
 			for (int i = 0; i < size; i++) {
 
-				//index = (thread_id + 2^k) * 16 + i
+				//index = (thread_id + 2^k) * 16 + i if array_size = 8
 				int shm_index1 = (thread_id + k) * (2 * size) + i;
 				next_arr1[i] = shared_arrays[shm_index1];
 
-				//index = (thread_id + 2^k) * 16 + 8 + i
+				//index = (thread_id + 2^k) * 16 + 8 + i if array_size = 8
 				int shm_index2 = (thread_id + k) * (2 * size) + size + i;
 				next_arr2[i] = shared_arrays[shm_index2];
 			}
 
 			//Step 2: Find the match
 			for (int i = 0; i < size; i++) {
+				int match = -1;
 
 				for (int j = 0; j < size; j++) {
 
 					if (current_arr2[i] == next_arr1[j]) {
 						current_arr2[i] = next_arr2[j];
+						match = 1;
 						break; //For some reason the function behaved funny without a break
 					}
 
+					current_arr2[i] *= match; //Value is negative if no match
 				}
 			}
 		}
@@ -74,11 +78,9 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 		__syncthreads();
 	}
 
-	for (int i = 0; i < size; i++) {
-		int arr1_index = (thread_id * 2 * size) + i;
-		global_arrays[arr1_index] = shared_arrays[arr1_index];
-
-		int arr2_index = (thread_id * 2 * size) + size + i;
-		global_arrays[arr2_index] = shared_arrays[arr2_index];
+	//Write shared memory to global memory for verification
+	for (int i = 0; i < 2 * size; i++) {
+		int arr_index = (thread_id * 2 * size) + i;
+		global_arrays[arr_index] = shared_arrays[arr_index];
 	}
 }

@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
     shuffle(host_arrays + (i * array_size * 2) + array_size, array_size);
 	}
 
-  //Print arrays
+  //Print arrays before matching
   for(int i = 0; i < NUM_THREADS; i++) {
 
     cout << "Arrays " << i << ": [";
@@ -124,27 +124,31 @@ int main(int argc, char** argv) {
 
   if (cuda_err != cudaSuccess) {
 
-    cerr << endl << "(Dynamic shared memory size of 98 kibibytes for array set failed, trying 64kb...)" << endl << endl;
+    cerr << "Dynamic shared memory size of 98 kibibytes for array set failed, trying 64kb..." << endl;
     SHARE_SIZE = 65536;
 
     cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
 
     if (cuda_err != cudaSuccess) {
-      cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program." << endl;
+      cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl;
 
       return -1;
     }
 	}
 
+  //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
+
+  cout << "--------------------KERNEL CALL--------------------" << endl;
+
+  //Kernel call
   shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
 
+  //Copy device arrays back to host
   cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  cout << "----------------KERNEL CALL----------------" << endl;
-
-  //Print arrays
+  //Print arrays after matching
   for(int i = 0; i < NUM_THREADS; i++) {
 
     cout << "Arrays " << i << ": [";
