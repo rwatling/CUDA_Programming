@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 	num_arrays = atoi(argv[1]);
   NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
-  SHARE_SIZE = MAX_SHM;
+  SHARE_SIZE = 98304; //98 kibibytes, subject to change based on GPU requirements. See set attribute below
 
 	//Host allocation
 	one_t = (size_t) 1;
@@ -119,17 +119,18 @@ int main(int argc, char** argv) {
     cout << "]" << endl;
 	}
 
-  //cudaFuncGetAttributes(&attributes, shm_array_match);
-
-  cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, 98304);
+  //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
+  cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
 
   if (cuda_err != cudaSuccess) {
-		cerr << "Dynamic shared memory size of 98304 for array set failed, trying 64kb" << endl;
 
-    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, 64000);
+    cerr << endl << "(Dynamic shared memory size of 98 kibibytes for array set failed, trying 64kb...)" << endl << endl;
+    SHARE_SIZE = 65536;
+
+    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
 
     if (cuda_err != cudaSuccess) {
-      cerr << "Dynamic shared memory size of 64000 for array set failed" << endl;
+      cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program." << endl;
 
       return -1;
     }

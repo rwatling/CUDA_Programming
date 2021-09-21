@@ -1,7 +1,5 @@
 #ifndef SHM_ARRAY_MATCH_H
 #define SHM_ARRAY_MATCH_H 1
-#define MAX_SHM 48000
-#define MAX_INTS (MAX_SHM / sizeof(int))
 #define ARRAY_SIZE 8
 #include "cuda_includes.h"
 #include <time.h>
