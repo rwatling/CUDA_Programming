@@ -44,6 +44,8 @@ int main(int argc, char** argv) {
 	int NUM_THREADS;
 	int NUM_BLOCKS;
 	int SHARE_SIZE;
+  float milliseconds;
+  cudaEvent_t start, stop;
 	cudaError_t cuda_err;
 
 	//Byte size variables
@@ -59,9 +61,12 @@ int main(int argc, char** argv) {
 	/***Initialization***/
 	array_size = ARRAY_SIZE; //Ignoring array size right now
 	num_arrays = atoi(argv[1]);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
   NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
   SHARE_SIZE = 98304; //98 kibibytes, subject to change based on GPU requirements. See set attribute below
+
 
 	//Host allocation
 	one_t = (size_t) 1;
@@ -142,8 +147,15 @@ int main(int argc, char** argv) {
 
   cout << "--------------------KERNEL CALL--------------------" << endl;
 
+  //Timing
+  cudaEventRecord(start);
+
   //Kernel call
   shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
+
+  //Timing
+  cudaEventRecord(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
 
   //Copy device arrays back to host
   cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -163,6 +175,10 @@ int main(int argc, char** argv) {
 
     cout << "]" << endl;
   }
+
+  cout << milliseconds << "ms" << endl;
+
+
 
 	/***Free variables***/
 	cudaFree(device_arrays);
