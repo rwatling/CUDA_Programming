@@ -49,17 +49,19 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 
 			//Step 2: Find the match
 			for (int i = 0; i < size; i++) {
-				int match = -1;
+				int match = 0;
 
 				for (int j = 0; j < size; j++) {
 
 					if (current_arr2[i] == next_arr1[j]) {
 						current_arr2[i] = next_arr2[j];
 						match = 1;
-						break; //For some reason the function behaved funny without a break
+						break;
 					}
+				}
 
-					current_arr2[i] *= match; //Value is negative if no match
+				if ((!match) && (current_arr2[i] > 0)) {
+					current_arr2[i] = current_arr2[i] * -1;
 				}
 			}
 		}
