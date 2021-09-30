@@ -48,8 +48,8 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 
 		__syncthreads();
 
+		//Step 3: Write back to shared memory
 		if ((thread_id % (k * 2)) == 0) {
-			//Step 3: Write back to shared memory
 			for (int i = 0; i < size; i++) {
 				int arr2_index = (thread_id * 2 * size) + size + i;
 				shared_arrays[arr2_index] = current_arr2[i];
@@ -61,8 +61,10 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 	}
 
 	//Write shared memory to global memory for verification
-	for (int i = 0; i < 2 * size; i++) {
-		int arr_index = (thread_id * 2 * size) + i;
-		global_arrays[arr_index] = shared_arrays[arr_index];
+	if (thread_id == 0) {
+		for (int i = 0; i < 2 * size; i++) {
+			int arr_index = (thread_id * 2 * size) + i;
+			global_arrays[arr_index] = shared_arrays[arr_index];
+		}
 	}
 }

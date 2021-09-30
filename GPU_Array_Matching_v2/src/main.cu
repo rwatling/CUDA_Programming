@@ -5,6 +5,7 @@
 
 #include "cuda_includes.h"
 #include "shm_array_match.h"
+#include "shfl_array_match.h"
 #include <iostream>
 #include <vector>
 #include <utility>
@@ -34,11 +35,10 @@ void shuffle(int *array, size_t n)
 int main(int argc, char** argv) {
 
 	/***Variable Declarations***/
-	//Host and device variables
 	int* host_arrays;
+  int* experiment1_arrays;
+  int* experiment2_arrays;
 	int* device_arrays;
-
-	//Host and device detail variables
 	int array_size;
   int num_arrays;
 	int NUM_THREADS;
@@ -46,9 +46,8 @@ int main(int argc, char** argv) {
 	int SHARE_SIZE;
   float milliseconds;
   cudaEvent_t start, stop;
+  cudaEvent_t start1, stop1;
 	cudaError_t cuda_err;
-
-	//Byte size variables
 	size_t one_t;
 	size_t array_set_bytes;
 
@@ -61,8 +60,6 @@ int main(int argc, char** argv) {
 	/***Initialization***/
 	array_size = ARRAY_SIZE; //Ignoring array size right now
 	num_arrays = atoi(argv[1]);
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
   NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
   SHARE_SIZE = 98304; //98 kibibytes, subject to change based on GPU requirements. See set attribute below
@@ -75,6 +72,21 @@ int main(int argc, char** argv) {
 
 	if (host_arrays == NULL) {
 		cerr << "Host arrays calloc failed\n" << endl;
+		return -1;
+	}
+
+
+  experiment1_arrays = (int*) calloc(one_t, array_set_bytes);
+
+  if (experiment1_arrays == NULL) {
+		cerr << "experiment1 arrays calloc failed\n" << endl;
+		return -1;
+	}
+
+  experiment2_arrays = (int*) calloc(one_t, array_set_bytes);
+
+  if (experiment2_arrays == NULL) {
+		cerr << "experiment2 arrays calloc failed\n" << endl;
 		return -1;
 	}
 
@@ -109,7 +121,7 @@ int main(int argc, char** argv) {
 	}
 
   //Print arrays before matching
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < 1; i++) {
 
     cout << "Arrays " << i << ": [";
 
@@ -124,12 +136,75 @@ int main(int argc, char** argv) {
     cout << "]" << endl;
 	}
 
+  /************************Experiment 1***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
 
   if (cuda_err != cudaSuccess) {
 
-    cerr << "Dynamic shared memory size of 98 kibibytes for array set failed, trying 64kb..." << endl;
+    cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl << endl;
+    SHARE_SIZE = 65536;
+
+    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
+
+    if (cuda_err != cudaSuccess) {
+      cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl;
+
+      return -1;
+    }
+	}
+
+  cout << "***Experiment1***" << endl;
+
+  //Copy host arrays to device
+  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+
+  cout << "--------------------KERNEL CALL--------------------" << endl;
+
+  //Timing
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
+
+  //Kernel call
+  shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
+
+  //Copy device arrays back to host
+  cudaMemcpy(experiment1_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+
+  //Print arrays after matching
+  for(int i = 0; i < 1; i++) {
+
+    cout << "Arrays " << i << ": [";
+
+    for(int j = 0; j < array_size * 2; j++) {
+      cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
+
+      if (j == array_size - 1) {
+        cout << "]\t[";
+      }
+    }
+
+    cout << "]" << endl;
+  }
+
+  cout << milliseconds << "ms" << endl << endl;
+
+  /************************Experiment 2***************************************/
+  //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
+  cuda_err = cudaFuncSetAttribute(shfl_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
+
+  if (cuda_err != cudaSuccess) {
+
+    cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl << endl;
     SHARE_SIZE = 65536;
 
     cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
@@ -145,28 +220,35 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
 
+  cout << "***Experiment2***" << endl;
+
   cout << "--------------------KERNEL CALL--------------------" << endl;
 
   //Timing
-  cudaEventRecord(start);
+  cudaEventCreate(&start1);
+  cudaEventCreate(&stop1);
+  cudaEventRecord(start1, 0);
 
   //Kernel call
-  shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
+  shfl_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
 
   //Timing
-  cudaEventRecord(stop);
-  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventRecord(stop1, 0);
+  cudaEventSynchronize(stop1);
+  cudaEventElapsedTime(&milliseconds, start1, stop1);
+  cudaEventDestroy(start1);
+  cudaEventDestroy(stop1);
 
   //Copy device arrays back to host
-  cudaMemcpy(host_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment2_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   //Print arrays after matching
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < 1; i++) {
 
     cout << "Arrays " << i << ": [";
 
     for(int j = 0; j < array_size * 2; j++) {
-      cout << host_arrays[(i * array_size * 2) + j] << " ";
+      cout << experiment2_arrays[(i * array_size * 2) + j] << " ";
 
       if (j == array_size - 1) {
         cout << "]\t[";
@@ -178,11 +260,11 @@ int main(int argc, char** argv) {
 
   cout << milliseconds << "ms" << endl;
 
-
-
 	/***Free variables***/
 	cudaFree(device_arrays);
 	free(host_arrays);
+  free(experiment1_arrays);
+  free(experiment2_arrays);
 
 	return 0;
 }
