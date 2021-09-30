@@ -7,20 +7,19 @@
 #include "shm_array_match.h"
 #include "shfl_array_match.h"
 #include <iostream>
-#include <vector>
-#include <utility>
-#include <iostream>
-#include <iomanip>
-#include <time.h>
-#include <unistd.h>
+#include <sys/time.h>
 
 using namespace std;
 
 // For shuffling host arrays
 void shuffle(int *array, size_t n)
 {
-    usleep(100); //Clock is too fast on server. This is to seed rand
-    srand(time(NULL));
+  struct timeval tp;
+  gettimeofday(&tp, NULL);
+  long int mytime = tp.tv_sec * 1000 + tp.tv_usec;
+
+    //sleep(1); //Clock is too fast on server. This is to seed rand
+    srand(mytime);
 
     if (n > 1) {
         size_t i;
