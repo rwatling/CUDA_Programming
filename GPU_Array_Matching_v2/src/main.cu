@@ -18,10 +18,6 @@ using namespace std;
 // For shuffling host arrays
 void shuffle(int *array, size_t n)
 {
-    if (clock() == -1) {
-      cerr << "Clock failed" << endl;
-    }
-
     srand(clock());
 
     if (n > 1) {
