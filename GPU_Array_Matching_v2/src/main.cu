@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 	num_arrays = atoi(argv[1]);
   NUM_THREADS = num_arrays;
 	NUM_BLOCKS = 1;
-  SHARE_SIZE = 98304; //98 kibibytes, subject to change based on GPU requirements. See set attribute below
+  SHARE_SIZE = 65536; //64 kibibytes, subject to change based on GPU requirements. See set attribute below
 
 
 	//Host allocation
