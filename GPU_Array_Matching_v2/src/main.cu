@@ -11,7 +11,7 @@
 #include <utility>
 #include <iostream>
 #include <iomanip>
-#include <time.h>
+#include <ctime>
 
 using namespace std;
 
