@@ -121,7 +121,7 @@ int main(int argc, char** argv) {
 	}
 
   //Print arrays before matching
-  for(int i = 0; i < 1; i++) {
+  for(int i = 0; i < NUM_THREADS; i++) {
 
     cout << "Arrays " << i << ": [";
 
