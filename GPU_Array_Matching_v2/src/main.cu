@@ -19,8 +19,7 @@ using namespace std;
 // For shuffling host arrays
 void shuffle(int *array, size_t n)
 {
-    sleep(1);
-    srand(clock());
+    srand(time());
 
     if (n > 1) {
         size_t i;
