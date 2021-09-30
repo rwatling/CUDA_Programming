@@ -19,6 +19,7 @@ using namespace std;
 // For shuffling host arrays
 void shuffle(int *array, size_t n)
 {
+    usleep(100); //Clock is too fast on server. This is to seed rand
     srand(time(NULL));
 
     if (n > 1) {
