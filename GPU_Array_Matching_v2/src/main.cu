@@ -12,12 +12,14 @@
 #include <iostream>
 #include <iomanip>
 #include <time.h>
+#include <unistd.h>
 
 using namespace std;
 
 // For shuffling host arrays
 void shuffle(int *array, size_t n)
 {
+    sleep(1);
     srand(clock());
 
     if (n > 1) {
