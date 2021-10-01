@@ -12,10 +12,10 @@ include_directories(${GPU_LIB} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 add_library(${GPU_LIB} STATIC ${gpu_source_files})
 
-# Request that ${GPU_LIB} be built with -std=c++17
+# Request that ${GPU_LIB} be built with -std=c++11
 # As this is a public compile feature anything that links to
-# will also build with -std=c++17
-target_compile_features(${GPU_LIB} PUBLIC cxx_std_17)
+# will also build with -std=c++11
+target_compile_features(${GPU_LIB} PUBLIC cxx_std_11)
 
 # We need to explicitly state that we need all CUDA files in ${GPU_LIB}
 # to be built with -dc
