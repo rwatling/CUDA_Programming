@@ -9,6 +9,9 @@
 #include <iostream>
 #include <sys/time.h>
 
+#define SHM_96_KB 98304
+#define SHM_64_KB 65536
+
 using namespace std;
 
 // For shuffling host arrays
@@ -17,39 +20,41 @@ void shuffle(int *array, size_t n)
   struct timeval tp;
   gettimeofday(&tp, NULL);
   long int mytime = tp.tv_sec * 1000 + tp.tv_usec;
+  srand(mytime);
 
-    //sleep(1); //Clock is too fast on server. This is to seed rand
-    srand(mytime);
-
-    if (n > 1) {
-        size_t i;
-        for (i = 0; i < n - 1; i++){
-          size_t j = i + rand() / (RAND_MAX / (n - i) + 1);
-          int t = array[j];
-          array[j] = array[i];
-          array[i] = t;
-        }
-    }
+  if (n > 1) {
+      int i;
+      for (i = 0; i < n - 1; i++){
+        int j = i + rand() / (RAND_MAX / (n - i) + 1);
+        int t = array[j];
+        array[j] = array[i];
+        array[i] = t;
+      }
+  }
 }
 
 int main(int argc, char** argv) {
 
 	/***Variable Declarations***/
-	int* host_arrays;
+  float milliseconds;
+
+  int* host_arrays;
   int* experiment1_arrays;
   int* experiment2_arrays;
 	int* device_arrays;
+
 	int array_size;
   int num_arrays;
-	int NUM_THREADS;
-	int NUM_BLOCKS;
-	int SHARE_SIZE;
-  float milliseconds;
-  cudaEvent_t start, stop;
-  cudaEvent_t start1, stop1;
-	cudaError_t cuda_err;
+	int num_threads;
+	int num_blocks;
+  int share_size;
+
 	size_t one_t;
 	size_t array_set_bytes;
+
+  cudaEvent_t start, stop;
+  cudaEvent_t start1, stop1;
+  cudaError_t cuda_err;
 
 	/*** Read args ***/
 	if (argc < 2) {
@@ -58,16 +63,16 @@ int main(int argc, char** argv) {
 	}
 
 	/***Initialization***/
-	array_size = ARRAY_SIZE; //Ignoring array size right now
+	array_size = ARRAY_SIZE;
 	num_arrays = atoi(argv[1]);
-  NUM_THREADS = num_arrays;
-	NUM_BLOCKS = 1;
-  SHARE_SIZE = 65536; //64 kibibytes, subject to change based on GPU requirements. See set attribute below
+  num_threads = num_arrays;
+	num_blocks = 1;
+  share_size = SHM_64_KB;
 
 
 	//Host allocation
 	one_t = (size_t) 1;
-	array_set_bytes = (size_t) NUM_THREADS * array_size * 2 * sizeof(int);
+	array_set_bytes = (size_t) num_threads * array_size * 2 * sizeof(int);
   host_arrays = (int*) calloc(one_t, array_set_bytes);
 
 	if (host_arrays == NULL) {
@@ -75,7 +80,7 @@ int main(int argc, char** argv) {
 		return -1;
 	}
 
-
+  //Experiment arrays allocation
   experiment1_arrays = (int*) calloc(one_t, array_set_bytes);
 
   if (experiment1_arrays == NULL) {
@@ -99,7 +104,7 @@ int main(int argc, char** argv) {
 	}
 
   //Fill in host arrays to emulate major operation
-  for(int i = 0; i < NUM_THREADS; i++) {
+  for(int i = 0; i < num_threads; i++) {
 
     //Start array
 		for(int j = 0; j < array_size; j++) {
@@ -108,9 +113,7 @@ int main(int argc, char** argv) {
       }
 		}
 
-    if (i != 0) {
-      shuffle(host_arrays + (i * array_size * 2), array_size);
-    }
+    if (i != 0) { shuffle(host_arrays + (i * array_size * 2), array_size); }
 
     //End array
     for(int j = array_size; j < array_size * 2; j++) {
@@ -121,31 +124,33 @@ int main(int argc, char** argv) {
 	}
 
   //Print arrays before matching
-  for(int i = 0; i < NUM_THREADS; i++) {
+  if (num_threads <= 16) {
+    for(int i = 0; i < num_threads; i++) {
 
-    cout << "Arrays " << i << ": [";
+      cout << "Arrays " << i << ": [";
 
-		for(int j = 0; j < array_size * 2; j++) {
-			cout << host_arrays[(i * array_size * 2) + j] << " ";
+  		for(int j = 0; j < array_size * 2; j++) {
+  			cout << host_arrays[(i * array_size * 2) + j] << " ";
 
-      if (j == array_size - 1) {
-        cout << "]\t[";
-      }
-		}
+        if (j == array_size - 1) { cout << "]\t["; }
+  		}
 
-    cout << "]" << endl;
-	}
+      cout << "]" << endl;
+  	}
+  }
 
   /************************Experiment 1***************************************/
+
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
-  cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
+  share_size = SHM_96_KB;
+  cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
 
-    cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl << endl;
-    SHARE_SIZE = 65536;
+    cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl;
+    share_size = SHM_64_KB;
 
-    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
+    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
     if (cuda_err != cudaSuccess) {
       cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl;
@@ -154,11 +159,10 @@ int main(int argc, char** argv) {
     }
 	}
 
-  cout << "***Experiment1***" << endl;
+  cout << endl << "***Experiment1***" << endl;
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
-
 
   cout << "--------------------KERNEL CALL--------------------" << endl;
 
@@ -168,7 +172,7 @@ int main(int argc, char** argv) {
   cudaEventRecord(start, 0);
 
   //Kernel call
-  shm_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
+  shm_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -188,9 +192,7 @@ int main(int argc, char** argv) {
     for(int j = 0; j < array_size * 2; j++) {
       cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
 
-      if (j == array_size - 1) {
-        cout << "]\t[";
-      }
+      if (j == array_size - 1) { cout << "]\t["; }
     }
 
     cout << "]" << endl;
@@ -200,27 +202,17 @@ int main(int argc, char** argv) {
 
   /************************Experiment 2***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
-  cuda_err = cudaFuncSetAttribute(shfl_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
+  cuda_err = cudaFuncSetAttribute(shfl_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-
-    cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl << endl;
-    SHARE_SIZE = 65536;
-
-    cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, SHARE_SIZE);
-
-    if (cuda_err != cudaSuccess) {
-      cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl;
-
-      return -1;
-    }
+    cerr << endl << "Second attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl;
+    return -1;
 	}
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-
-  cout << "***Experiment2***" << endl;
+  cout << endl << "***Experiment2***" << endl;
 
   cout << "--------------------KERNEL CALL--------------------" << endl;
 
@@ -230,7 +222,7 @@ int main(int argc, char** argv) {
   cudaEventRecord(start1, 0);
 
   //Kernel call
-  shfl_array_match <<<NUM_BLOCKS, NUM_THREADS, SHARE_SIZE>>> (device_arrays, NUM_THREADS);
+  shfl_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
   //Timing
   cudaEventRecord(stop1, 0);
@@ -248,11 +240,9 @@ int main(int argc, char** argv) {
     cout << "Arrays " << i << ": [";
 
     for(int j = 0; j < array_size * 2; j++) {
-      cout << experiment2_arrays[(i * array_size * 2) + j] << " ";
+      cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
 
-      if (j == array_size - 1) {
-        cout << "]\t[";
-      }
+      if (j == array_size - 1) { cout << "]\t["; }
     }
 
     cout << "]" << endl;
