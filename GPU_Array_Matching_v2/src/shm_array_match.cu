@@ -18,7 +18,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 	for (int i = 0; i < size; i++) {
 		int arr1_index = (thread_id * 2 * size) + i;
 		current_arr1[i] = global_arrays[arr1_index];
-		shared_arrays[arr1_index] = current_arr1[i]; //eliminate?
+		shared_arrays[arr1_index] = current_arr1[i];
 
 		int arr2_index = (thread_id * 2 * size) + size + i;
 		current_arr2[i] = global_arrays[arr2_index];
@@ -61,7 +61,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 				arr2_index = (thread_id * 2 * size) + size + i;
 				shared_arrays[arr2_index] = current_arr2[i];
 			}
-
 		}
 
 		__syncthreads();

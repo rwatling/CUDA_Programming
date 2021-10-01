@@ -22,8 +22,6 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
     current_arr2[i] = global_arrays[arr2_index];
   }
 
-  __syncthreads();
-
   //Stage 1: Match by shuffle arrays
   for (int delta = 1; delta < 32; delta *= 2) {
 
@@ -32,13 +30,9 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
       next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);
     }
 
-    __syncthreads();
-
     if ((thread_id % (delta * 2)) == 0) {
       match(current_arr2, next_arr1, next_arr2);
     }
-
-    __syncthreads();
   }
 
   //Stage 2: Write to shared memory
@@ -65,8 +59,6 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
     }
   }
 
-  __syncthreads();
-
   //Step 4: Shuffle again
   for (int delta = 1; delta < 32; delta *= 2) {
 
@@ -77,15 +69,11 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
       }
     }
 
-    __syncthreads();
-
     if (thread_id < WARP_SIZE) {
       if ((thread_id % (delta * 2)) == 0) {
         match(current_arr2, next_arr1, next_arr2);
       }
     }
-
-    __syncthreads();
   }
 
   //Stage 5: Write back to global memory
