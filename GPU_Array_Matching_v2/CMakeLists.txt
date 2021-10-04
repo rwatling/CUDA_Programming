@@ -4,7 +4,7 @@ set(GPU_LIB "_gpu_lib")
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
-file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/src/shm_array_match.cu" "${CMAKE_SOURCE_DIR}/src/match.cu" "${CMAKE_SOURCE_DIR}/src/shfl_array_match.cu")
+file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/src/shm_array_match.cu" "${CMAKE_SOURCE_DIR}/src/match.cu" "${CMAKE_SOURCE_DIR}/src/shfl_array_match.cu" "${CMAKE_SOURCE_DIR}/src/warp_match.cu")
 file(GLOB main_file "${CMAKE_SOURCE_DIR}/src/main.cu")
 
 include_directories(${CMAKE_PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

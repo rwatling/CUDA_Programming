@@ -240,7 +240,7 @@ int main(int argc, char** argv) {
     cout << "Arrays " << i << ": [";
 
     for(int j = 0; j < array_size * 2; j++) {
-      cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
+      cout << experiment2_arrays[(i * array_size * 2) + j] << " ";
 
       if (j == array_size - 1) { cout << "]\t["; }
     }
@@ -249,6 +249,8 @@ int main(int argc, char** argv) {
   }
 
   cout << milliseconds << "ms" << endl;
+
+  //CPU verification
 
 	/***Free variables***/
 	cudaFree(device_arrays);
