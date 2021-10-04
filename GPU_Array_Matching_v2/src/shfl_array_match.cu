@@ -5,9 +5,12 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
 	extern __shared__ int shared_arrays[];
 	int current_arr1[ARRAY_SIZE];
 	int current_arr2[ARRAY_SIZE];
+  int next_arr1[ARRAY_SIZE];
+  int next_arr2[ARRAY_SIZE];
 	int size = ARRAY_SIZE;
   int arr1_index = 0;
   int arr2_index = 0;
+  unsigned int mask = 0xffffffff;
 
   //Stage 0: Retrieve from global memory
   for (int i = 0; i < size; i++) {
@@ -19,11 +22,20 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
   }
 
   //Stage 1: Match by shuffle arrays
-  warp_match(thread_id, current_arr1, current_arr2);
+  for (int delta = 1; delta < WARP_SIZE; delta *= 2) {
+    for (int i = 0; i < size; i++) {
+      next_arr1[i] = __shfl_down_sync(mask, current_arr1[i], delta, WARP_SIZE);
+      next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);
+    }
 
-  if (num_threads > WARP_SIZE) {
+    if ((thread_id % (delta * 2)) == 0) {
+      match(current_arr2, next_arr1, next_arr2);
+    }
 
     __syncthreads();
+  }
+
+  if (num_threads > WARP_SIZE) {
 
     //Stage 2: Write to shared memory
     if ((thread_id % WARP_SIZE) == 0) {
@@ -56,13 +68,22 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
 
     __syncthreads();
 
-    //Step 4: Shuffle again
+    //Stage 4: Shuffle again
     if (thread_id < WARP_SIZE) {
-      warp_match(thread_id, current_arr1, current_arr2);
+      for (int delta = 1; delta < (num_threads / WARP_SIZE); delta *= 2) {
+        for (int i = 0; i < size; i++) {
+          next_arr1[i] = __shfl_down_sync(mask, current_arr1[i], delta, WARP_SIZE);
+          next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);
+        }
+
+        if ((thread_id % (delta * 2)) == 0) {
+          match(current_arr2, next_arr1, next_arr2);
+        }
+
+        __syncthreads();
+      }
     }
   }
-
-  __syncthreads();
 
   //Stage 5: Write back to global memory
   if (thread_id == 0) {
