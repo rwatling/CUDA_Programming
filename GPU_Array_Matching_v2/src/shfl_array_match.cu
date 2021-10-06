@@ -21,8 +21,10 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
     current_arr2[i] = global_arrays[arr2_index];
   }
 
-  //Stage 1: Match by shuffle arrays
-  for (int delta = 1; delta < WARP_SIZE; delta *= 2) {
+  //Stage 1: Match by shuffle arrays with tree like reduction
+  for (int delta = 1; delta < WARP_SIZE; delta = delta << 1) {
+
+    //Retrieve value from register from thread_id + delta
     for (int i = 0; i < size; i++) {
       next_arr1[i] = __shfl_down_sync(mask, current_arr1[i], delta, WARP_SIZE);
       next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);
@@ -37,7 +39,7 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
 
   if (num_threads > WARP_SIZE) {
 
-    //Stage 2: Write to shared memory
+    //Stage 2: Warp thread 0 write warp shuffle result to shared memory
     if ((thread_id % WARP_SIZE) == 0) {
 
       for(int i = 0; i < size; i++) {
@@ -53,7 +55,7 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
 
     __syncthreads();
 
-    //Stage 3: Read from shared memory
+    //Stage 3: Read all warps 0 thread from shared memory
     if (thread_id < WARP_SIZE) {
       for(int i = 0; i < size; i++) {
         arr1_index = (thread_id * 2 * size) + i;
@@ -70,7 +72,11 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
 
     //Stage 4: Shuffle again
     if (thread_id < WARP_SIZE) {
-      for (int delta = 1; delta < (num_threads / WARP_SIZE); delta *= 2) {
+
+      // Tree like reduction, notice for loop condition
+      for (int delta = 1; delta < (num_threads / WARP_SIZE); delta = delta << 1) {
+
+        //Retrieve value from register from thread_id + delta
         for (int i = 0; i < size; i++) {
           next_arr1[i] = __shfl_down_sync(mask, current_arr1[i], delta, WARP_SIZE);
           next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);

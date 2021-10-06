@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
 
     //End array
     for(int j = array_size; j < array_size * 2; j++) {
-      host_arrays[(i * array_size * 2) + j] = j % 8;
+      host_arrays[(i * array_size * 2) + j] = j % array_size;
 		}
 
     shuffle(host_arrays + (i * array_size * 2) + array_size, array_size);
@@ -249,8 +249,6 @@ int main(int argc, char** argv) {
   }
 
   cout << milliseconds << "ms" << endl;
-
-  //CPU verification
 
 	/***Free variables***/
 	cudaFree(device_arrays);
