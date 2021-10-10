@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
 
 	/*** Read args ***/
 	if (argc < 2) {
-		cerr << "./gpu_match num_operating_threads" << endl;
+		cerr << "./gpu_match num_operating_threads array" << endl;
 		return -1;
 	}
 
