@@ -26,7 +26,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 	__syncthreads();
 
 	// Tree like match reduction using shared memory
-	for (int k = 1; k < num_threads; k = k << 2) {
+	for (int k = 1; k < num_threads; k = k << 1) {
 
 		// If thread is a writer
 		if ((thread_id % (k * 2)) == k) {

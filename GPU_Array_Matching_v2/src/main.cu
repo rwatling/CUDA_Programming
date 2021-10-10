@@ -6,6 +6,7 @@
 #include "cuda_includes.h"
 #include "shm_array_match.h"
 #include "shfl_array_match.h"
+#include "cpu_array_match.h"
 #include <iostream>
 #include <sys/time.h>
 
@@ -48,6 +49,7 @@ int main(int argc, char** argv) {
 	int num_threads;
 	int num_blocks;
   int share_size;
+  int debug;
 
 	size_t one_t;
 	size_t array_set_bytes;
@@ -57,14 +59,15 @@ int main(int argc, char** argv) {
   cudaError_t cuda_err;
 
 	/*** Read args ***/
-	if (argc < 2) {
-		cerr << "./gpu_match num_operating_threads array" << endl;
+	if (argc < 3) {
+		cerr << "./gpu_match num_operating_threads debug(1 or 0)" << endl;
 		return -1;
 	}
 
 	/***Initialization***/
 	array_size = ARRAY_SIZE;
 	num_arrays = atoi(argv[1]);
+  debug = (atoi(argv[2]));
   num_threads = num_arrays;
 	num_blocks = 1;
   share_size = SHM_64_KB;
@@ -124,7 +127,7 @@ int main(int argc, char** argv) {
 	}
 
   //Print arrays before matching
-  if (num_threads <= 16) {
+  if (debug) {
     for(int i = 0; i < num_threads; i++) {
 
       cout << "Arrays " << i << ": [";
@@ -249,6 +252,23 @@ int main(int argc, char** argv) {
   }
 
   cout << milliseconds << "ms" << endl;
+
+  cout << endl << "***Host Arrays***" << endl;
+
+  cpu_array_match(host_arrays, num_threads, array_size);
+
+  for(int i = 0; i < 1; i++) {
+
+    cout << "Arrays " << i << ": [";
+
+    for(int j = 0; j < array_size * 2; j++) {
+      cout << host_arrays[(i * array_size * 2) + j] << " ";
+
+      if (j == array_size - 1) { cout << "]\t["; }
+    }
+
+    cout << "]" << endl;
+  }
 
 	/***Free variables***/
 	cudaFree(device_arrays);
