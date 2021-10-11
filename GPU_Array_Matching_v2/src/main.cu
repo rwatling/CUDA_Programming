@@ -150,24 +150,27 @@ int main(int argc, char** argv) {
 
   if (cuda_err != cudaSuccess) {
 
-    cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl;
+    if (debug) { cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl; }
     share_size = SHM_64_KB;
 
     cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
     if (cuda_err != cudaSuccess) {
-      cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl;
+
+      if (debug) { cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl; }
 
       return -1;
     }
 	}
 
-  cout << endl << "***Experiment1***" << endl;
+  if (debug) {
+    cout << endl << "***Experiment1***" << endl;
 
-  //Copy host arrays to device
-  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+    //Copy host arrays to device
+    cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-  cout << "--------------------KERNEL CALL--------------------" << endl;
+    cout << "--------------------KERNEL CALL--------------------" << endl;
+  }
 
   //Timing
   cudaEventCreate(&start);
@@ -187,37 +190,41 @@ int main(int argc, char** argv) {
   //Copy device arrays back to host
   cudaMemcpy(experiment1_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  //Print arrays after matching
-  for(int i = 0; i < 1; i++) {
+  if (debug) {
+    //Print arrays after matching
+    for(int i = 0; i < 1; i++) {
 
-    cout << "Arrays " << i << ": [";
+      cout << "Arrays " << i << ": [";
 
-    for(int j = 0; j < array_size * 2; j++) {
-      cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
+      for(int j = 0; j < array_size * 2; j++) {
+        cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
 
-      if (j == array_size - 1) { cout << "]\t["; }
+        if (j == array_size - 1) { cout << "]\t["; }
+      }
+
+      cout << "]" << endl;
     }
-
-    cout << "]" << endl;
   }
 
-  cout << milliseconds << "ms" << endl << endl;
+  cout << 0 << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   /************************Experiment 2***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shfl_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    cerr << endl << "Second attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl;
+    if (debug) { cerr << endl << "Second attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
 	}
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-  cout << endl << "***Experiment2***" << endl;
+  if (debug) {
+    cout << endl << "***Experiment2***" << endl;
 
-  cout << "--------------------KERNEL CALL--------------------" << endl;
+    cout << "--------------------KERNEL CALL--------------------" << endl;
+  }
 
   //Timing
   cudaEventCreate(&start1);
@@ -234,40 +241,43 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start1);
   cudaEventDestroy(stop1);
 
+  cout << 1 << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+
   //Copy device arrays back to host
   cudaMemcpy(experiment2_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  //Print arrays after matching
-  for(int i = 0; i < 1; i++) {
+  if (debug) {
+    //Print arrays after matching
+    for(int i = 0; i < 1; i++) {
 
-    cout << "Arrays " << i << ": [";
+      cout << "Arrays " << i << ": [";
 
-    for(int j = 0; j < array_size * 2; j++) {
-      cout << experiment2_arrays[(i * array_size * 2) + j] << " ";
+      for(int j = 0; j < array_size * 2; j++) {
+        cout << experiment2_arrays[(i * array_size * 2) + j] << " ";
 
-      if (j == array_size - 1) { cout << "]\t["; }
+        if (j == array_size - 1) { cout << "]\t["; }
+      }
+
+      cout << "]" << endl;
     }
 
-    cout << "]" << endl;
-  }
 
-  cout << milliseconds << "ms" << endl;
+    cout << endl << "***Host Arrays***" << endl;
 
-  cout << endl << "***Host Arrays***" << endl;
+    cpu_array_match(host_arrays, num_threads, array_size);
 
-  cpu_array_match(host_arrays, num_threads, array_size);
+    for(int i = 0; i < 1; i++) {
 
-  for(int i = 0; i < 1; i++) {
+      cout << "Arrays " << i << ": [";
 
-    cout << "Arrays " << i << ": [";
+      for(int j = 0; j < array_size * 2; j++) {
+        cout << host_arrays[(i * array_size * 2) + j] << " ";
 
-    for(int j = 0; j < array_size * 2; j++) {
-      cout << host_arrays[(i * array_size * 2) + j] << " ";
+        if (j == array_size - 1) { cout << "]\t["; }
+      }
 
-      if (j == array_size - 1) { cout << "]\t["; }
+      cout << "]" << endl;
     }
-
-    cout << "]" << endl;
   }
 
 	/***Free variables***/
