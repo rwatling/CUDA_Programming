@@ -33,8 +33,6 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
     if ((thread_id % (delta * 2)) == 0) {
       match(current_arr2, next_arr1, next_arr2);
     }
-
-    __syncthreads();
   }
 
   if (num_threads > WARP_SIZE) {
@@ -85,8 +83,6 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
         if ((thread_id % (delta * 2)) == 0) {
           match(current_arr2, next_arr1, next_arr2);
         }
-
-        __syncthreads();
       }
     }
   }
