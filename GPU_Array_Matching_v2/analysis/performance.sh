@@ -1,6 +1,6 @@
 #!/bin/bash
 
-file1=./data/change_t_a12.csv
+file1=./data/change_t_a4.csv
 
 empty=./data/empty_results.csv
 
