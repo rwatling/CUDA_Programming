@@ -18,11 +18,11 @@ file1 <- "data/change_t_a4.csv"
 file2 <- "data/change_t_a8.csv"
 file3 <- "data/change_t_a12.csv"
 file4 <- "data/change_t_a16.csv"
-file4 <- "data/change_t_a23.csv"
-all_files <- c(file1, file2, file3, file4)
+file5 <- "data/change_t_a23.csv"
+all_files <- c(file1, file2, file3, file4, file5)
 
 ### Change Array Size: file1-4###
-file_num <- 4
+file_num <- 5
   allPerfDf <- read.csv(all_files[file_num]) # Change this
   
   # For speedup
