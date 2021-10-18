@@ -1,0 +1,9 @@
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z16shfl_array_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z16shfl_array_matchPii
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, 332 bytes cmem[0]
+ptxas info    : Compiling entry function '_Z15shm_array_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z15shm_array_matchPii
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 32 registers, 332 bytes cmem[0]
