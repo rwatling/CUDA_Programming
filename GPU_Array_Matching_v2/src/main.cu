@@ -163,11 +163,11 @@ int main(int argc, char** argv) {
     }
 	}
 
+  //Copy host arrays to device
+  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
   if (debug) {
     cout << endl << "***Experiment1***" << endl;
-
-    //Copy host arrays to device
-    cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
