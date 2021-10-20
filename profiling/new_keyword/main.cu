@@ -13,7 +13,7 @@
 
 #define SHM_96_KB 98304
 #define SHM_64_KB 65536
-#define ARRAY_SIZE 23
+#define ARRAY_SIZE 16
 #define WARP_SIZE 32
 
 using namespace std;
