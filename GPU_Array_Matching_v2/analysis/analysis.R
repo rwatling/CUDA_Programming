@@ -29,8 +29,8 @@ allPerfDf4 <- read.csv(all_files[4])
 allPerfDf5 <- read.csv(all_files[5])
 
 # For plots
-allPerfDf1[which(allPerfDf1$type == 1),]$type = "shuffle"
-allPerfDf1[which(allPerfDf1$type == 0),]$type = "shared"
+# allPerfDf1[which(allPerfDf1$type == 1),]$type = "shuffle"
+# allPerfDf1[which(allPerfDf1$type == 0),]$type = "shared"
 
 allPerfDf2[which(allPerfDf2$type == 1),]$type = "shuffle"
 allPerfDf2[which(allPerfDf2$type == 0),]$type = "shared"
@@ -44,20 +44,19 @@ allPerfDf4[which(allPerfDf4$type == 0),]$type = "shared"
 allPerfDf5[which(allPerfDf5$type == 1),]$type = "shuffle"
 allPerfDf5[which(allPerfDf5$type == 0),]$type = "shared"
 
-combined <- rbind(allPerfDf1, allPerfDf2, allPerfDf3, allPerfDf4, allPerfDf5)
+combined <- rbind(allPerfDf2, allPerfDf3, allPerfDf4, allPerfDf5)
 
 # Plot
 #png(file=gsub(".csv", ".png", all_files[file_num])) # Change this
+png(shared_v_shuffle.png)
 plot.new()
 ggplot() +
-  geom_smooth(data = combined, mapping = aes(x = number_of_arrays, y = time, group=interaction(type, array_size), color=interaction(type, array_size))) +
+  geom_line(data = combined, mapping = aes(x = number_of_arrays, y = time, group=interaction(type, array_size), color=interaction(type, array_size))) +
   ggtitle("Time vs. Number of Threads") +
   ylab("Time (ms)") +
   theme_minimal() +
   scale_color_colorblind()
-#dev.off()
-
-scale_color_
+dev.off()
 
 ### Plot speedup bar graphs ###
 # For speedup
