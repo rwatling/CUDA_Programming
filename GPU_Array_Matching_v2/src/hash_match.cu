@@ -19,7 +19,7 @@ __device__ void hash_match(int* array2, int* next_arr1, int* next_arr2) {
         h_table2[hashed_key][j] = next_arr2[i];
         break;
       } else if ((h_table1[hashed_key][j] != 0) && (j == MAX_COLLISIONS -1)) {
-        for (int k = 0; k < size; k++) {
+        for (int k = 0; k < ARRAY_SIZE; k++) {
           array2[k] = INT_MIN;
           return;
         }
