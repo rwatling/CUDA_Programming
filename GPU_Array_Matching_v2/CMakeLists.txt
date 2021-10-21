@@ -5,7 +5,13 @@ set(CPU_LIB "_cpu_lib")
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2")
 
-file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/src/shm_array_match.cu" "${CMAKE_SOURCE_DIR}/src/match.cu" "${CMAKE_SOURCE_DIR}/src/shfl_array_match.cu")
+file(GLOB gpu_source_files "${CMAKE_SOURCE_DIR}/src/shm_array_match.cu"
+"${CMAKE_SOURCE_DIR}/src/match.cu" "${CMAKE_SOURCE_DIR}/src/shfl_array_match.cu"
+"${CMAKE_SOURCE_DIR}/src/shfl_hash_match.cu"
+"${CMAKE_SOURCE_DIR}/src/shm_hash_match.cu"
+"${CMAKE_SOURCE_DIR}/src/hash_match.cu")
+
+
 file(GLOB cpp_source_files "${CMAKE_SOURCE_DIR}/src/cpu_array_match.cpp")
 file(GLOB main_file "${CMAKE_SOURCE_DIR}/src/main.cu")
 
