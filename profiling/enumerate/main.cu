@@ -371,25 +371,27 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 		}
 	}*/
 
-  global_arrays[0] = current_a1_e0;
-  global_arrays[1] = current_a1_e1;
-  global_arrays[2] = current_a1_e2;
-  global_arrays[3] = current_a1_e3;
+  if (thread_id == 0) {
+    global_arrays[0] = current_a1_e0;
+    global_arrays[1] = current_a1_e1;
+    global_arrays[2] = current_a1_e2;
+    global_arrays[3] = current_a1_e3;
 
-  global_arrays[4] = current_a1_e4;
-  global_arrays[5] = current_a1_e5;
-  global_arrays[6] = current_a1_e6;
-  global_arrays[7] = current_a1_e7;
+    global_arrays[4] = current_a1_e4;
+    global_arrays[5] = current_a1_e5;
+    global_arrays[6] = current_a1_e6;
+    global_arrays[7] = current_a1_e7;
 
-  global_arrays[8] = current_a2_e0;
-  global_arrays[9] = current_a2_e1;
-  global_arrays[10] = current_a2_e2;
-  global_arrays[11] = current_a2_e3;
+    global_arrays[8] = current_a2_e0;
+    global_arrays[9] = current_a2_e1;
+    global_arrays[10] = current_a2_e2;
+    global_arrays[11] = current_a2_e3;
 
-  global_arrays[12] = current_a2_e4;
-  global_arrays[13] = current_a2_e5;
-  global_arrays[14] = current_a2_e6;
-  global_arrays[15] = current_a2_e7;
+    global_arrays[12] = current_a2_e4;
+    global_arrays[13] = current_a2_e5;
+    global_arrays[14] = current_a2_e6;
+    global_arrays[15] = current_a2_e7;
+  }
 }
 
 __global__ void shfl_array_match(int* global_arrays, int num_threads) {
@@ -405,25 +407,244 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
   unsigned int mask = 0xffffffff;
 
   //Stage 0: Retrieve from global memory
-  for (int i = 0; i < size; i++) {
+  /*for (int i = 0; i < size; i++) {
     arr1_index = (thread_id * 2 * size) + i;
     current_arr1[i] = global_arrays[arr1_index];
 
     arr2_index = (thread_id * 2 * size) + size + i;
     current_arr2[i] = global_arrays[arr2_index];
-  }
+  }*/
+
+  //Enumerated version
+  //Current array 1
+  int current_a1_e0 = global_arrays[0];
+  int current_a1_e1 = global_arrays[1];
+  int current_a1_e2 = global_arrays[2];
+  int current_a1_e3 = global_arrays[3];
+
+  int current_a1_e4 = global_arrays[4];
+  int current_a1_e5 = global_arrays[5];
+  int current_a1_e6 = global_arrays[6];
+  int current_a1_e7 = global_arrays[7];
+
+  //Current array 2
+  int current_a2_e0 = global_arrays[0];
+  int current_a2_e1 = global_arrays[1];
+  int current_a2_e2 = global_arrays[2];
+  int current_a2_e3 = global_arrays[3];
+
+  int current_a2_e4 = global_arrays[4];
+  int current_a2_e5 = global_arrays[5];
+  int current_a2_e6 = global_arrays[6];
+  int current_a2_e7 = global_arrays[7];
+
+  //Init next array 1
+  int next_a1_e0 = 0;
+  int next_a1_e1 = 0;
+  int next_a1_e2 = 0;
+  int next_a1_e3 = 0;
+
+  int next_a1_e4 = 0;
+  int next_a1_e5 = 0;
+  int next_a1_e6 = 0;
+  int next_a1_e7 = 0;
+
+  //Init next array 2
+  int next_a2_e0 = 0;
+  int next_a2_e1 = 0;
+  int next_a2_e2 = 0;
+  int next_a2_e3 = 0;
+
+  int next_a2_e4 = 0;
+  int next_a2_e5 = 0;
+  int next_a2_e6 = 0;
+  int next_a2_e7 = 0;
 
   //Stage 1: Match by shuffle arrays with tree like reduction
   for (int delta = 1; delta < WARP_SIZE; delta = delta << 1) {
 
     //Retrieve value from register from thread_id + delta
-    for (int i = 0; i < size; i++) {
+    /*for (int i = 0; i < size; i++) {
       next_arr1[i] = __shfl_down_sync(mask, current_arr1[i], delta, WARP_SIZE);
       next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);
-    }
+    }*/
+
+    next_a1_e0 = __shfl_down_sync(mask, current_a1_e0, delta, WARP_SIZE);
+    next_a2_e0 = __shfl_down_sync(mask, current_a2_e0, delta, WARP_SIZE);
+
+    next_a1_e1 = __shfl_down_sync(mask, current_a1_e1, delta, WARP_SIZE);
+    next_a2_e1 = __shfl_down_sync(mask, current_a2_e1, delta, WARP_SIZE);
+
+    next_a1_e2 = __shfl_down_sync(mask, current_a1_e2, delta, WARP_SIZE);
+    next_a2_e2 = __shfl_down_sync(mask, current_a2_e2, delta, WARP_SIZE);
+
+    next_a1_e3 = __shfl_down_sync(mask, current_a1_e3, delta, WARP_SIZE);
+    next_a2_e3 = __shfl_down_sync(mask, current_a2_e3, delta, WARP_SIZE);
+
+    next_a1_e4 = __shfl_down_sync(mask, current_a1_e4, delta, WARP_SIZE);
+    next_a2_e4 = __shfl_down_sync(mask, current_a2_e4, delta, WARP_SIZE);
+
+    next_a1_e5 = __shfl_down_sync(mask, current_a1_e5, delta, WARP_SIZE);
+    next_a2_e5 = __shfl_down_sync(mask, current_a2_e5, delta, WARP_SIZE);
+
+    next_a1_e6 = __shfl_down_sync(mask, current_a1_e6, delta, WARP_SIZE);
+    next_a2_e6 = __shfl_down_sync(mask, current_a2_e6, delta, WARP_SIZE);
+
+    next_a1_e7 = __shfl_down_sync(mask, current_a1_e7, delta, WARP_SIZE);
+    next_a2_e7 = __shfl_down_sync(mask, current_a2_e7, delta, WARP_SIZE);
 
     if ((thread_id % (delta * 2)) == 0) {
-      match(current_arr2, next_arr1, next_arr2);
+      //current_a2_e0
+      if (current_a2_e0 == next_a1_e0) {
+        current_a2_e0 = next_a2_e0;
+      } else if (current_a2_e0 == next_a1_e1) {
+        current_a2_e0 = next_a2_e1;
+      } else if (current_a2_e0 == next_a1_e2) {
+        current_a2_e0 = next_a2_e2;
+      } else if (current_a2_e0 == next_a1_e3) {
+        current_a2_e0 = next_a2_e3;
+      } else if (current_a2_e0 == next_a1_e4) {
+        current_a2_e0 = next_a2_e4;
+      } else if (current_a2_e0 == next_a1_e5) {
+        current_a2_e0 = next_a2_e5;
+      } else if (current_a2_e0 == next_a1_e6) {
+        current_a2_e0 = next_a2_e6;
+      } else if (current_a2_e0 == next_a1_e7) {
+        current_a2_e0 = next_a2_e7;
+      }
+
+      //current_a2_e1
+      if (current_a2_e1 == next_a1_e0) {
+        current_a2_e1 = next_a2_e0;
+      } else if (current_a2_e1 == next_a1_e1) {
+        current_a2_e1 = next_a2_e1;
+      } else if (current_a2_e1 == next_a1_e2) {
+        current_a2_e1 = next_a2_e2;
+      } else if (current_a2_e1 == next_a1_e3) {
+        current_a2_e1 = next_a2_e3;
+      } else if (current_a2_e1 == next_a1_e4) {
+        current_a2_e1 = next_a2_e4;
+      } else if (current_a2_e1 == next_a1_e5) {
+        current_a2_e1 = next_a2_e5;
+      } else if (current_a2_e1 == next_a1_e6) {
+        current_a2_e1 = next_a2_e6;
+      } else if (current_a2_e1 == next_a1_e7) {
+        current_a2_e1 = next_a2_e7;
+      }
+
+      //current_a2_e2
+      if (current_a2_e2 == next_a1_e0) {
+        current_a2_e2 = next_a2_e0;
+      } else if (current_a2_e2 == next_a1_e1) {
+        current_a2_e2 = next_a2_e1;
+      } else if (current_a2_e2 == next_a1_e2) {
+        current_a2_e2 = next_a2_e2;
+      } else if (current_a2_e2 == next_a1_e3) {
+        current_a2_e2 = next_a2_e3;
+      } else if (current_a2_e2 == next_a1_e4) {
+        current_a2_e2 = next_a2_e4;
+      } else if (current_a2_e2 == next_a1_e5) {
+        current_a2_e2 = next_a2_e5;
+      } else if (current_a2_e2 == next_a1_e6) {
+        current_a2_e2 = next_a2_e6;
+      } else if (current_a2_e2 == next_a1_e7) {
+        current_a2_e2 = next_a2_e7;
+      }
+
+      //current_a2_e3
+      if (current_a2_e3 == next_a1_e0) {
+        current_a2_e3 = next_a2_e0;
+      } else if (current_a2_e3 == next_a1_e1) {
+        current_a2_e3 = next_a2_e1;
+      } else if (current_a2_e3 == next_a1_e2) {
+        current_a2_e3 = next_a2_e2;
+      } else if (current_a2_e3 == next_a1_e3) {
+        current_a2_e3 = next_a2_e3;
+      } else if (current_a2_e3 == next_a1_e4) {
+        current_a2_e3 = next_a2_e4;
+      } else if (current_a2_e3 == next_a1_e5) {
+        current_a2_e3 = next_a2_e5;
+      } else if (current_a2_e3 == next_a1_e6) {
+        current_a2_e3 = next_a2_e6;
+      } else if (current_a2_e3 == next_a1_e7) {
+        current_a2_e3 = next_a2_e7;
+      }
+
+      //current_a2_e4
+      if (current_a2_e4 == next_a1_e0) {
+        current_a2_e4 = next_a2_e0;
+      } else if (current_a2_e4 == next_a1_e1) {
+        current_a2_e4 = next_a2_e1;
+      } else if (current_a2_e4 == next_a1_e2) {
+        current_a2_e4 = next_a2_e2;
+      } else if (current_a2_e4 == next_a1_e3) {
+        current_a2_e4 = next_a2_e3;
+      } else if (current_a2_e4 == next_a1_e4) {
+        current_a2_e4 = next_a2_e4;
+      } else if (current_a2_e4 == next_a1_e5) {
+        current_a2_e4 = next_a2_e5;
+      } else if (current_a2_e4 == next_a1_e6) {
+        current_a2_e4 = next_a2_e6;
+      } else if (current_a2_e4 == next_a1_e7) {
+        current_a2_e4 = next_a2_e7;
+      }
+
+      //current_a2_e5
+      if (current_a2_e5 == next_a1_e0) {
+        current_a2_e5 = next_a2_e0;
+      } else if (current_a2_e5 == next_a1_e1) {
+        current_a2_e5 = next_a2_e1;
+      } else if (current_a2_e5 == next_a1_e2) {
+        current_a2_e5 = next_a2_e2;
+      } else if (current_a2_e5 == next_a1_e3) {
+        current_a2_e5 = next_a2_e3;
+      } else if (current_a2_e5 == next_a1_e4) {
+        current_a2_e5 = next_a2_e4;
+      } else if (current_a2_e5 == next_a1_e5) {
+        current_a2_e5 = next_a2_e5;
+      } else if (current_a2_e5 == next_a1_e6) {
+        current_a2_e5 = next_a2_e6;
+      } else if (current_a2_e5 == next_a1_e7) {
+        current_a2_e5 = next_a2_e7;
+      }
+
+      //current_a2_e6
+      if (current_a2_e6 == next_a1_e0) {
+        current_a2_e6 = next_a2_e0;
+      } else if (current_a2_e6 == next_a1_e1) {
+        current_a2_e6 = next_a2_e1;
+      } else if (current_a2_e6 == next_a1_e2) {
+        current_a2_e6 = next_a2_e2;
+      } else if (current_a2_e6 == next_a1_e3) {
+        current_a2_e6 = next_a2_e3;
+      } else if (current_a2_e6 == next_a1_e4) {
+        current_a2_e6 = next_a2_e4;
+      } else if (current_a2_e6 == next_a1_e5) {
+        current_a2_e6 = next_a2_e5;
+      } else if (current_a2_e6 == next_a1_e6) {
+        current_a2_e6 = next_a2_e6;
+      } else if (current_a2_e6 == next_a1_e7) {
+        current_a2_e6 = next_a2_e7;
+      }
+
+      //current_a2_e7
+      if (current_a2_e7 == next_a1_e0) {
+        current_a2_e7 = next_a2_e0;
+      } else if (current_a2_e7 == next_a1_e1) {
+        current_a2_e7 = next_a2_e1;
+      } else if (current_a2_e7 == next_a1_e2) {
+        current_a2_e7 = next_a2_e2;
+      } else if (current_a2_e7 == next_a1_e3) {
+        current_a2_e7 = next_a2_e3;
+      } else if (current_a2_e7 == next_a1_e4) {
+        current_a2_e7 = next_a2_e4;
+      } else if (current_a2_e7 == next_a1_e5) {
+        current_a2_e7 = next_a2_e5;
+      } else if (current_a2_e7 == next_a1_e6) {
+        current_a2_e7 = next_a2_e6;
+      } else if (current_a2_e7 == next_a1_e7) {
+        current_a2_e7 = next_a2_e7;
+      }
     }
   }
 
@@ -432,7 +653,7 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
     //Stage 2: Warp thread 0 write warp shuffle result to shared memory
     if ((thread_id % WARP_SIZE) == 0) {
 
-      for(int i = 0; i < size; i++) {
+      /*for(int i = 0; i < size; i++) {
         arr1_index = ((thread_id / WARP_SIZE) * 2 * size) + i;
         shared_arrays[arr1_index] = current_arr1[i];
       }
@@ -440,22 +661,60 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
       for(int i = 0; i < size; i++) {
         arr2_index = ((thread_id / WARP_SIZE) * 2 * size) + size + i;
         shared_arrays[arr2_index] = current_arr2[i];
-      }
+      }*/
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 0] = current_a1_e0;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 0] = current_a2_e0;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 1] = current_a1_e1;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 1] = current_a2_e1;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 2] = current_a1_e2;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 2] = current_a2_e2;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 3] = current_a1_e3;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 3] = current_a2_e3;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 4] = current_a1_e4;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 4] = current_a2_e4;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 5] = current_a1_e5;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 5] = current_a2_e5;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 6] = current_a1_e6;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 6] = current_a2_e6;
+
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + 7] = current_a1_e7;
+      shared_arrays[((thread_id / WARP_SIZE) * 2 * size) + size + 7] = current_a2_e7;
     }
 
     __syncthreads();
 
     //Stage 3: Read all warps 0 thread from shared memory
     if (thread_id < WARP_SIZE) {
-      for(int i = 0; i < size; i++) {
-        arr1_index = (thread_id * 2 * size) + i;
-        current_arr1[i] = shared_arrays[arr1_index];
-      }
+      current_a1_e0 = shared_arrays[(thread_id * 2 * size) + 0];
+      current_a2_e0 = shared_arrays[(thread_id * 2 * size) + size + 0];
 
-      for(int i = 0; i < size; i++) {
-        arr2_index = (thread_id * 2 * size) + size + i;
-        current_arr2[i] = shared_arrays[arr2_index];
-      }
+      current_a1_e1 = shared_arrays[(thread_id * 2 * size) + 1];
+      current_a2_e1 = shared_arrays[(thread_id * 2 * size) + size + 1];
+
+      current_a1_e2 = shared_arrays[(thread_id * 2 * size) + 2];
+      current_a2_e2 = shared_arrays[(thread_id * 2 * size) + size + 2];
+
+      current_a1_e3 = shared_arrays[(thread_id * 2 * size) + 3];
+      current_a2_e3 = shared_arrays[(thread_id * 2 * size) + size + 3];
+
+      current_a1_e4 = shared_arrays[(thread_id * 2 * size) + 4];
+      current_a2_e4 = shared_arrays[(thread_id * 2 * size) + size + 4];
+
+      current_a1_e5 = shared_arrays[(thread_id * 2 * size) + 5];
+      current_a2_e5 = shared_arrays[(thread_id * 2 * size) + size + 5];
+
+      current_a1_e6 = shared_arrays[(thread_id * 2 * size) + 6];
+      current_a2_e6 = shared_arrays[(thread_id * 2 * size) + size + 6];
+
+      current_a1_e7 = shared_arrays[(thread_id * 2 * size) + 7];
+      current_a2_e7 = shared_arrays[(thread_id * 2 * size) + size + 7];
     }
 
     __syncthreads();
@@ -466,28 +725,215 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
       // Tree like reduction, notice for loop condition
       for (int delta = 1; delta < (num_threads / WARP_SIZE); delta = delta << 1) {
 
-        //Retrieve value from register from thread_id + delta
-        for (int i = 0; i < size; i++) {
-          next_arr1[i] = __shfl_down_sync(mask, current_arr1[i], delta, WARP_SIZE);
-          next_arr2[i] = __shfl_down_sync(mask, current_arr2[i], delta, WARP_SIZE);
-        }
+        next_a1_e0 = __shfl_down_sync(mask, current_a1_e0, delta, WARP_SIZE);
+        next_a2_e0 = __shfl_down_sync(mask, current_a2_e0, delta, WARP_SIZE);
+
+        next_a1_e1 = __shfl_down_sync(mask, current_a1_e1, delta, WARP_SIZE);
+        next_a2_e1 = __shfl_down_sync(mask, current_a2_e1, delta, WARP_SIZE);
+
+        next_a1_e2 = __shfl_down_sync(mask, current_a1_e2, delta, WARP_SIZE);
+        next_a2_e2 = __shfl_down_sync(mask, current_a2_e2, delta, WARP_SIZE);
+
+        next_a1_e3 = __shfl_down_sync(mask, current_a1_e3, delta, WARP_SIZE);
+        next_a2_e3 = __shfl_down_sync(mask, current_a2_e3, delta, WARP_SIZE);
+
+        next_a1_e4 = __shfl_down_sync(mask, current_a1_e4, delta, WARP_SIZE);
+        next_a2_e4 = __shfl_down_sync(mask, current_a2_e4, delta, WARP_SIZE);
+
+        next_a1_e5 = __shfl_down_sync(mask, current_a1_e5, delta, WARP_SIZE);
+        next_a2_e5 = __shfl_down_sync(mask, current_a2_e5, delta, WARP_SIZE);
+
+        next_a1_e6 = __shfl_down_sync(mask, current_a1_e6, delta, WARP_SIZE);
+        next_a2_e6 = __shfl_down_sync(mask, current_a2_e6, delta, WARP_SIZE);
+
+        next_a1_e7 = __shfl_down_sync(mask, current_a1_e7, delta, WARP_SIZE);
+        next_a2_e7 = __shfl_down_sync(mask, current_a2_e7, delta, WARP_SIZE);
 
         if ((thread_id % (delta * 2)) == 0) {
-          match(current_arr2, next_arr1, next_arr2);
-        }
+          //current_a2_e0
+          if (current_a2_e0 == next_a1_e0) {
+            current_a2_e0 = next_a2_e0;
+          } else if (current_a2_e0 == next_a1_e1) {
+            current_a2_e0 = next_a2_e1;
+          } else if (current_a2_e0 == next_a1_e2) {
+            current_a2_e0 = next_a2_e2;
+          } else if (current_a2_e0 == next_a1_e3) {
+            current_a2_e0 = next_a2_e3;
+          } else if (current_a2_e0 == next_a1_e4) {
+            current_a2_e0 = next_a2_e4;
+          } else if (current_a2_e0 == next_a1_e5) {
+            current_a2_e0 = next_a2_e5;
+          } else if (current_a2_e0 == next_a1_e6) {
+            current_a2_e0 = next_a2_e6;
+          } else if (current_a2_e0 == next_a1_e7) {
+            current_a2_e0 = next_a2_e7;
+          }
+
+          //current_a2_e1
+          if (current_a2_e1 == next_a1_e0) {
+            current_a2_e1 = next_a2_e0;
+          } else if (current_a2_e1 == next_a1_e1) {
+            current_a2_e1 = next_a2_e1;
+          } else if (current_a2_e1 == next_a1_e2) {
+            current_a2_e1 = next_a2_e2;
+          } else if (current_a2_e1 == next_a1_e3) {
+            current_a2_e1 = next_a2_e3;
+          } else if (current_a2_e1 == next_a1_e4) {
+            current_a2_e1 = next_a2_e4;
+          } else if (current_a2_e1 == next_a1_e5) {
+            current_a2_e1 = next_a2_e5;
+          } else if (current_a2_e1 == next_a1_e6) {
+            current_a2_e1 = next_a2_e6;
+          } else if (current_a2_e1 == next_a1_e7) {
+            current_a2_e1 = next_a2_e7;
+          }
+
+          //current_a2_e2
+          if (current_a2_e2 == next_a1_e0) {
+            current_a2_e2 = next_a2_e0;
+          } else if (current_a2_e2 == next_a1_e1) {
+            current_a2_e2 = next_a2_e1;
+          } else if (current_a2_e2 == next_a1_e2) {
+            current_a2_e2 = next_a2_e2;
+          } else if (current_a2_e2 == next_a1_e3) {
+            current_a2_e2 = next_a2_e3;
+          } else if (current_a2_e2 == next_a1_e4) {
+            current_a2_e2 = next_a2_e4;
+          } else if (current_a2_e2 == next_a1_e5) {
+            current_a2_e2 = next_a2_e5;
+          } else if (current_a2_e2 == next_a1_e6) {
+            current_a2_e2 = next_a2_e6;
+          } else if (current_a2_e2 == next_a1_e7) {
+            current_a2_e2 = next_a2_e7;
+          }
+
+          //current_a2_e3
+          if (current_a2_e3 == next_a1_e0) {
+            current_a2_e3 = next_a2_e0;
+          } else if (current_a2_e3 == next_a1_e1) {
+            current_a2_e3 = next_a2_e1;
+          } else if (current_a2_e3 == next_a1_e2) {
+            current_a2_e3 = next_a2_e2;
+          } else if (current_a2_e3 == next_a1_e3) {
+            current_a2_e3 = next_a2_e3;
+          } else if (current_a2_e3 == next_a1_e4) {
+            current_a2_e3 = next_a2_e4;
+          } else if (current_a2_e3 == next_a1_e5) {
+            current_a2_e3 = next_a2_e5;
+          } else if (current_a2_e3 == next_a1_e6) {
+            current_a2_e3 = next_a2_e6;
+          } else if (current_a2_e3 == next_a1_e7) {
+            current_a2_e3 = next_a2_e7;
+          }
+
+          //current_a2_e4
+          if (current_a2_e4 == next_a1_e0) {
+            current_a2_e4 = next_a2_e0;
+          } else if (current_a2_e4 == next_a1_e1) {
+            current_a2_e4 = next_a2_e1;
+          } else if (current_a2_e4 == next_a1_e2) {
+            current_a2_e4 = next_a2_e2;
+          } else if (current_a2_e4 == next_a1_e3) {
+            current_a2_e4 = next_a2_e3;
+          } else if (current_a2_e4 == next_a1_e4) {
+            current_a2_e4 = next_a2_e4;
+          } else if (current_a2_e4 == next_a1_e5) {
+            current_a2_e4 = next_a2_e5;
+          } else if (current_a2_e4 == next_a1_e6) {
+            current_a2_e4 = next_a2_e6;
+          } else if (current_a2_e4 == next_a1_e7) {
+            current_a2_e4 = next_a2_e7;
+          }
+
+          //current_a2_e5
+          if (current_a2_e5 == next_a1_e0) {
+            current_a2_e5 = next_a2_e0;
+          } else if (current_a2_e5 == next_a1_e1) {
+            current_a2_e5 = next_a2_e1;
+          } else if (current_a2_e5 == next_a1_e2) {
+            current_a2_e5 = next_a2_e2;
+          } else if (current_a2_e5 == next_a1_e3) {
+            current_a2_e5 = next_a2_e3;
+          } else if (current_a2_e5 == next_a1_e4) {
+            current_a2_e5 = next_a2_e4;
+          } else if (current_a2_e5 == next_a1_e5) {
+            current_a2_e5 = next_a2_e5;
+          } else if (current_a2_e5 == next_a1_e6) {
+            current_a2_e5 = next_a2_e6;
+          } else if (current_a2_e5 == next_a1_e7) {
+            current_a2_e5 = next_a2_e7;
+          }
+
+          //current_a2_e6
+          if (current_a2_e6 == next_a1_e0) {
+            current_a2_e6 = next_a2_e0;
+          } else if (current_a2_e6 == next_a1_e1) {
+            current_a2_e6 = next_a2_e1;
+          } else if (current_a2_e6 == next_a1_e2) {
+            current_a2_e6 = next_a2_e2;
+          } else if (current_a2_e6 == next_a1_e3) {
+            current_a2_e6 = next_a2_e3;
+          } else if (current_a2_e6 == next_a1_e4) {
+            current_a2_e6 = next_a2_e4;
+          } else if (current_a2_e6 == next_a1_e5) {
+            current_a2_e6 = next_a2_e5;
+          } else if (current_a2_e6 == next_a1_e6) {
+            current_a2_e6 = next_a2_e6;
+          } else if (current_a2_e6 == next_a1_e7) {
+            current_a2_e6 = next_a2_e7;
+          }
+
+          //current_a2_e7
+          if (current_a2_e7 == next_a1_e0) {
+            current_a2_e7 = next_a2_e0;
+          } else if (current_a2_e7 == next_a1_e1) {
+            current_a2_e7 = next_a2_e1;
+          } else if (current_a2_e7 == next_a1_e2) {
+            current_a2_e7 = next_a2_e2;
+          } else if (current_a2_e7 == next_a1_e3) {
+            current_a2_e7 = next_a2_e3;
+          } else if (current_a2_e7 == next_a1_e4) {
+            current_a2_e7 = next_a2_e4;
+          } else if (current_a2_e7 == next_a1_e5) {
+            current_a2_e7 = next_a2_e5;
+          } else if (current_a2_e7 == next_a1_e6) {
+            current_a2_e7 = next_a2_e6;
+          } else if (current_a2_e7 == next_a1_e7) {
+            current_a2_e7 = next_a2_e7;
+          }
       }
     }
   }
 
   //Stage 5: Write back to global memory
   if (thread_id == 0) {
-		for (int i = 0; i < size; i++) {
+		/*for (int i = 0; i < size; i++) {
 			arr1_index = (thread_id * 2 * size) + i;
 			global_arrays[arr1_index] = current_arr1[i];
 
 			arr2_index = (thread_id * 2 * size) + size + i;
 			global_arrays[arr2_index] = current_arr2[i];
-		}
+		}*/
+
+    global_arrays[0] = current_a1_e0;
+    global_arrays[1] = current_a1_e1;
+    global_arrays[2] = current_a1_e2;
+    global_arrays[3] = current_a1_e3;
+
+    global_arrays[4] = current_a1_e4;
+    global_arrays[5] = current_a1_e5;
+    global_arrays[6] = current_a1_e6;
+    global_arrays[7] = current_a1_e7;
+
+    global_arrays[8] = current_a2_e0;
+    global_arrays[9] = current_a2_e1;
+    global_arrays[10] = current_a2_e2;
+    global_arrays[11] = current_a2_e3;
+
+    global_arrays[12] = current_a2_e4;
+    global_arrays[13] = current_a2_e5;
+    global_arrays[14] = current_a2_e6;
+    global_arrays[15] = current_a2_e7;
 	}
 }
 
