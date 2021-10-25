@@ -13,7 +13,7 @@
 
 #define SHM_96_KB 98304
 #define SHM_64_KB 65536
-#define ARRAY_SIZE 23
+#define ARRAY_SIZE 8
 #define WARP_SIZE 32
 
 using namespace std;
@@ -87,25 +87,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
   int current_a1_e6 = global_arrays[6];
   int current_a1_e7 = global_arrays[7];
 
-  int current_a1_e8 = global_arrays[8];
-  int current_a1_e9 = global_arrays[9];
-  int current_a1_e10 = global_arrays[10];
-  int current_a1_e11 = global_arrays[11];
-
-  int current_a1_e12 = global_arrays[12];
-  int current_a1_e13 = global_arrays[13];
-  int current_a1_e14 = global_arrays[14];
-  int current_a1_e15 = global_arrays[15];
-
-  int current_a1_e16 = global_arrays[16];
-  int current_a1_e17 = global_arrays[17];
-  int current_a1_e18 = global_arrays[18];
-  int current_a1_e19 = global_arrays[19];
-
-  int current_a1_e20 = global_arrays[20];
-  int current_a1_e21 = global_arrays[21];
-  int current_a1_e22 = global_arrays[22];
-
   //Current array 2
   int current_a2_e0 = global_arrays[0];
   int current_a2_e1 = global_arrays[1];
@@ -116,25 +97,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
   int current_a2_e5 = global_arrays[5];
   int current_a2_e6 = global_arrays[6];
   int current_a2_e7 = global_arrays[7];
-
-  int current_a2_e8 = global_arrays[8];
-  int current_a2_e9 = global_arrays[9];
-  int current_a2_e10 = global_arrays[10];
-  int current_a2_e11 = global_arrays[11];
-
-  int current_a2_e12 = global_arrays[12];
-  int current_a2_e13 = global_arrays[13];
-  int current_a2_e14 = global_arrays[14];
-  int current_a2_e15 = global_arrays[15];
-
-  int current_a2_e16 = global_arrays[16];
-  int current_a2_e17 = global_arrays[17];
-  int current_a2_e18 = global_arrays[18];
-  int current_a2_e19 = global_arrays[19];
-
-  int current_a2_e20 = global_arrays[20];
-  int current_a2_e21 = global_arrays[21];
-  int current_a2_e22 = global_arrays[22];
 
   //Init next array 1
   int next_a1_e0 = 0;
@@ -147,25 +109,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
   int next_a1_e6 = 0;
   int next_a1_e7 = 0;
 
-  int next_a1_e8 = 0;
-  int next_a1_e9 = 0;
-  int next_a1_e10 = 0;
-  int next_a1_e11 = 0;
-
-  int next_a1_e12 = 0;
-  int next_a1_e13 = 0;
-  int next_a1_e14 = 0;
-  int next_a1_e15 = 0;
-
-  int next_a1_e16 = 0;
-  int next_a1_e17 = 0;
-  int next_a1_e18 = 0;
-  int next_a1_e19 = 0;
-
-  int next_a1_e20 = 0;
-  int next_a1_e21 = 0;
-  int next_a1_e22 = 0;
-
   //Init next array 2
   int next_a2_e0 = 0;
   int next_a2_e1 = 0;
@@ -176,25 +119,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
   int next_a2_e5 = 0;
   int next_a2_e6 = 0;
   int next_a2_e7 = 0;
-
-  int next_a2_e8 = 0;
-  int next_a2_e9 = 0;
-  int next_a2_e10 = 0;
-  int next_a2_e11 = 0;
-
-  int next_a2_e12 = 0;
-  int next_a2_e13 = 0;
-  int next_a2_e14 = 0;
-  int next_a2_e15 = 0;
-
-  int next_a2_e16 = 0;
-  int next_a2_e17 = 0;
-  int next_a2_e18 = 0;
-  int next_a2_e19 = 0;
-
-  int next_a2_e20 = 0;
-  int next_a2_e21 = 0;
-  int next_a2_e22 = 0;
 
 	__syncthreads();
 
@@ -227,25 +151,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
       shared_arrays[(thread_id / (k * 2)) * 2 * size + 6] = current_a1_e6;
       shared_arrays[(thread_id / (k * 2)) * 2 * size + 7] = current_a1_e7;
 
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 8] = current_a1_e8;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 9] = current_a1_e9;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 10] = current_a1_e10;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 11] = current_a1_e11;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 12] = current_a1_e12;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 13] = current_a1_e13;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 14] = current_a1_e14;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 15] = current_a1_e15;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 16] = current_a1_e16;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 17] = current_a1_e17;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 18] = current_a1_e18;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 19] = current_a1_e19;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 20] = current_a1_e20;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 21] = current_a1_e21;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + 22] = current_a1_e22;
-
       //Write for current array 2
       shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 0] = current_a2_e0;
       shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 1] = current_a2_e1;
@@ -256,25 +161,6 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
       shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 5] = current_a2_e5;
       shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 6] = current_a2_e6;
       shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 7] = current_a2_e7;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 8] = current_a2_e8;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 9] = current_a2_e9;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 10] = current_a2_e10;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 11] = current_a2_e11;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 12] = current_a2_e12;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 13] = current_a2_e13;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 14] = current_a2_e14;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 15] = current_a2_e15;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 16] = current_a2_e16;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 17] = current_a2_e17;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 18] = current_a2_e18;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 19] = current_a2_e19;
-
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 20] = current_a2_e20;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 21] = current_a2_e21;
-      shared_arrays[(thread_id / (k * 2)) * 2 * size + size + 22] = current_a2_e22;
 		}
 
 		__syncthreads();
@@ -305,56 +191,170 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
       next_a1_e6 = shared_arrays[(thread_id / (k*2)) * 2 * size + 6];
       next_a1_e7 = shared_arrays[(thread_id / (k*2)) * 2 * size + 7];
 
-      next_a1_e8 = shared_arrays[(thread_id / (k*2)) * 2 * size + 8];
-      next_a1_e9 = shared_arrays[(thread_id / (k*2)) * 2 * size + 9];
-      next_a1_e10 = shared_arrays[(thread_id / (k*2)) * 2 * size + 10];
-      next_a1_e11 = shared_arrays[(thread_id / (k*2)) * 2 * size + 11];
-
-      next_a1_e12 = shared_arrays[(thread_id / (k*2)) * 2 * size + 12];
-      next_a1_e13 = shared_arrays[(thread_id / (k*2)) * 2 * size + 13];
-      next_a1_e14 = shared_arrays[(thread_id / (k*2)) * 2 * size + 14];
-      next_a1_e15 = shared_arrays[(thread_id / (k*2)) * 2 * size + 15];
-
-      next_a1_e16 = shared_arrays[(thread_id / (k*2)) * 2 * size + 16];
-      next_a1_e17 = shared_arrays[(thread_id / (k*2)) * 2 * size + 17];
-      next_a1_e18 = shared_arrays[(thread_id / (k*2)) * 2 * size + 18];
-      next_a1_e19 = shared_arrays[(thread_id / (k*2)) * 2 * size + 19];
-
-      next_a1_e20 = shared_arrays[(thread_id / (k*2)) * 2 * size + 20];
-      next_a1_e21 = shared_arrays[(thread_id / (k*2)) * 2 * size + 21];
-      next_a1_e22 = shared_arrays[(thread_id / (k*2)) * 2 * size + 22];
-
       //Read next array 2
-      next_a1_e0 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 0];
-      next_a1_e1 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 1];
-      next_a1_e2 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 2];
-      next_a1_e3 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 3];
+      next_a2_e0 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 0];
+      next_a2_e1 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 1];
+      next_a2_e2 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 2];
+      next_a2_e3 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 3];
 
-      next_a1_e4 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 4];
-      next_a1_e5 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 5];
-      next_a1_e6 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 6];
-      next_a1_e7 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 7];
-
-      next_a1_e8 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 8];
-      next_a1_e9 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 9];
-      next_a1_e10 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 10];
-      next_a1_e11 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 11];
-
-      next_a1_e12 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 12];
-      next_a1_e13 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 13];
-      next_a1_e14 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 14];
-      next_a1_e15 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 15];
-
-      next_a1_e16 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 16];
-      next_a1_e17 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 17];
-      next_a1_e18 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 18];
-      next_a1_e19 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 19];
-
-      next_a1_e20 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 20];
-      next_a1_e21 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 21];
-      next_a1_e22 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 22];
+      next_a2_e4 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 4];
+      next_a2_e5 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 5];
+      next_a2_e6 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 6];
+      next_a2_e7 = shared_arrays[(thread_id / (k*2)) * 2 * size + size + 7];
 
 			//match(current_arr2, next_arr1, next_arr2);
+
+      //current_a2_e0
+      if (current_a2_e0 == next_a1_e0) {
+        current_a2_e0 = next_a2_e0;
+      } else if (current_a2_e0 == next_a1_e1) {
+        current_a2_e0 = next_a2_e1;
+      } else if (current_a2_e0 == next_a1_e2) {
+        current_a2_e0 = next_a2_e2;
+      } else if (current_a2_e0 == next_a1_e3) {
+        current_a2_e0 = next_a2_e3;
+      } else if (current_a2_e0 == next_a1_e4) {
+        current_a2_e0 = next_a2_e4;
+      } else if (current_a2_e0 == next_a1_e5) {
+        current_a2_e0 = next_a2_e5;
+      } else if (current_a2_e0 == next_a1_e6) {
+        current_a2_e0 = next_a2_e6;
+      } else if (current_a2_e0 == next_a1_e7) {
+        current_a2_e0 = next_a2_e7;
+      }
+
+      //current_a2_e1
+      if (current_a2_e1 == next_a1_e0) {
+        current_a2_e1 = next_a2_e0;
+      } else if (current_a2_e1 == next_a1_e1) {
+        current_a2_e1 = next_a2_e1;
+      } else if (current_a2_e1 == next_a1_e2) {
+        current_a2_e1 = next_a2_e2;
+      } else if (current_a2_e1 == next_a1_e3) {
+        current_a2_e1 = next_a2_e3;
+      } else if (current_a2_e1 == next_a1_e4) {
+        current_a2_e1 = next_a2_e4;
+      } else if (current_a2_e1 == next_a1_e5) {
+        current_a2_e1 = next_a2_e5;
+      } else if (current_a2_e1 == next_a1_e6) {
+        current_a2_e1 = next_a2_e6;
+      } else if (current_a2_e1 == next_a1_e7) {
+        current_a2_e1 = next_a2_e7;
+      }
+
+      //current_a2_e2
+      if (current_a2_e2 == next_a1_e0) {
+        current_a2_e2 = next_a2_e0;
+      } else if (current_a2_e2 == next_a1_e1) {
+        current_a2_e2 = next_a2_e1;
+      } else if (current_a2_e2 == next_a1_e2) {
+        current_a2_e2 = next_a2_e2;
+      } else if (current_a2_e2 == next_a1_e3) {
+        current_a2_e2 = next_a2_e3;
+      } else if (current_a2_e2 == next_a1_e4) {
+        current_a2_e2 = next_a2_e4;
+      } else if (current_a2_e2 == next_a1_e5) {
+        current_a2_e2 = next_a2_e5;
+      } else if (current_a2_e2 == next_a1_e6) {
+        current_a2_e2 = next_a2_e6;
+      } else if (current_a2_e2 == next_a1_e7) {
+        current_a2_e2 = next_a2_e7;
+      }
+
+      //current_a2_e3
+      if (current_a2_e3 == next_a1_e0) {
+        current_a2_e3 = next_a2_e0;
+      } else if (current_a2_e3 == next_a1_e1) {
+        current_a2_e3 = next_a2_e1;
+      } else if (current_a2_e3 == next_a1_e2) {
+        current_a2_e3 = next_a2_e2;
+      } else if (current_a2_e3 == next_a1_e3) {
+        current_a2_e3 = next_a2_e3;
+      } else if (current_a2_e3 == next_a1_e4) {
+        current_a2_e3 = next_a2_e4;
+      } else if (current_a2_e3 == next_a1_e5) {
+        current_a2_e3 = next_a2_e5;
+      } else if (current_a2_e3 == next_a1_e6) {
+        current_a2_e3 = next_a2_e6;
+      } else if (current_a2_e3 == next_a1_e7) {
+        current_a2_e3 = next_a2_e7;
+      }
+
+      //current_a2_e4
+      if (current_a2_e4 == next_a1_e0) {
+        current_a2_e4 = next_a2_e0;
+      } else if (current_a2_e4 == next_a1_e1) {
+        current_a2_e4 = next_a2_e1;
+      } else if (current_a2_e4 == next_a1_e2) {
+        current_a2_e4 = next_a2_e2;
+      } else if (current_a2_e4 == next_a1_e3) {
+        current_a2_e4 = next_a2_e3;
+      } else if (current_a2_e4 == next_a1_e4) {
+        current_a2_e4 = next_a2_e4;
+      } else if (current_a2_e4 == next_a1_e5) {
+        current_a2_e4 = next_a2_e5;
+      } else if (current_a2_e4 == next_a1_e6) {
+        current_a2_e4 = next_a2_e6;
+      } else if (current_a2_e4 == next_a1_e7) {
+        current_a2_e4 = next_a2_e7;
+      }
+
+      //current_a2_e5
+      if (current_a2_e5 == next_a1_e0) {
+        current_a2_e5 = next_a2_e0;
+      } else if (current_a2_e5 == next_a1_e1) {
+        current_a2_e5 = next_a2_e1;
+      } else if (current_a2_e5 == next_a1_e2) {
+        current_a2_e5 = next_a2_e2;
+      } else if (current_a2_e5 == next_a1_e3) {
+        current_a2_e5 = next_a2_e3;
+      } else if (current_a2_e5 == next_a1_e4) {
+        current_a2_e5 = next_a2_e4;
+      } else if (current_a2_e5 == next_a1_e5) {
+        current_a2_e5 = next_a2_e5;
+      } else if (current_a2_e5 == next_a1_e6) {
+        current_a2_e5 = next_a2_e6;
+      } else if (current_a2_e5 == next_a1_e7) {
+        current_a2_e5 = next_a2_e7;
+      }
+
+      //current_a2_e6
+      if (current_a2_e6 == next_a1_e0) {
+        current_a2_e6 = next_a2_e0;
+      } else if (current_a2_e6 == next_a1_e1) {
+        current_a2_e6 = next_a2_e1;
+      } else if (current_a2_e6 == next_a1_e2) {
+        current_a2_e6 = next_a2_e2;
+      } else if (current_a2_e6 == next_a1_e3) {
+        current_a2_e6 = next_a2_e3;
+      } else if (current_a2_e6 == next_a1_e4) {
+        current_a2_e6 = next_a2_e4;
+      } else if (current_a2_e6 == next_a1_e5) {
+        current_a2_e6 = next_a2_e5;
+      } else if (current_a2_e6 == next_a1_e6) {
+        current_a2_e6 = next_a2_e6;
+      } else if (current_a2_e6 == next_a1_e7) {
+        current_a2_e6 = next_a2_e7;
+      }
+
+      //current_a2_e7
+      if (current_a2_e7 == next_a1_e0) {
+        current_a2_e7 = next_a2_e0;
+      } else if (current_a2_e7 == next_a1_e1) {
+        current_a2_e7 = next_a2_e1;
+      } else if (current_a2_e7 == next_a1_e2) {
+        current_a2_e7 = next_a2_e2;
+      } else if (current_a2_e7 == next_a1_e3) {
+        current_a2_e7 = next_a2_e3;
+      } else if (current_a2_e7 == next_a1_e4) {
+        current_a2_e7 = next_a2_e4;
+      } else if (current_a2_e7 == next_a1_e5) {
+        current_a2_e7 = next_a2_e5;
+      } else if (current_a2_e7 == next_a1_e6) {
+        current_a2_e7 = next_a2_e6;
+      } else if (current_a2_e7 == next_a1_e7) {
+        current_a2_e7 = next_a2_e7;
+      }
     }
 
     __syncthreads();
@@ -371,7 +371,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 		}
 	}*/
 
-  /*global_arrays[0] = current_a1_e0;
+  global_arrays[0] = current_a1_e0;
   global_arrays[1] = current_a1_e1;
   global_arrays[2] = current_a1_e2;
   global_arrays[3] = current_a1_e3;
@@ -389,7 +389,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
   global_arrays[12] = current_a2_e4;
   global_arrays[13] = current_a2_e5;
   global_arrays[14] = current_a2_e6;
-  global_arrays[15] = current_a2_e7;*/
+  global_arrays[15] = current_a2_e7;
 }
 
 __global__ void shfl_array_match(int* global_arrays, int num_threads) {
