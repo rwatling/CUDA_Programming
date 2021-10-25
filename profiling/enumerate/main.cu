@@ -88,15 +88,15 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
   int current_a1_e7 = global_arrays[7];
 
   //Current array 2
-  int current_a2_e0 = global_arrays[0];
-  int current_a2_e1 = global_arrays[1];
-  int current_a2_e2 = global_arrays[2];
-  int current_a2_e3 = global_arrays[3];
+  int current_a2_e0 = global_arrays[size + 0];
+  int current_a2_e1 = global_arrays[size + 1];
+  int current_a2_e2 = global_arrays[size + 2];
+  int current_a2_e3 = global_arrays[size + 3];
 
-  int current_a2_e4 = global_arrays[4];
-  int current_a2_e5 = global_arrays[5];
-  int current_a2_e6 = global_arrays[6];
-  int current_a2_e7 = global_arrays[7];
+  int current_a2_e4 = global_arrays[size + 4];
+  int current_a2_e5 = global_arrays[size + 5];
+  int current_a2_e6 = global_arrays[size + 6];
+  int current_a2_e7 = global_arrays[size + 7];
 
   //Init next array 1
   int next_a1_e0 = 0;
@@ -281,7 +281,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
       }
 
       //current_a2_e4
-      if (current_a2_e4 == next_a1_e0) {
+      /*if (current_a2_e4 == next_a1_e0) {
         current_a2_e4 = next_a2_e0;
       } else if (current_a2_e4 == next_a1_e1) {
         current_a2_e4 = next_a2_e1;
@@ -354,7 +354,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
         current_a2_e7 = next_a2_e6;
       } else if (current_a2_e7 == next_a1_e7) {
         current_a2_e7 = next_a2_e7;
-      }
+      }*/
     }
 
     __syncthreads();
@@ -382,10 +382,10 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
     global_arrays[6] = current_a1_e6;
     global_arrays[7] = current_a1_e7;
 
-    global_arrays[8] = current_a2_e0;
-    global_arrays[9] = current_a2_e1;
-    global_arrays[10] = current_a2_e2;
-    global_arrays[11] = current_a2_e3;
+    global_arrays[size + 0] = current_a2_e0;
+    global_arrays[size + 1] = current_a2_e1;
+    global_arrays[size + 2] = current_a2_e2;
+    global_arrays[size + 3] = current_a2_e3;
 
     global_arrays[12] = current_a2_e4;
     global_arrays[13] = current_a2_e5;
@@ -397,13 +397,13 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
 __global__ void shfl_array_match(int* global_arrays, int num_threads) {
   int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
 	extern __shared__ int shared_arrays[];
-	int current_arr1[ARRAY_SIZE];
-	int current_arr2[ARRAY_SIZE];
-  int next_arr1[ARRAY_SIZE];
-  int next_arr2[ARRAY_SIZE];
+	//int current_arr1[ARRAY_SIZE];
+	//int current_arr2[ARRAY_SIZE];
+  //int next_arr1[ARRAY_SIZE];
+  //int next_arr2[ARRAY_SIZE];
 	int size = ARRAY_SIZE;
-  int arr1_index = 0;
-  int arr2_index = 0;
+  //int arr1_index = 0;
+  //int arr2_index = 0;
   unsigned int mask = 0xffffffff;
 
   //Stage 0: Retrieve from global memory
@@ -428,15 +428,15 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
   int current_a1_e7 = global_arrays[7];
 
   //Current array 2
-  int current_a2_e0 = global_arrays[0];
-  int current_a2_e1 = global_arrays[1];
-  int current_a2_e2 = global_arrays[2];
-  int current_a2_e3 = global_arrays[3];
+  int current_a2_e0 = global_arrays[size + 0];
+  int current_a2_e1 = global_arrays[size + 1];
+  int current_a2_e2 = global_arrays[size + 2];
+  int current_a2_e3 = global_arrays[size + 3];
 
-  int current_a2_e4 = global_arrays[4];
-  int current_a2_e5 = global_arrays[5];
-  int current_a2_e6 = global_arrays[6];
-  int current_a2_e7 = global_arrays[7];
+  int current_a2_e4 = global_arrays[size + 4];
+  int current_a2_e5 = global_arrays[size + 5];
+  int current_a2_e6 = global_arrays[size + 6];
+  int current_a2_e7 = global_arrays[size + 7];
 
   //Init next array 1
   int next_a1_e0 = 0;
@@ -904,6 +904,7 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
       }
     }
   }
+}
 
   //Stage 5: Write back to global memory
   if (thread_id == 0) {
@@ -925,10 +926,10 @@ __global__ void shfl_array_match(int* global_arrays, int num_threads) {
     global_arrays[6] = current_a1_e6;
     global_arrays[7] = current_a1_e7;
 
-    global_arrays[8] = current_a2_e0;
-    global_arrays[9] = current_a2_e1;
-    global_arrays[10] = current_a2_e2;
-    global_arrays[11] = current_a2_e3;
+    global_arrays[size + 0] = current_a2_e0;
+    global_arrays[size + 1] = current_a2_e1;
+    global_arrays[size + 2] = current_a2_e2;
+    global_arrays[size + 3] = current_a2_e3;
 
     global_arrays[12] = current_a2_e4;
     global_arrays[13] = current_a2_e5;
