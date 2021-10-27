@@ -281,7 +281,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
       }
 
       //current_a2_e4
-      /*if (current_a2_e4 == next_a1_e0) {
+      if (current_a2_e4 == next_a1_e0) {
         current_a2_e4 = next_a2_e0;
       } else if (current_a2_e4 == next_a1_e1) {
         current_a2_e4 = next_a2_e1;
@@ -354,7 +354,7 @@ __global__ void shm_array_match(int* global_arrays, int num_threads) {
         current_a2_e7 = next_a2_e6;
       } else if (current_a2_e7 == next_a1_e7) {
         current_a2_e7 = next_a2_e7;
-      }*/
+      }
     }
 
     __syncthreads();
