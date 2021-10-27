@@ -3,6 +3,5 @@
 #include <cuda.h>
 #include <cuda_runtime_api.h>
 #include <device_launch_parameters.h>
-#include <curand.h>
 #include <curand_kernel.h>
 #endif

@@ -6,6 +6,8 @@
 #include "cuda_includes.h"
 #include "shm_array_match.h"
 #include "shfl_array_match.h"
+#include "shfl_hash_match.h"
+#include "shm_hash_match.h"
 #include "cpu_array_match.h"
 #include <iostream>
 #include <sys/time.h>
@@ -42,6 +44,7 @@ int main(int argc, char** argv) {
   int* host_arrays;
   int* experiment1_arrays;
   int* experiment2_arrays;
+  int* experiment3_arrays;
 	int* device_arrays;
 
 	int array_size;
@@ -54,8 +57,9 @@ int main(int argc, char** argv) {
 	size_t one_t;
 	size_t array_set_bytes;
 
-  cudaEvent_t start, stop;
   cudaEvent_t start1, stop1;
+  cudaEvent_t start2, stop2;
+  cudaEvent_t start3, stop3;
   cudaError_t cuda_err;
 
 	/*** Read args ***/
@@ -95,6 +99,13 @@ int main(int argc, char** argv) {
 
   if (experiment2_arrays == NULL) {
 		cerr << "experiment2 arrays calloc failed\n" << endl;
+		return -1;
+	}
+
+  experiment3_arrays = (int*) calloc(one_t, array_set_bytes);
+
+  if (experiment3_arrays == NULL) {
+		cerr << "experiment3 arrays calloc failed\n" << endl;
 		return -1;
 	}
 
@@ -167,25 +178,25 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
   if (debug) {
-    cout << endl << "***Experiment1***" << endl;
+    cout << endl << "***Experiment 1 Shared Mem***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
   //Timing
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start, 0);
+  cudaEventCreate(&start1);
+  cudaEventCreate(&stop1);
+  cudaEventRecord(start1, 0);
 
   //Kernel call
   shm_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  cudaEventElapsedTime(&milliseconds, start, stop);
-  cudaEventDestroy(start);
-  cudaEventDestroy(stop);
+  cudaEventRecord(stop1, 0);
+  cudaEventSynchronize(stop1);
+  cudaEventElapsedTime(&milliseconds, start1, stop1);
+  cudaEventDestroy(start1);
+  cudaEventDestroy(stop1);
 
   //Copy device arrays back to host
   cudaMemcpy(experiment1_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -221,25 +232,25 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
   if (debug) {
-    cout << endl << "***Experiment2***" << endl;
+    cout << endl << "***Experiment 2 Shuffle***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
   //Timing
-  cudaEventCreate(&start1);
-  cudaEventCreate(&stop1);
-  cudaEventRecord(start1, 0);
+  cudaEventCreate(&start2);
+  cudaEventCreate(&stop2);
+  cudaEventRecord(start2, 0);
 
   //Kernel call
   shfl_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop1, 0);
-  cudaEventSynchronize(stop1);
-  cudaEventElapsedTime(&milliseconds, start1, stop1);
-  cudaEventDestroy(start1);
-  cudaEventDestroy(stop1);
+  cudaEventRecord(stop2, 0);
+  cudaEventSynchronize(stop2);
+  cudaEventElapsedTime(&milliseconds, start2, stop2);
+  cudaEventDestroy(start2);
+  cudaEventDestroy(stop2);
 
   cout << 1 << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -261,7 +272,116 @@ int main(int argc, char** argv) {
       cout << "]" << endl;
     }
 
+    /************************Experiment 3***************************************/
+    //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
+    cuda_err = cudaFuncSetAttribute(shm_hash_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
+    if (cuda_err != cudaSuccess) {
+      if (debug) { cerr << endl << "Third attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+      return -1;
+  	}
+
+    //Copy host arrays to device
+    cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+    if (debug) {
+      cout << endl << "***Experiment 3 Shared with Hash***" << endl;
+
+      cout << "--------------------KERNEL CALL--------------------" << endl;
+    }
+
+    //Timing
+    cudaEventCreate(&start3);
+    cudaEventCreate(&stop3);
+    cudaEventRecord(start3, 0);
+
+    //Kernel call
+    shm_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
+
+    //Timing
+    cudaEventRecord(stop3, 0);
+    cudaEventSynchronize(stop3);
+    cudaEventElapsedTime(&milliseconds, start3, stop3);
+    cudaEventDestroy(start3);
+    cudaEventDestroy(stop3);
+
+    cout << 2 << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+
+    //Copy device arrays back to host
+    cudaMemcpy(experiment3_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+
+    if (debug) {
+      //Print arrays after matching
+      for(int i = 0; i < 1; i++) {
+
+        cout << "Arrays " << i << ": [";
+
+        for(int j = 0; j < array_size * 2; j++) {
+          cout << experiment3_arrays[(i * array_size * 2) + j] << " ";
+
+          if (j == array_size - 1) { cout << "]\t["; }
+        }
+
+        cout << "]" << endl;
+      }
+    }
+
+    /************************Experiment 4***************************************/
+    //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
+    /*cuda_err = cudaFuncSetAttribute(shfl_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
+
+    if (cuda_err != cudaSuccess) {
+      if (debug) { cerr << endl << "Third attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+      return -1;
+    }
+
+    //Copy host arrays to device
+    cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+    if (debug) {
+      cout << endl << "***Experiment 3 Shared with Hash***" << endl;
+
+      cout << "--------------------KERNEL CALL--------------------" << endl;
+    }
+
+    //Timing
+    cudaEventCreate(&start4);
+    cudaEventCreate(&stop4);
+    cudaEventRecord(start4, 0);
+
+    //Kernel call
+    shfl_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
+
+    //Timing
+    cudaEventRecord(stop4, 0);
+    cudaEventSynchronize(stop4);
+    cudaEventElapsedTime(&milliseconds, start3, stop3);
+    cudaEventDestroy(start4);
+    cudaEventDestroy(stop4);
+
+    cout << 1 << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+
+    //Copy device arrays back to host
+    cudaMemcpy(experiment4_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+
+    if (debug) {
+      //Print arrays after matching
+      for(int i = 0; i < 1; i++) {
+
+        cout << "Arrays " << i << ": [";
+
+        for(int j = 0; j < array_size * 2; j++) {
+          cout << experiment3_arrays[(i * array_size * 2) + j] << " ";
+
+          if (j == array_size - 1) { cout << "]\t["; }
+        }
+
+        cout << "]" << endl;
+      }
+    }*/
+
+
+    /************************CPU Verification***************************************/
     cout << endl << "***Host Arrays***" << endl;
 
     cpu_array_match(host_arrays, num_threads, array_size);
@@ -285,6 +405,7 @@ int main(int argc, char** argv) {
 	free(host_arrays);
   free(experiment1_arrays);
   free(experiment2_arrays);
+  free(experiment3_arrays);
 
 	return 0;
 }

@@ -123,7 +123,7 @@ dev.off()
 ### Register Information ###
 array_sizes <- c(4, 8, 12, 16, 24)
 static_shuffle_regs <- c(31, 40, 48, 54, 80)
-static_share_regs <- c(22, 32, 48, 64, 56)
+static_share_regs <- c(22, 32, 48, 54, 56)
 new_shuffle_regs <- c(29, 29, 30, 30, 30)
 new_share_regs <- c(30, 30, 27, 27, 27)
 shuffleRegsDf <- data.frame(array_sizes, static_shuffle_regs, new_shuffle_regs)
