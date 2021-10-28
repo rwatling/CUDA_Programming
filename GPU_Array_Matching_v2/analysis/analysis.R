@@ -58,17 +58,6 @@ ggplot() +
   scale_color_brewer("Type | Arrays Size", palette = "Paired")
 dev.off()
 
-### Plot grouped bar graphs ###
-png("shared_vs_shufle_bar.png")
-plot.new()
-ggplot(combined, aes(fill=type, y=time, x=array_size)) +
-  geom_bar(position="dodge",  width=2, stat="identity") +
-  ylab("Time (ms)") +
-  xlab("Array Size") +
-  guides(fill=guide_legend("Type"))+
-  theme_minimal()
-dev.off()
-
 ### Speedup information ###
 shuffleChangeDf1 <-  allPerfDf1[which(allPerfDf1$type == "shuffle"),]
 shareChangeDf1 <-  allPerfDf1[which(allPerfDf1$type == "shared"),]

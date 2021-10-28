@@ -57,5 +57,5 @@ __device__ void hash_match(int* array2, int* next_arr1, int* next_arr2) {
 
 //Simpler but effective hashing function
 __device__ int hash(int key) {
-  return key * (key + 3) % HASH_SIZE;
+  return (key * SCALE) % HASH_SIZE;
 }
