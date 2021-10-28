@@ -53,7 +53,6 @@ int main(int argc, char** argv) {
 	int num_threads;
 	int num_blocks;
   int share_size;
-  int debug;
 
 	size_t one_t;
 	size_t array_set_bytes;
@@ -65,19 +64,21 @@ int main(int argc, char** argv) {
   cudaError_t cuda_err;
 
 	/*** Read args ***/
-	if (argc < 3) {
-		cerr << "./gpu_match num_operating_threads debug(1 or 0)" << endl;
+	if (argc < 2) {
+		cerr << "./gpu_match num_operating_threads" << endl;
 		return -1;
 	}
 
 	/***Initialization***/
 	array_size = ARRAY_SIZE;
 	num_arrays = atoi(argv[1]);
-  debug = (atoi(argv[2]));
   num_threads = num_arrays;
 	num_blocks = 1;
   share_size = SHM_64_KB;
 
+  /* Defined by compiler flags:
+  ARRAY_SIZE
+  DEBUG */
 
 	//Host allocation
 	one_t = (size_t) 1;
@@ -147,7 +148,7 @@ int main(int argc, char** argv) {
 	}
 
   //Print arrays before matching
-  if (debug) {
+  if (DEBUG) {
     for(int i = 0; i < num_threads; i++) {
 
       cout << "Arrays " << i << ": [";
@@ -170,14 +171,14 @@ int main(int argc, char** argv) {
 
   if (cuda_err != cudaSuccess) {
 
-    if (debug) { cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl; }
+    if (DEBUG) { cerr << endl << "Dynamic shared memory size of 96kb for array set failed, trying 64kb" << endl; }
     share_size = SHM_64_KB;
 
     cuda_err = cudaFuncSetAttribute(shm_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
     if (cuda_err != cudaSuccess) {
 
-      if (debug) { cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl; }
+      if (DEBUG) { cerr << "Dynamic shared memory size of 64000 for array set failed. Exiting program..." << endl; }
 
       return -1;
     }
@@ -186,7 +187,7 @@ int main(int argc, char** argv) {
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-  if (debug) {
+  if (DEBUG) {
     cout << endl << "***Experiment 1 Shared Mem***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
@@ -210,7 +211,7 @@ int main(int argc, char** argv) {
   //Copy device arrays back to host
   cudaMemcpy(experiment1_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  if (debug) {
+  if (DEBUG) {
     //Print arrays after matching
     for(int i = 0; i < 1; i++) {
 
@@ -233,14 +234,14 @@ int main(int argc, char** argv) {
   cuda_err = cudaFuncSetAttribute(shfl_array_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (debug) { cerr << endl << "Second attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Second attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
 	}
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-  if (debug) {
+  if (DEBUG) {
     cout << endl << "***Experiment 2 Shuffle***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
@@ -266,7 +267,7 @@ int main(int argc, char** argv) {
   //Copy device arrays back to host
   cudaMemcpy(experiment2_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  if (debug) {
+  if (DEBUG) {
     //Print arrays after matching
     for(int i = 0; i < 1; i++) {
 
@@ -287,14 +288,14 @@ int main(int argc, char** argv) {
   cuda_err = cudaFuncSetAttribute(shm_hash_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (debug) { cerr << endl << "Third attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Third attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
 	}
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-  if (debug) {
+  if (DEBUG) {
     cout << endl << "***Experiment 3 Shared with Hash***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
@@ -320,7 +321,7 @@ int main(int argc, char** argv) {
   //Copy device arrays back to host
   cudaMemcpy(experiment3_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  if (debug) {
+  if (DEBUG) {
     //Print arrays after matching
     for(int i = 0; i < 1; i++) {
 
@@ -341,14 +342,14 @@ int main(int argc, char** argv) {
   cuda_err = cudaFuncSetAttribute(shfl_hash_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (debug) { cerr << endl << "Fourth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Fourth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
 	}
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
-  if (debug) {
+  if (DEBUG) {
     cout << endl << "***Experiment 4 Shuffle with Hash***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
@@ -374,7 +375,7 @@ int main(int argc, char** argv) {
   //Copy device arrays back to host
   cudaMemcpy(experiment4_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
-  if (debug) {
+  if (DEBUG) {
     //Print arrays after matching
     for(int i = 0; i < 1; i++) {
 
@@ -391,7 +392,7 @@ int main(int argc, char** argv) {
   }
 
   /************************CPU Verification***************************************/
-  if (debug) {
+  if (DEBUG) {
     cout << endl << "***Host Arrays***" << endl;
 
     cpu_array_match(host_arrays, num_threads, array_size);

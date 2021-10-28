@@ -1,7 +1,6 @@
 #ifndef HASH_MATCH_H
 #define HASH_MATCH_H 1
 
-#include "match.h"
 #include "cuda_includes.h"
 
 #if ARRAY_SIZE == 4
