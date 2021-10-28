@@ -13,7 +13,7 @@
   #define MAX_COLLISIONS 2
   #define SCALE 7
 #elif ARRAY_SIZE == 12
-  #define HASH_SIZE 13
+  #define HASH_SIZE 17
   #define MAX_COLLISIONS 2
   #define SCALE 11
 #elif ARRAY_SIZE == 16
