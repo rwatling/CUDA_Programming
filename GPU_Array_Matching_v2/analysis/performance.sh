@@ -1,15 +1,15 @@
 #!/bin/bash
 
-file1=./data/change_t_a24.csv
+echo "File: $1"
 
 empty=./data/empty_results.csv
 
 cp $empty $file1
 
-# number of threads goes from 8 to 1024 in increments of 8
-for i in {8..1024..8}
+# number of threads goes from 2 to 1024 in powers of 2
+for i in {1..10}
 do
-	../gpu_match $((i)) 0 >> $file1
-	../gpu_match $((i)) 0 >> $file1
-	../gpu_match $((i)) 0 >> $file1
+	../gpu_match $((2**i)) 0 >> $1
+	../gpu_match $((2**i)) 0 >> $1
+	../gpu_match $((2**i)) 0 >> $1
 done

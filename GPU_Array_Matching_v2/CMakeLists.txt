@@ -14,6 +14,11 @@ if(NOT DEFINED DEBUG)
     set(DEBUG 0)
 endif()
 
+if(NOT DEFINED LG_REL_HASH)
+    message("\n*** AUTOMATICALLY SETTING LG_REL_HASH TO 0 ***")
+    set(LG_REL_HASH 0)
+endif()
+
 if ((NOT ARRAY_SIZE EQUAL 4)
 AND (NOT ARRAY_SIZE EQUAL 8)
 AND (NOT ARRAY_SIZE EQUAL 12)
@@ -22,24 +27,10 @@ AND (NOT ARRAY_SIZE EQUAL 24))
     message(FATAL_ERROR "ARRAY_SIZE not valid (4, 8, 12, 16, or 24)")
 endif()
 
-# Print user variable definitions
-message("\n*** ALL USER DEFINED VARIABLES ***")
-message("ARRAY_SIZE=${ARRAY_SIZE}")
-message("DEBUG=${DEBUG}")
-message("SHM_MATCH")
-message("SHFL_MATCH")
-message("ENABLE_MATCH_ENUM")
-message("MATCH_ENUM")
-message("SHM_HASH")
-message("SHFL_HASH")
-message("REL_HASH_SIZE")
-message("SHM_BS")
-message("SHFL_BS")
-message("******************************\n")
-
 # Add compile definitions for specified directory
 add_compile_definitions(ARRAY_SIZE=${ARRAY_SIZE})
 add_compile_definitions(DEBUG=${DEBUG})
+add_compile_definitions(LG_REL_HASH=${LG_REL_HASH})
 
 # CMake variable definitions
 set(GPU_LIB "_gpu_lib")
@@ -90,3 +81,11 @@ set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${GPU_LIB})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${CPU_LIB})
+
+
+# Print user variable definitions
+message("\n*** ALL USER DEFINED VARIABLES ***")
+message("ARRAY_SIZE=${ARRAY_SIZE}")
+message("DEBUG=${DEBUG}")
+message("LG_REL_HASH=${LG_REL_HASH}")
+message("******************************\n")

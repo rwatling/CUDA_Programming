@@ -49,7 +49,6 @@ int main(int argc, char** argv) {
 	int* device_arrays;
 
 	int array_size;
-  int num_arrays;
 	int num_threads;
 	int num_blocks;
   int share_size;
@@ -71,10 +70,16 @@ int main(int argc, char** argv) {
 
 	/***Initialization***/
 	array_size = ARRAY_SIZE;
-	num_arrays = atoi(argv[1]);
-  num_threads = num_arrays;
+	num_threads = atoi(argv[1]);
 	num_blocks = 1;
   share_size = SHM_64_KB;
+
+  unsigned int temp_num_threads = num_threads;
+  bool pow_2 = temp_num_threads && !(temp_num_threads & (temp_num_threads - 1));
+  if (!pow_2) {
+    cerr << "Number of threads not a power of 2" << endl;
+    return -1;
+  }
 
   /* Defined by compiler flags:
   ARRAY_SIZE
