@@ -3,14 +3,14 @@
 Author: Robbie Watling
 
 ## Description
-This is the second version of the GPU match experiment. It is currently under development.
+This is the second version of the GPU match experiment.
 
 ## Requirements
 * NVIDIA Capable GPU
 * GPU needs to have a maximum shared memory size greater than or equal to 64 kibibytes
 * CMake version >= 3.8
 * Make
-* CUDA library (nvcc)
+* CUDA library and compiler `nvcc`
 
 ## Build instructions
 This project relies on the `nvcc` compiler and `cmake` commands.
@@ -37,7 +37,7 @@ followed by a `make` <br>
 
 * `LG_REL_HASH=(0 or 1)` the relative hash table size for hash table versions
   * `LG_REL_HASH=0` we choose `HASH_SIZE = <smallest prime greater than ARRAY_SIZE>` <br> approximately `1.3 * ARRAY_SIZE` <br>
-  * `LG_REL_HASH=1` we choose `HASH_SIZE = <second smallest prime greater than ARRAY_SIZE>` <br> which is ` 1.3 * ARRAY_SIZE` <br>
+  * `LG_REL_HASH=1` we choose `HASH_SIZE = <second smallest prime greater than ARRAY_SIZE>` <br> which is `> 1.3 * ARRAY_SIZE` <br>
 `G_REL_HASH=(0 or 1)` <br>
 
 ## Edit instructions
