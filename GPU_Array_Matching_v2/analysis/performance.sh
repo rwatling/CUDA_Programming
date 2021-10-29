@@ -4,7 +4,7 @@ echo "File: $1"
 
 empty=./data/empty_results.csv
 
-cp $empty $file1
+cp $empty $1
 
 # number of threads goes from 2 to 1024 in powers of 2
 for i in {1..10}
