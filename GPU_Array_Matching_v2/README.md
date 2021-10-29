@@ -22,8 +22,29 @@ This project relies on the `nvcc` compiler and `cmake` commands.
 * Run a single run of the program:<br>
 `./gpu_matching num_threads` in the base directory
 
+## Advanced Build instructions
+To further customize the build options you can use <br>
+'cmake . -D<option name>=1 -D<option name>=0...' <br>
+followed by a 'make' <br>
+
+* 'ARRAY_SIZE=(4, 8, 12, 16, 24)' to change array size <br>
+** Note: Shared memory is limited on some platforms. <br>
+** Platforms for development: <br>
+*** 1650TiMobile = 65kb or up to 16 array elements for 1024 arrays <br>
+*** RTX 2XXX = 98kb or up to 24 array elements for 1024 arrays <br>
+
+* 'DEBUG=(0 or 1)' to print debug information and run sequential CPU_Verification <br>
+
+* 'LG_REL_HASH=(0 or 1)' the relative hash table size for hash table versions
+** 'LG_REL_HASH=0' we choose 'HASH_SIZE = <smallest prime greater than ARRAY_SIZE>' approximately '1.3 * ARRAY_SIZE' <br>
+** 'LG_REL_HASH=1' we choose 'HASH_SIZE = <second smallest prime greater than ARRAY_SIZE>' which is '> 1.3 * ARRAY_SIZE' <br>
+'LG_REL_HASH=(0 or 1)' <br>
+
 ## Edit instructions
-Source files are in the `src/` folder
+Source files are in the `src/` folder <br>
 
 * `main.cu`: main function that coordinates calls to the GPU
 * `shm_array_match.cu`: function that conducts the array matching via shared memory
+* `shfl_array_match.cu`: function that conducts the array matching via shuffling registers
+* `shm_hash_match.cu`: function that conducts the array matching via shared memory with hash table lookup
+* `shfl_hash_match.cu`: function that conducts the array matching via shuffling registers with hash table lookup
