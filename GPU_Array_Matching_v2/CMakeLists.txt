@@ -44,7 +44,10 @@ file(GLOB gpu_source_files
   "${CMAKE_SOURCE_DIR}/src/shfl_array_match.cu"
   "${CMAKE_SOURCE_DIR}/src/shfl_hash_match.cu"
   "${CMAKE_SOURCE_DIR}/src/shm_hash_match.cu"
-  "${CMAKE_SOURCE_DIR}/src/hash_match.cu")
+  "${CMAKE_SOURCE_DIR}/src/hash_match.cu"
+  "${CMAKE_SOURCE_DIR}/src/unroll_match.cu"
+  "${CMAKE_SOURCE_DIR}/src/shfl_unroll_match.cu"
+  "${CMAKE_SOURCE_DIR}/src/shm_unroll_match.cu")
 
 
 file(GLOB cpp_source_files
