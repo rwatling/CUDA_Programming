@@ -11,6 +11,7 @@
 #include "cpu_array_match.h"
 #include "shfl_unroll_match.h"
 #include "shm_unroll_match.h"
+#include "shfl_bs_match.h"
 #include <iostream>
 #include <sys/time.h>
 
@@ -50,6 +51,7 @@ int main(int argc, char** argv) {
   int* experiment4_arrays;
   int* experiment5_arrays;
   int* experiment6_arrays;
+  int* experiment7_arrays;
 	int* device_arrays;
 
 	int array_size;
@@ -66,6 +68,7 @@ int main(int argc, char** argv) {
   cudaEvent_t start4, stop4;
   cudaEvent_t start5, stop5;
   cudaEvent_t start6, stop6;
+  cudaEvent_t start7, stop7;
   cudaError_t cuda_err;
 
 	/*** Read args ***/
@@ -141,6 +144,13 @@ int main(int argc, char** argv) {
 
   if (experiment6_arrays == NULL) {
 		cerr << "experiment6 arrays calloc failed\n" << endl;
+		return -1;
+	}
+
+  experiment7_arrays = (int*) calloc(one_t, array_set_bytes);
+
+  if (experiment7_arrays == NULL) {
+		cerr << "experiment7 arrays calloc failed\n" << endl;
 		return -1;
 	}
 
@@ -524,6 +534,60 @@ int main(int argc, char** argv) {
     }
   }
 
+  /************************Experiment 7***************************************/
+  //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
+  cuda_err = cudaFuncSetAttribute(shfl_bs_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
+
+  if (cuda_err != cudaSuccess) {
+    if (DEBUG) { cerr << endl << "Seventh attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    return -1;
+  }
+
+  if (DEBUG) {
+    cout << endl << "***Experiment 7 Shfl with Binary Search***" << endl;
+
+    cout << "--------------------KERNEL CALL--------------------" << endl;
+  }
+
+  //Copy host arrays to device
+  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+  //Timing
+  cudaEventCreate(&start7);
+  cudaEventCreate(&stop7);
+  cudaEventRecord(start7, 0);
+
+  //Kernel call
+  shfl_bs_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
+
+  //Timing
+  cudaEventRecord(stop7, 0);
+  cudaEventSynchronize(stop7);
+  cudaEventElapsedTime(&milliseconds, start7, stop7);
+  cudaEventDestroy(start7);
+  cudaEventDestroy(stop7);
+
+  cout << "Shfl Binary Search" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+
+  //Copy device arrays back to host
+  cudaMemcpy(experiment7_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+
+  if (DEBUG) {
+    //Print arrays after matching
+    for(int i = 0; i < 1; i++) {
+
+      cout << "Arrays " << i << ": [";
+
+      for(int j = 0; j < array_size * 2; j++) {
+        cout << experiment7_arrays[(i * array_size * 2) + j] << " ";
+
+        if (j == array_size - 1) { cout << "]\t["; }
+      }
+
+      cout << "]" << endl;
+    }
+  }
+
   /************************CPU Verification***************************************/
   if (DEBUG) {
     cout << endl << "***Host Arrays***" << endl;
@@ -553,6 +617,7 @@ int main(int argc, char** argv) {
   free(experiment4_arrays);
   free(experiment5_arrays);
   free(experiment6_arrays);
+  free(experiment7_arrays);
 
 	return 0;
 }
