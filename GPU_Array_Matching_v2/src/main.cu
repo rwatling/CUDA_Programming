@@ -12,6 +12,7 @@
 #include "shfl_unroll_match.h"
 #include "shm_unroll_match.h"
 #include "shfl_bs_match.h"
+#include "shfl_hash_w_shared_match.h"
 #include <iostream>
 #include <sys/time.h>
 
@@ -45,13 +46,7 @@ int main(int argc, char** argv) {
   float milliseconds;
 
   int* host_arrays;
-  int* experiment1_arrays;
-  int* experiment2_arrays;
-  int* experiment3_arrays;
-  int* experiment4_arrays;
-  int* experiment5_arrays;
-  int* experiment6_arrays;
-  int* experiment7_arrays;
+  int* experiment_arrays;
 	int* device_arrays;
 
 	int array_size;
@@ -62,13 +57,7 @@ int main(int argc, char** argv) {
 	size_t one_t;
 	size_t array_set_bytes;
 
-  cudaEvent_t start1, stop1;
-  cudaEvent_t start2, stop2;
-  cudaEvent_t start3, stop3;
-  cudaEvent_t start4, stop4;
-  cudaEvent_t start5, stop5;
-  cudaEvent_t start6, stop6;
-  cudaEvent_t start7, stop7;
+  cudaEvent_t start, stop;
   cudaError_t cuda_err;
 
 	/*** Read args ***/
@@ -105,52 +94,10 @@ int main(int argc, char** argv) {
 	}
 
   //Experiment arrays allocation
-  experiment1_arrays = (int*) calloc(one_t, array_set_bytes);
+  experiment_arrays = (int*) calloc(one_t, array_set_bytes);
 
-  if (experiment1_arrays == NULL) {
-		cerr << "experiment1 arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-  experiment2_arrays = (int*) calloc(one_t, array_set_bytes);
-
-  if (experiment2_arrays == NULL) {
-		cerr << "experiment2 arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-  experiment3_arrays = (int*) calloc(one_t, array_set_bytes);
-
-  if (experiment3_arrays == NULL) {
-		cerr << "experiment3 arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-  experiment4_arrays = (int*) calloc(one_t, array_set_bytes);
-
-  if (experiment4_arrays == NULL) {
-		cerr << "experiment4 arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-  experiment5_arrays = (int*) calloc(one_t, array_set_bytes);
-
-  if (experiment5_arrays == NULL) {
-		cerr << "experiment5 arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-  experiment6_arrays = (int*) calloc(one_t, array_set_bytes);
-
-  if (experiment6_arrays == NULL) {
-		cerr << "experiment6 arrays calloc failed\n" << endl;
-		return -1;
-	}
-
-  experiment7_arrays = (int*) calloc(one_t, array_set_bytes);
-
-  if (experiment7_arrays == NULL) {
-		cerr << "experiment7 arrays calloc failed\n" << endl;
+  if (experiment_arrays == NULL) {
+		cerr << "experiment arrays calloc failed\n" << endl;
 		return -1;
 	}
 
@@ -229,22 +176,22 @@ int main(int argc, char** argv) {
   }
 
   //Timing
-  cudaEventCreate(&start1);
-  cudaEventCreate(&stop1);
-  cudaEventRecord(start1, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shm_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop1, 0);
-  cudaEventSynchronize(stop1);
-  cudaEventElapsedTime(&milliseconds, start1, stop1);
-  cudaEventDestroy(start1);
-  cudaEventDestroy(stop1);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment1_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -253,7 +200,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment1_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -283,24 +230,24 @@ int main(int argc, char** argv) {
   }
 
   //Timing
-  cudaEventCreate(&start2);
-  cudaEventCreate(&stop2);
-  cudaEventRecord(start2, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shfl_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop2, 0);
-  cudaEventSynchronize(stop2);
-  cudaEventElapsedTime(&milliseconds, start2, stop2);
-  cudaEventDestroy(start2);
-  cudaEventDestroy(stop2);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   cout << "Simple Shfl" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment2_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -309,7 +256,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment2_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -337,24 +284,24 @@ int main(int argc, char** argv) {
   }
 
   //Timing
-  cudaEventCreate(&start3);
-  cudaEventCreate(&stop3);
-  cudaEventRecord(start3, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shm_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop3, 0);
-  cudaEventSynchronize(stop3);
-  cudaEventElapsedTime(&milliseconds, start3, stop3);
-  cudaEventDestroy(start3);
-  cudaEventDestroy(stop3);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   cout << "Shm Hash" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment3_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -363,7 +310,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment3_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -391,24 +338,24 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
   //Timing
-  cudaEventCreate(&start4);
-  cudaEventCreate(&stop4);
-  cudaEventRecord(start4, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shfl_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop4, 0);
-  cudaEventSynchronize(stop4);
-  cudaEventElapsedTime(&milliseconds, start4, stop4);
-  cudaEventDestroy(start4);
-  cudaEventDestroy(stop4);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   cout << "Shfl Hash" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment4_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -417,7 +364,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment4_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -445,24 +392,24 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
   //Timing
-  cudaEventCreate(&start5);
-  cudaEventCreate(&stop5);
-  cudaEventRecord(start5, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shm_unroll_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop5, 0);
-  cudaEventSynchronize(stop5);
-  cudaEventElapsedTime(&milliseconds, start5, stop5);
-  cudaEventDestroy(start5);
-  cudaEventDestroy(stop5);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   cout << "Shm Unroll" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment5_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -471,7 +418,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment5_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -499,24 +446,24 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
   //Timing
-  cudaEventCreate(&start6);
-  cudaEventCreate(&stop6);
-  cudaEventRecord(start6, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shfl_unroll_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop6, 0);
-  cudaEventSynchronize(stop6);
-  cudaEventElapsedTime(&milliseconds, start6, stop6);
-  cudaEventDestroy(start6);
-  cudaEventDestroy(stop6);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   cout << "Shfl Unroll" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment6_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -525,7 +472,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment6_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -553,24 +500,24 @@ int main(int argc, char** argv) {
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
   //Timing
-  cudaEventCreate(&start7);
-  cudaEventCreate(&stop7);
-  cudaEventRecord(start7, 0);
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   //Kernel call
   shfl_bs_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
 
   //Timing
-  cudaEventRecord(stop7, 0);
-  cudaEventSynchronize(stop7);
-  cudaEventElapsedTime(&milliseconds, start7, stop7);
-  cudaEventDestroy(start7);
-  cudaEventDestroy(stop7);
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   cout << "Shfl Binary Search" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
-  cudaMemcpy(experiment7_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
 
   if (DEBUG) {
     //Print arrays after matching
@@ -579,7 +526,7 @@ int main(int argc, char** argv) {
       cout << "Arrays " << i << ": [";
 
       for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment7_arrays[(i * array_size * 2) + j] << " ";
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
 
         if (j == array_size - 1) { cout << "]\t["; }
       }
@@ -590,7 +537,7 @@ int main(int argc, char** argv) {
 
   /************************CPU Verification***************************************/
   if (DEBUG) {
-    cout << endl << "***Host Arrays***" << endl;
+    cout << endl << "***CPU Verification***" << endl;
 
     cpu_array_match(host_arrays, num_threads, array_size);
 
@@ -611,13 +558,7 @@ int main(int argc, char** argv) {
 	/***Free variables***/
 	cudaFree(device_arrays);
 	free(host_arrays);
-  free(experiment1_arrays);
-  free(experiment2_arrays);
-  free(experiment3_arrays);
-  free(experiment4_arrays);
-  free(experiment5_arrays);
-  free(experiment6_arrays);
-  free(experiment7_arrays);
+  free(experiment_arrays);
 
 	return 0;
 }
