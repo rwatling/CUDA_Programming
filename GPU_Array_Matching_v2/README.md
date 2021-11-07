@@ -1,6 +1,6 @@
 # GPU Array Matching
 
-Author: Robbie Watling
+Author: Robbie Watling BS
 
 ## Description
 This is the second version of the GPU match experiment.
