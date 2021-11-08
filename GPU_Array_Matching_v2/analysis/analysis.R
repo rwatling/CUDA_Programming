@@ -15,12 +15,12 @@ package.check <- lapply(
 )
 
 file1 <- "data/hash/sm_hash_array_size4.csv"
-file2 <- "data/hash/sm_hash_array_size4.csv"
-file3 <- "data/hash/sm_hash_array_size4.csv"
+file2 <- "data/hash/sm_hash_array_size8.csv"
+file3 <- "data/hash/sm_hash_array_size12.csv"
 file4 <- "data/hash/sm_hash_array_size16.csv"
 file5 <- "data/hash/sm_hash_array_size24.csv"
 
-### Change Number of Threads ###
+### Communication Analysis ###
 naiveArr4Df <- read.csv(file1)
 naiveArr8Df <- read.csv(file2)
 naiveArr12Df <- read.csv(file3)
@@ -30,32 +30,22 @@ naiveArr24Df <- read.csv(file5)
 # Filter data
 temp1 <- naiveArr4Df[which(naiveArr4Df$type == 2),]
 temp2 <- naiveArr4Df[which(naiveArr4Df$type == 1),]
-temp1[which(temp1$type == 2),]$type = "shuffle"
-temp2[which(temp2$type == 1),]$type = "shared"
 naive4 <- rbind(temp1, temp2)
 
 temp1 <- naiveArr8Df[which(naiveArr8Df$type == 2),]
 temp2 <- naiveArr8Df[which(naiveArr8Df$type == 1),]
-temp1[which(temp1$type == 2),]$type = "shuffle"
-temp2[which(temp2$type == 1),]$type = "shared"
 naive8 <- rbind(temp1, temp2)
 
 temp1 <- naiveArr12Df[which(naiveArr12Df$type == 2),]
 temp2 <- naiveArr12Df[which(naiveArr12Df$type == 1),]
-temp1[which(temp1$type == 2),]$type = "shuffle"
-temp2[which(temp2$type == 1),]$type = "shared"
 naive12 <- rbind(temp1, temp2)
 
 temp1 <- naiveArr16Df[which(naiveArr16Df$type == 2),]
 temp2 <- naiveArr16Df[which(naiveArr16Df$type == 1),]
-temp1[which(temp1$type == 2),]$type = "shuffle"
-temp2[which(temp2$type == 1),]$type = "shared"
 naive16 <- rbind(temp1, temp2)
 
 temp1 <- naiveArr24Df[which(naiveArr24Df$type == 2),]
 temp2 <- naiveArr24Df[which(naiveArr24Df$type == 1),]
-temp1[which(temp1$type == 2),]$type = "shuffle"
-temp2[which(temp2$type == 1),]$type = "shared"
 naive24 <- rbind(temp1, temp2)
 
 # Combine 1-5 for line graph
@@ -72,6 +62,17 @@ ggplot() +
   theme_minimal() +
   scale_color_brewer("Type | Arrays Size", palette = "Paired")
 dev.off()
+
+# Speedup at 1024 Threads
+
+### Match Analysis ###
+## Nested loop vs Shfl
+# Line graph
+## Unrolled loop vs Shfl
+# Line graph
+## Sort and Search vs Shfl
+# Line graph
+
 
 ### HASH ANALYSIS ###
 sm_hash_a4 <- read.csv("data/hash/sm_hash_array_size4.csv")

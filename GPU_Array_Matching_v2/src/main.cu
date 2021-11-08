@@ -209,7 +209,7 @@ int main(int argc, char** argv) {
     }
   }
 
-  cout << "Simple Shm" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+  cout << "Nested Shm" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   /************************Experiment 2***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
@@ -244,7 +244,7 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  cout << "Simple Shfl" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+  cout << "Nested Shfl" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -514,7 +514,7 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  cout << "Shfl Binary Search" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+  cout << "Shfl Sort Search" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -534,6 +534,60 @@ int main(int argc, char** argv) {
       cout << "]" << endl;
     }
   }
+
+  /************************Experiment 8**************************************/
+  //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
+  /*cuda_err = cudaFuncSetAttribute(shfl_hash_w_shared_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
+
+  if (cuda_err != cudaSuccess) {
+    if (DEBUG) { cerr << endl << "Seventh attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    return -1;
+  }
+
+  if (DEBUG) {
+    cout << endl << "***Experiment 8 Shfl Hash in Shared***" << endl;
+
+    cout << "--------------------KERNEL CALL--------------------" << endl;
+  }
+
+  //Copy host arrays to device
+  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+  //Timing
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
+
+  //Kernel call
+  shfl_hash_w_shared_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
+
+  cout << "Shfl Hash in Shared" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+
+  //Copy device arrays back to host
+  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
+
+  if (DEBUG) {
+    //Print arrays after matching
+    for(int i = 0; i < 1; i++) {
+
+      cout << "Arrays " << i << ": [";
+
+      for(int j = 0; j < array_size * 2; j++) {
+        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
+
+        if (j == array_size - 1) { cout << "]\t["; }
+      }
+
+      cout << "]" << endl;
+    }
+  }*/
 
   /************************CPU Verification***************************************/
   if (DEBUG) {

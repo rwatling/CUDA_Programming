@@ -9,5 +9,5 @@ cp $empty $1
 # number of threads goes from 2 to 1024 in powers of 2
 for i in {1..5}
 do
-	../gpu_match 1024 0 >> $1
+	../gpu_match $((2**i)) >> $1
 done

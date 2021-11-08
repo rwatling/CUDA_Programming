@@ -1,10 +1,11 @@
 #include "shfl_hash_w_shared_match.h"
+#include "hash_match.h"
 
 __global__ void shfl_hash_w_shared_match(int* global_arrays, int num_threads) {
   int thread_id = (blockIdx.x * blockDim.x) + threadIdx.x;
-  __shared__ int shared_arrays[ARRAY_SIZE * WARP_SIZE];
-  __shared__ int h_table1[HASH_SIZE][MAX_COLLISIONS];
-  __shared__ int h_table2[HASH_SIZE][MAX_COLLISIONS];
+  extern __shared__ int shared_arrays[];
+  extern __shared__ int h_table1[];
+  extern __shared__ int h_table2[];
 	int current_arr1[ARRAY_SIZE];
 	int current_arr2[ARRAY_SIZE];
   int next_arr1[ARRAY_SIZE];
@@ -88,9 +89,8 @@ __global__ void shfl_hash_w_shared_match(int* global_arrays, int num_threads) {
           //Hash match
           //Hash tables are not garunteed to be 0
           for (int i = 0; i < HASH_SIZE; i++) {
-            for (int j = 0; j < MAX_COLLISIONS; j++) {
-              h_table1[i][j] = 0;
-            }
+              h_table1[(thread_id * HASH_SIZE * 2) + i] = 0;
+              h_table1[(thread_id * HASH_SIZE * 2) + HASH_SIZE + i] = 0;
           }
 
           //Hash "next" arrays
@@ -98,12 +98,12 @@ __global__ void shfl_hash_w_shared_match(int* global_arrays, int num_threads) {
             key = next_arr1[i];
             hashed_key = hash(key);
 
-            if (h_table1[hashed_key][0] == 0) {
-              h_table1[hashed_key][0] = next_arr1[i];
-              h_table2[hashed_key][0] = next_arr2[i];
-            } else if (h_table1[hashed_key][1] == 0) {
-              h_table1[hashed_key][1] = next_arr1[i];
-              h_table2[hashed_key][1] = next_arr2[i];
+            if (h_table1[(thread_id * HASH_SIZE * 2) + hashed_key] == 0) {
+              h_table1[(thread_id * HASH_SIZE * 2) + hashed_key] = key;
+              h_table2[(thread_id * HASH_SIZE * 2) + hashed_key] = next_arr2[i];
+            } else if (h_table1[(thread_id * HASH_SIZE * 2) + hashed_key + HASH_SIZE] == 0) {
+              h_table1[(thread_id * HASH_SIZE * 2) + HASH_SIZE + hashed_key] = key;
+              h_table2[(thread_id * HASH_SIZE * 2) + HASH_SIZE + hashed_key] = next_arr2[i];
             }
           }
 
@@ -112,18 +112,22 @@ __global__ void shfl_hash_w_shared_match(int* global_arrays, int num_threads) {
             key = current_arr2[i];
             hashed_key = hash(key);
 
-            //array2[i] = h_table2[hashed_key][0];
-
-            if (key == h_table1[hashed_key][0]) {
-              current_arr2[i] = h_table2[hashed_key][0];
-            } else if (key == h_table1[hashed_key][1]) {
-              current_arr2[i] = h_table2[hashed_key][1];
+            if (key == h_table1[(thread_id * HASH_SIZE * 2) + hashed_key]) {
+              current_arr2[i] = h_table2[(thread_id * HASH_SIZE * 2) + hashed_key];
+            } else if (key == h_table1[(thread_id * HASH_SIZE * 2)  + HASH_SIZE + hashed_key]) {
+              current_arr2[i] = h_table2[(thread_id * HASH_SIZE * 2) + HASH_SIZE + hashed_key];
             }
           }
+
         }
+
       }
+
     }
+
   }
+
+  __syncthreads();
 
   //Stage 5: Write back to global memory
   if (thread_id == 0) {
