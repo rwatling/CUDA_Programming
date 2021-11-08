@@ -1,106 +1,211 @@
 type,number_of_arrays,array_size,time
-Nested Shm,2,16,0.041152
-Nested Shfl,2,16,0.04512
-Shm Hash,2,16,0.017152
-Shfl Hash,2,16,0.031104
-Shm Unroll,2,16,0.015072
-Shfl Unroll,2,16,0.044576
-Shfl Sort Search,2,16,0.085088
-Nested Shm,2,16,0.03456
-Nested Shfl,2,16,0.044384
-Shm Hash,2,16,0.01248
-Shfl Hash,2,16,0.03088
-Shm Unroll,2,16,0.011936
-Shfl Unroll,2,16,0.043776
-Shfl Sort Search,2,16,0.08112
-Nested Shm,2,16,0.036448
-Nested Shfl,2,16,0.044192
-Shm Hash,2,16,0.01632
-Shfl Hash,2,16,0.030368
-Shm Unroll,2,16,0.013664
-Shfl Unroll,2,16,0.044864
-Shfl Sort Search,2,16,0.0824
-Nested Shm,4,16,0.041472
-Nested Shfl,4,16,0.043104
-Shm Hash,4,16,0.015584
-Shfl Hash,4,16,0.029632
-Shm Unroll,4,16,0.018624
+Nested Shm,2,16,0.04208
+Nested Shfl,2,16,0.045184
+Shm Hash,2,16,0.012064
+Shfl Hash,2,16,0.031392
+Shm Unroll,2,16,0.01232
+Shfl Unroll,2,16,0.045632
+Shfl Sort Search,2,16,0.083968
+Nested Shm,2,16,0.035456
+Nested Shfl,2,16,0.043904
+Shm Hash,2,16,0.012416
+Shfl Hash,2,16,0.03184
+Shm Unroll,2,16,0.011776
+Shfl Unroll,2,16,0.043648
+Shfl Sort Search,2,16,0.081408
+Nested Shm,2,16,0.03792
+Nested Shfl,2,16,0.044448
+Shm Hash,2,16,0.015456
+Shfl Hash,2,16,0.028864
+Shm Unroll,2,16,0.012928
+Shfl Unroll,2,16,0.0448
+Shfl Sort Search,2,16,0.08384
+Nested Shm,4,16,0.041728
+Nested Shfl,4,16,0.042944
+Shm Hash,4,16,0.020352
+Shfl Hash,4,16,0.032992
+Shm Unroll,4,16,0.019936
+Shfl Unroll,4,16,0.043936
+Shfl Sort Search,4,16,0.086496
+Nested Shm,4,16,0.043776
+Nested Shfl,4,16,0.043488
+Shm Hash,4,16,0.015648
+Shfl Hash,4,16,0.032192
+Shm Unroll,4,16,0.01872
 Shfl Unroll,4,16,0.0448
-Shfl Sort Search,4,16,0.086688
-Nested Shm,4,16,0.040352
-Nested Shfl,4,16,0.043008
-Shm Hash,4,16,0.016768
-Shfl Hash,4,16,0.030944
-Shm Unroll,4,16,0.018784
-Shfl Unroll,4,16,0.043264
-Shfl Sort Search,4,16,0.087584
-Nested Shm,4,16,0.044064
-Nested Shfl,4,16,0.042912
-Shm Hash,4,16,0.01664
-Shfl Hash,4,16,0.032256
-Shm Unroll,4,16,0.01888
-Shfl Unroll,4,16,0.043392
-Shfl Sort Search,4,16,0.087392
-Nested Shm,8,16,0.0512
-Nested Shfl,8,16,0.043168
-Shm Hash,8,16,0.02352
+Shfl Sort Search,4,16,0.086656
+Nested Shm,4,16,0.040064
+Nested Shfl,4,16,0.043296
+Shm Hash,4,16,0.021408
+Shfl Hash,4,16,0.031136
+Shm Unroll,4,16,0.018816
+Shfl Unroll,4,16,0.043552
+Shfl Sort Search,4,16,0.09136
+Nested Shm,8,16,0.052224
+Nested Shfl,8,16,0.043136
+Shm Hash,8,16,0.024416
+Shfl Hash,8,16,0.0304
+Shm Unroll,8,16,0.030048
+Shfl Unroll,8,16,0.04528
+Shfl Sort Search,8,16,0.093472
+Nested Shm,8,16,0.053248
+Nested Shfl,8,16,0.043488
+Shm Hash,8,16,0.020576
+Shfl Hash,8,16,0.028768
+Shm Unroll,8,16,0.030592
+Shfl Unroll,8,16,0.044608
+Shfl Sort Search,8,16,0.093088
+Nested Shm,8,16,0.051712
+Nested Shfl,8,16,0.042784
+Shm Hash,8,16,0.022688
 Shfl Hash,8,16,0.028128
-Shm Unroll,8,16,0.029664
-Shfl Unroll,8,16,0.044096
-Shfl Sort Search,8,16,0.10448
-Nested Shm,8,16,0.052032
-Nested Shfl,8,16,0.042528
-Shm Hash,8,16,0.0192
-Shfl Hash,8,16,0.02896
-Shm Unroll,8,16,0.0312
-Shfl Unroll,8,16,0.044896
-Shfl Sort Search,8,16,0.097984
-Nested Shm,8,16,0.054336
-Nested Shfl,8,16,0.043296
-Shm Hash,8,16,0.02048
-Shfl Hash,8,16,0.028928
-Shm Unroll,8,16,0.029792
-Shfl Unroll,8,16,0.044704
-Shfl Sort Search,8,16,0.096896
-Nested Shm,16,16,0.063552
-Nested Shfl,16,16,0.045056
-Shm Hash,16,16,0.029792
-Shfl Hash,16,16,0.032416
-Shm Unroll,16,16,0.044416
-Shfl Unroll,16,16,0.049568
-Shfl Sort Search,16,16,0.135264
-Nested Shm,16,16,0.063744
-Nested Shfl,16,16,0.04512
-Shm Hash,16,16,0.025248
-Shfl Hash,16,16,0.031264
-Shm Unroll,16,16,0.045152
-Shfl Unroll,16,16,0.050048
-Shfl Sort Search,16,16,0.142592
-Nested Shm,16,16,0.062144
-Nested Shfl,16,16,0.044768
-Shm Hash,16,16,0.029376
-Shfl Hash,16,16,0.032032
-Shm Unroll,16,16,0.044384
-Shfl Unroll,16,16,0.04928
-Shfl Sort Search,16,16,0.12448
-Nested Shm,32,16,0.073408
-Nested Shfl,32,16,0.048352
-Shm Hash,32,16,0.032768
-Shfl Hash,32,16,0.040544
-Shm Unroll,32,16,0.061792
-Shfl Unroll,32,16,0.057664
-Shfl Sort Search,32,16,0.199008
-Nested Shm,32,16,0.073504
-Nested Shfl,32,16,0.04752
-Shm Hash,32,16,0.034816
-Shfl Hash,32,16,0.032224
-Shm Unroll,32,16,0.06224
-Shfl Unroll,32,16,0.058816
-Shfl Sort Search,32,16,0.224736
-Nested Shm,32,16,0.071008
-Nested Shfl,32,16,0.0472
-Shm Hash,32,16,0.032896
-Shfl Hash,32,16,0.036416
-Shm Unroll,32,16,0.062304
-Shfl Unroll,32,16,0.056672
-Shfl Sort Search,32,16,0.230464
+Shm Unroll,8,16,0.030304
+Shfl Unroll,8,16,0.045504
+Shfl Sort Search,8,16,0.102272
+Nested Shm,16,16,0.0616
+Nested Shfl,16,16,0.0448
+Shm Hash,16,16,0.027616
+Shfl Hash,16,16,0.029536
+Shm Unroll,16,16,0.045536
+Shfl Unroll,16,16,0.048384
+Shfl Sort Search,16,16,0.134976
+Nested Shm,16,16,0.061728
+Nested Shfl,16,16,0.044544
+Shm Hash,16,16,0.026336
+Shfl Hash,16,16,0.030848
+Shm Unroll,16,16,0.04432
+Shfl Unroll,16,16,0.049312
+Shfl Sort Search,16,16,0.138848
+Nested Shm,16,16,0.066016
+Nested Shfl,16,16,0.044384
+Shm Hash,16,16,0.029408
+Shfl Hash,16,16,0.034144
+Shm Unroll,16,16,0.043808
+Shfl Unroll,16,16,0.049216
+Shfl Sort Search,16,16,0.149024
+Nested Shm,32,16,0.07248
+Nested Shfl,32,16,0.04816
+Shm Hash,32,16,0.02896
+Shfl Hash,32,16,0.03296
+Shm Unroll,32,16,0.063424
+Shfl Unroll,32,16,0.057088
+Shfl Sort Search,32,16,0.20064
+Nested Shm,32,16,0.073216
+Nested Shfl,32,16,0.046912
+Shm Hash,32,16,0.033568
+Shfl Hash,32,16,0.033408
+Shm Unroll,32,16,0.06368
+Shfl Unroll,32,16,0.056
+Shfl Sort Search,32,16,0.221792
+Nested Shm,32,16,0.0744
+Nested Shfl,32,16,0.04848
+Shm Hash,32,16,0.031584
+Shfl Hash,32,16,0.039872
+Shm Unroll,32,16,0.063392
+Shfl Unroll,32,16,0.058112
+Shfl Sort Search,32,16,0.229504
+Nested Shm,64,16,0.07904
+Nested Shfl,64,16,0.060864
+Shm Hash,64,16,0.078784
+Shfl Hash,64,16,0.073504
+Shm Unroll,64,16,0.067648
+Shfl Unroll,64,16,0.075936
+Shfl Sort Search,64,16,0.399808
+Nested Shm,64,16,0.079712
+Nested Shfl,64,16,0.062528
+Shm Hash,64,16,0.081952
+Shfl Hash,64,16,0.075136
+Shm Unroll,64,16,0.068768
+Shfl Unroll,64,16,0.075872
+Shfl Sort Search,64,16,0.386592
+Nested Shm,64,16,0.077216
+Nested Shfl,64,16,0.0624
+Shm Hash,64,16,0.082976
+Shfl Hash,64,16,0.075712
+Shm Unroll,64,16,0.066464
+Shfl Unroll,64,16,0.07488
+Shfl Sort Search,64,16,0.402432
+Nested Shm,128,16,0.120992
+Nested Shfl,128,16,0.085984
+Shm Hash,128,16,0.110912
+Shfl Hash,128,16,0.0992
+Shm Unroll,128,16,0.106912
+Shfl Unroll,128,16,0.117792
+Shfl Sort Search,128,16,0.536384
+Nested Shm,128,16,0.119936
+Nested Shfl,128,16,0.088704
+Shm Hash,128,16,0.110048
+Shfl Hash,128,16,0.0984
+Shm Unroll,128,16,0.113184
+Shfl Unroll,128,16,0.116128
+Shfl Sort Search,128,16,0.520416
+Nested Shm,128,16,0.115392
+Nested Shfl,128,16,0.089024
+Shm Hash,128,16,0.108992
+Shfl Hash,128,16,0.099264
+Shm Unroll,128,16,0.111072
+Shfl Unroll,128,16,0.118528
+Shfl Sort Search,128,16,0.537632
+Nested Shm,256,16,0.214976
+Nested Shfl,256,16,0.172608
+Shm Hash,256,16,0.133984
+Shfl Hash,256,16,0.112608
+Shm Unroll,256,16,0.227904
+Shfl Unroll,256,16,0.223264
+Shfl Sort Search,256,16,0.675744
+Nested Shm,256,16,0.212704
+Nested Shfl,256,16,0.173568
+Shm Hash,256,16,0.136032
+Shfl Hash,256,16,0.113056
+Shm Unroll,256,16,0.22848
+Shfl Unroll,256,16,0.222144
+Shfl Sort Search,256,16,0.663872
+Nested Shm,256,16,0.21248
+Nested Shfl,256,16,0.170048
+Shm Hash,256,16,0.135232
+Shfl Hash,256,16,0.111456
+Shm Unroll,256,16,0.22704
+Shfl Unroll,256,16,0.219936
+Shfl Sort Search,256,16,0.636032
+Nested Shm,512,16,0.276864
+Nested Shfl,512,16,0.23072
+Shm Hash,512,16,0.17488
+Shfl Hash,512,16,0.132928
+Shm Unroll,512,16,0.29216
+Shfl Unroll,512,16,0.28304
+Shfl Sort Search,512,16,0.788928
+Nested Shm,512,16,0.27936
+Nested Shfl,512,16,0.229344
+Shm Hash,512,16,0.173824
+Shfl Hash,512,16,0.131232
+Shm Unroll,512,16,0.291392
+Shfl Unroll,512,16,0.282272
+Shfl Sort Search,512,16,0.772832
+Nested Shm,512,16,0.280576
+Nested Shfl,512,16,0.231648
+Shm Hash,512,16,0.174528
+Shfl Hash,512,16,0.130848
+Shm Unroll,512,16,0.293056
+Shfl Unroll,512,16,0.285056
+Shfl Sort Search,512,16,0.766528
+Nested Shm,1024,16,0.34144
+Nested Shfl,1024,16,0.269728
+Shm Hash,1024,16,0.2584
+Shfl Hash,1024,16,0.19472
+Shm Unroll,1024,16,0.35552
+Shfl Unroll,1024,16,0.319488
+Shfl Sort Search,1024,16,0.91136
+Nested Shm,1024,16,0.34032
+Nested Shfl,1024,16,0.269024
+Shm Hash,1024,16,0.256384
+Shfl Hash,1024,16,0.195904
+Shm Unroll,1024,16,0.355584
+Shfl Unroll,1024,16,0.31872
+Shfl Sort Search,1024,16,0.92768
+Nested Shm,1024,16,0.342656
+Nested Shfl,1024,16,0.2712
+Shm Hash,1024,16,0.25776
+Shfl Hash,1024,16,0.19664
+Shm Unroll,1024,16,0.35712
+Shfl Unroll,1024,16,0.321568
+Shfl Sort Search,1024,16,0.882432
