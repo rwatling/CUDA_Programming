@@ -7,10 +7,9 @@
 #include "shm_array_match.h"
 #include "shfl_array_match.h"
 #include "shfl_hash_match.h"
-#include "shm_hash_match.h"
 #include "cpu_array_match.h"
 #include "shfl_unroll_match.h"
-#include "shm_unroll_match.h"
+#include "shfl_unroll2_match.h"
 #include "shfl_bs_match.h"
 #include "shfl_hash_w_shared_match.h"
 #include <iostream>
@@ -265,60 +264,6 @@ int main(int argc, char** argv) {
     }
   }
 
-  /************************Experiment 3***************************************/
-  //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
-  cuda_err = cudaFuncSetAttribute(shm_hash_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
-
-  if (cuda_err != cudaSuccess) {
-    if (DEBUG) { cerr << endl << "Third attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
-    return -1;
-	}
-
-  //Copy host arrays to device
-  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
-
-  if (DEBUG) {
-    cout << endl << "***Experiment 3 Shared with Hash***" << endl;
-
-    cout << "--------------------KERNEL CALL--------------------" << endl;
-  }
-
-  //Timing
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start, 0);
-
-  //Kernel call
-  shm_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
-
-  //Timing
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  cudaEventElapsedTime(&milliseconds, start, stop);
-  cudaEventDestroy(start);
-  cudaEventDestroy(stop);
-
-  cout << "Shm Hash" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
-
-  //Copy device arrays back to host
-  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
-
-  if (DEBUG) {
-    //Print arrays after matching
-    for(int i = 0; i < 1; i++) {
-
-      cout << "Arrays " << i << ": [";
-
-      for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
-
-        if (j == array_size - 1) { cout << "]\t["; }
-      }
-
-      cout << "]" << endl;
-    }
-  }
-
   /************************Experiment 4***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shfl_hash_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
@@ -375,7 +320,7 @@ int main(int argc, char** argv) {
 
   /************************Experiment 5***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
-  cuda_err = cudaFuncSetAttribute(shm_unroll_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
+  cuda_err = cudaFuncSetAttribute(shfl_unroll2_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
     if (DEBUG) { cerr << endl << "Fifth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
@@ -383,7 +328,7 @@ int main(int argc, char** argv) {
   }
 
   if (DEBUG) {
-    cout << endl << "***Experiment 5 Shm with Unroll***" << endl;
+    cout << endl << "***Experiment 5 Shfl Unroll 2***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
@@ -397,7 +342,7 @@ int main(int argc, char** argv) {
   cudaEventRecord(start, 0);
 
   //Kernel call
-  shm_unroll_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
+  shfl_unroll2_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -406,7 +351,7 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  cout << "Shm Unroll" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
+  cout << "Shfl Unroll 2" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);

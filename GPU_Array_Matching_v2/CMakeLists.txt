@@ -19,6 +19,11 @@ if(NOT DEFINED LG_REL_HASH)
     set(LG_REL_HASH 0)
 endif()
 
+if(NOT DEFINED MEM_OPT)
+  message("\n*** AUTOMATICALLY SETTING MEM_OPT TO 0 ***")
+  set(MEM_OPT 0)
+endif()
+
 if ((NOT ARRAY_SIZE EQUAL 4)
 AND (NOT ARRAY_SIZE EQUAL 8)
 AND (NOT ARRAY_SIZE EQUAL 12)
@@ -50,7 +55,9 @@ file(GLOB gpu_source_files
   "${CMAKE_SOURCE_DIR}/src/shm_unroll_match.cu"
   "${CMAKE_SOURCE_DIR}/src/shfl_bs_match.cu"
   "${CMAKE_SOURCE_DIR}/src/bs_match.cu"
-  "${CMAKE_SOURCE_DIR}/src/shfl_hash_w_shared_match.cu")
+  "${CMAKE_SOURCE_DIR}/src/shfl_hash_w_shared_match.cu"
+  "${CMAKE_SOURCE_DIR}/src/shfl_unroll2_match.cu"
+  "${CMAKE_SOURCE_DIR}/src/unroll2_match.cu")
 
 
 file(GLOB cpp_source_files
@@ -76,8 +83,11 @@ target_compile_features(${GPU_LIB} PUBLIC cxx_std_11)
 
 # We need to explicitly state that we need all CUDA files in ${GPU_LIB}
 # to be built with -dc
-target_compile_options(${GPU_LIB} PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>)
 set_target_properties(${GPU_LIB} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
+
+if (NOT MEM_OPT EQUAL 0)
+  target_compile_options(${GPU_LIB} PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>)
+endif()
 
 # Create executable
 add_executable(${PROJECT_NAME} ${main_file})
@@ -95,4 +105,5 @@ message("\n*** ALL USER DEFINED VARIABLES ***")
 message("ARRAY_SIZE=${ARRAY_SIZE}")
 message("DEBUG=${DEBUG}")
 message("LG_REL_HASH=${LG_REL_HASH}")
+message("MEM_OPT=${MEM_OPT}")
 message("******************************\n")
