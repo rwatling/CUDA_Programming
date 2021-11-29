@@ -76,6 +76,7 @@ target_compile_features(${GPU_LIB} PUBLIC cxx_std_11)
 
 # We need to explicitly state that we need all CUDA files in ${GPU_LIB}
 # to be built with -dc
+target_compile_options(${GPU_LIB} PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>)
 set_target_properties(${GPU_LIB} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # Create executable
