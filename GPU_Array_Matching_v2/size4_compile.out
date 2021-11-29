@@ -1,0 +1,81 @@
+[  5%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/bs_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z9partitionPiS_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z13binary_searchPiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z9quicksortPiS_ii
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z8bs_matchPiS_S_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+[ 11%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/hash_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z4hashi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z10hash_matchPiS_S_
+    80 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+[ 16%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z5matchPiS_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+[ 22%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_array_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z16shfl_array_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z16shfl_array_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 28 registers, 332 bytes cmem[0]
+[ 27%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_bs_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z13shfl_bs_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z13shfl_bs_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 28 registers, 332 bytes cmem[0]
+[ 33%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_hash_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z15shfl_hash_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z15shfl_hash_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 28 registers, 332 bytes cmem[0]
+[ 38%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_hash_w_shared_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z24shfl_hash_w_shared_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z24shfl_hash_w_shared_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 28 registers, 332 bytes cmem[0]
+[ 44%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_unroll2_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z18shfl_unroll2_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z18shfl_unroll2_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 28 registers, 332 bytes cmem[0]
+[ 50%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_unroll_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z17shfl_unroll_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z17shfl_unroll_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 28 registers, 332 bytes cmem[0]
+[ 55%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shm_array_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z15shm_array_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z15shm_array_matchPii
+    48 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 26 registers, 332 bytes cmem[0]
+[ 61%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/unroll2_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z13unroll2_matchPiS_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+[ 66%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/unroll_match.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z12unroll_matchPiS_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+[ 72%] Linking CUDA static library lib_gpu_lib.a
+[ 72%] Built target _gpu_lib
+[ 77%] Building CXX object CMakeFiles/_cpu_lib.dir/src/cpu_array_match.cpp.o
+[ 83%] Linking CXX static library lib_cpu_lib.a
+[ 83%] Built target _cpu_lib
+[ 88%] Building CUDA object CMakeFiles/gpu_match.dir/src/main.cu.o
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+[ 94%] Linking CUDA device code CMakeFiles/gpu_match.dir/cmake_device_link.o
+nvlink warning : Stack size for entry function '_Z13shfl_bs_matchPii' cannot be statically determined
+[100%] Linking CXX executable gpu_match
+[100%] Built target gpu_match

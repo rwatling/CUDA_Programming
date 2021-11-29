@@ -1,0 +1,124 @@
+Consolidate compiler generated dependencies of target _gpu_lib
+[  5%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/bs_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z9partitionPiS_ii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z13binary_searchPiiii
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z9quicksortPiS_ii
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z8bs_matchPiS_S_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 11%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/hash_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z4hashi
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z10hash_matchPiS_S_
+    496 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 16%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z5matchPiS_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 22%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_array_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z16shfl_array_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z16shfl_array_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 27%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_bs_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z13shfl_bs_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z13shfl_bs_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 33%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_hash_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z15shfl_hash_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z15shfl_hash_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 38%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_hash_w_shared_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z24shfl_hash_w_shared_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z24shfl_hash_w_shared_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 44%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_unroll2_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z18shfl_unroll2_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z18shfl_unroll2_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 50%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shfl_unroll_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z17shfl_unroll_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z17shfl_unroll_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 63 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 55%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/shm_array_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Compiling entry function '_Z15shm_array_matchPii' for 'sm_52'
+ptxas info    : Function properties for _Z15shm_array_matchPii
+    288 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 62 registers, 332 bytes cmem[0]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 61%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/unroll2_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z13unroll2_matchPiS_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 66%] Building CUDA object CMakeFiles/_gpu_lib.dir/src/unroll_match.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+ptxas info    : Function properties for _Z12unroll_matchPiS_S_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 72%] Linking CUDA static library lib_gpu_lib.a
+[ 72%] Built target _gpu_lib
+Consolidate compiler generated dependencies of target _cpu_lib
+[ 77%] Building CXX object CMakeFiles/_cpu_lib.dir/src/cpu_array_match.cpp.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 83%] Linking CXX static library lib_cpu_lib.a
+[ 83%] Built target _cpu_lib
+Consolidate compiler generated dependencies of target gpu_match
+[ 88%] Building CUDA object CMakeFiles/gpu_match.dir/src/main.cu.o
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+ptxas info    : 64448 bytes gmem, 72 bytes cmem[3]
+cc1plus: warning: /home/rwatling/CUDA_Programming/GPU_Array_Matching_v2/gpu_match: not a directory [enabled by default]
+[ 94%] Linking CUDA device code CMakeFiles/gpu_match.dir/cmake_device_link.o
+nvlink warning : Stack size for entry function '_Z13shfl_bs_matchPii' cannot be statically determined
+[100%] Linking CXX executable gpu_match
+[100%] Built target gpu_match
