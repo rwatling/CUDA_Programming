@@ -16,11 +16,11 @@ package.check <- lapply(
 )
 
 
-file1 <- "data/fall2021-mid/change_t_arr4.csv"
-file2 <- "data/fall2021-mid/change_t_arr8.csv"
-file3 <- "data/fall2021-mid/change_t_arr12.csv"
-file4 <- "data/fall2021-mid/change_t_arr16.csv"
-file5 <- "data/fall2021-mid/change_t_arr24.csv"
+file1 <- "data/fall2021-end/change_t_arr4.csv"
+file2 <- "data/fall2021-end/change_t_arr8.csv"
+file3 <- "data/fall2021-end/change_t_arr12.csv"
+file4 <- "data/fall2021-end/change_t_arr16.csv"
+file5 <- "data/fall2021-end/change_t_arr24.csv"
 
 arr4Df <- read.csv(file1)
 arr8Df <- read.csv(file2)
@@ -87,23 +87,28 @@ print(speedup - 1.0)
 # Filter data
 temp1 <- arr4Df[which(arr4Df$type == "Nested Shfl"),]
 temp2 <- arr4Df[which(arr4Df$type == "Shfl Unroll"),]
-unroll4 <- rbind(temp1, temp2)
+temp3 <- arr4Df[which(arr4Df$type == "Shfl Unroll 2"),]
+unroll4 <- rbind(temp1, temp2, temp3)
 
 temp1 <- arr8Df[which(arr8Df$type == "Nested Shfl"),]
 temp2 <- arr8Df[which(arr8Df$type == "Shfl Unroll"),]
-unroll8 <- rbind(temp1, temp2)
+temp3 <- arr8Df[which(arr8Df$type == "Shfl Unroll 2"),]
+unroll8 <- rbind(temp1, temp2, temp3)
 
 temp1 <- arr12Df[which(arr12Df$type == "Nested Shfl"),]
 temp2 <- arr12Df[which(arr12Df$type == "Shfl Unroll"),]
-unroll12 <- rbind(temp1, temp2)
+temp3 <- arr12Df[which(arr12Df$type == "Shfl Unroll 2"),]
+unroll12 <- rbind(temp1,temp2, temp3)
 
 temp1 <- arr16Df[which(arr16Df$type == "Nested Shfl"),]
 temp2 <- arr16Df[which(arr16Df$type == "Shfl Unroll"),]
-unroll16 <- rbind(temp1, temp2)
+temp3 <- arr16Df[which(arr16Df$type == "Shfl Unroll 2"),]
+unroll16 <- rbind(temp1,temp2, temp3)
 
 temp1 <- arr24Df[which(arr24Df$type == "Nested Shfl"),]
 temp2 <- arr24Df[which(arr24Df$type == "Shfl Unroll"),]
-unroll24 <- rbind(temp1, temp2)
+temp3 <- arr24Df[which(arr24Df$type == "Shfl Unroll 2"),]
+unroll24 <- rbind(temp1, temp2, temp3)
 
 # Combine 1-5 for line graph
 combined <- rbind(unroll4, unroll8, unroll12, unroll16, unroll24)
@@ -120,7 +125,7 @@ plot.new()
 ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) + 
   geom_bar(position = "dodge", stat="identity", show.legend = TRUE, color="black") +
   scale_x_discrete(limits=c("4", "8", "12", "16", "24")) +
-  scale_fill_manual("Communication Type", labels=c("Nested Match", "Unrolled Match"), values=c("black", "white")) +
+  scale_fill_manual("Communication Type", labels=c("Nested Match", "Unrolled Match (Factor 2)", "Unrolled Match (Factor 4)"), values=c("black", "gray", "white")) +
   ggtitle("Nested Loop Match vs Unroll Loop Match (T=1024)") +
   xlab("Array Size") +
   ylab("Time (ms)") +
@@ -135,21 +140,13 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
         text = element_text(size=14))
 dev.off()
 
-# Plot
-#png("nested_shfl_v_shfl_unroll.png")
-#plot.new()
-#ggplot() +
-  #geom_smooth(data = combined, mapping = aes(x = number_of_arrays, y = time, group=interaction(type, array_size), color=interaction(type, array_size)), se=F) +
-  #ggtitle("Time vs. Number of Threads") +
-  #ylab("Time (ms)") +
-  #xlab("Number of Threads") +
-  #theme_minimal() +
-  #scale_color_brewer("Type | Arrays Size", palette = "Paired")
-#dev.off()
-
 # Speedup at 1024 Threads
 speedupDf = unroll24[which(unroll24$number_of_arrays == 1024),]
 speedup = mean(speedupDf[which(speedupDf$type == "Nested Shfl"),]$time)/mean(speedupDf[which(speedupDf$type == "Shfl Unroll"),]$time)
+print(speedup - 1.0)
+
+speedupDf = unroll24[which(unroll24$number_of_arrays == 1024),]
+speedup = mean(speedupDf[which(speedupDf$type == "Nested Shfl"),]$time)/mean(speedupDf[which(speedupDf$type == "Shfl Unroll 2"),]$time)
 print(speedup - 1.0)
 
 ## Hash vs Shfl
