@@ -3,7 +3,6 @@ setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/GPU_Arr
 #packages required
 packages = c("gbutils", "ggplot2", "ggthemes", "grid", "gridExtra", "gtable", "remotes")
 
-
 ## Now load or install&load all
 package.check <- lapply(
   packages,
@@ -14,7 +13,6 @@ package.check <- lapply(
     }
   }
 )
-
 
 file1 <- "data/fall2021-end/change_t_arr4.csv"
 file2 <- "data/fall2021-end/change_t_arr8.csv"
@@ -269,19 +267,6 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
         text = element_text(size=14))
 dev.off()
 
-
-# Plot
-#png("nested_shfl_v_sort_search.png")
-#plot.new()
-#ggplot() +
-  #geom_smooth(data = combined, mapping = aes(x = number_of_arrays, y = time, group=interaction(type, array_size), color=interaction(type, array_size)), se=F) +
-  #ggtitle("Time vs. Number of Threads") +
-  #ylab("Time (ms)") +
-  #xlab("Number of Threads") +
-  #theme_minimal() +
-  #scale_color_brewer("Type | Arrays Size", palette = "Paired")
-#dev.off()
-
 # Speedup at 1024 Threads
 speedupDf = ss24[which(ss24$number_of_arrays == 1024),]
 speedup = mean(speedupDf[which(speedupDf$type == "Nested Shfl"),]$time)/mean(speedupDf[which(speedupDf$type == "Shfl Sort Search"),]$time)
@@ -395,3 +380,70 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
         text = element_text(size=14))
 dev.off()
 
+### FORCE NO UNROLL EXPERIMENTS
+file1 <- "data/fall2021-end-nounroll/size4.csv"
+file2 <- "data/fall2021-end-nounroll/size8.csv"
+file3 <- "data/fall2021-end-nounroll/size12.csv"
+file4 <- "data/fall2021-end-nounroll/size16.csv"
+file5 <- "data/fall2021-end-nounroll/size24.csv"
+
+arr4Df <- read.csv(file1)
+arr8Df <- read.csv(file2)
+arr12Df <- read.csv(file3)
+arr16Df <- read.csv(file4)
+arr24Df <- read.csv(file5)
+
+temp1 <- arr4Df[which(arr4Df$type == "Nested Shfl"),]
+temp2 <- arr4Df[which(arr4Df$type == "Shfl Unroll"),]
+temp3 <- arr4Df[which(arr4Df$type == "Shfl Unroll 2"),]
+unroll4 <- rbind(temp1, temp2, temp3)
+
+temp1 <- arr8Df[which(arr8Df$type == "Nested Shfl"),]
+temp2 <- arr8Df[which(arr8Df$type == "Shfl Unroll"),]
+temp3 <- arr8Df[which(arr8Df$type == "Shfl Unroll 2"),]
+unroll8 <- rbind(temp1, temp2, temp3)
+
+temp1 <- arr12Df[which(arr12Df$type == "Nested Shfl"),]
+temp2 <- arr12Df[which(arr12Df$type == "Shfl Unroll"),]
+temp3 <- arr12Df[which(arr12Df$type == "Shfl Unroll 2"),]
+unroll12 <- rbind(temp1,temp2, temp3)
+
+temp1 <- arr16Df[which(arr16Df$type == "Nested Shfl"),]
+temp2 <- arr16Df[which(arr16Df$type == "Shfl Unroll"),]
+temp3 <- arr16Df[which(arr16Df$type == "Shfl Unroll 2"),]
+unroll16 <- rbind(temp1,temp2, temp3)
+
+temp1 <- arr24Df[which(arr24Df$type == "Nested Shfl"),]
+temp2 <- arr24Df[which(arr24Df$type == "Shfl Unroll"),]
+temp3 <- arr24Df[which(arr24Df$type == "Shfl Unroll 2"),]
+unroll24 <- rbind(temp1, temp2, temp3)
+
+# Combine 1-5 for line graph
+combined <- rbind(unroll4, unroll8, unroll12, unroll16, unroll24)
+
+# Combine
+combined <- rbind(unroll4, unroll8, unroll12, unroll16, unroll24)
+combined <- combined[which(combined$number_of_arrays == 1024),]
+combined[, c(3)] <- sapply(combined[,c(3)], as.character)
+combined <- aggregate(combined[, 4], list(combined$type, combined$array_size), mean)
+
+# Plot
+png("force_nested_v_unroll_bar.png")
+plot.new()
+ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) + 
+  geom_bar(position = "dodge", stat="identity", show.legend = TRUE, color="black") +
+  scale_x_discrete(limits=c("4", "8", "12", "16", "24")) +
+  scale_fill_manual("Communication Type", labels=c("Forced No-Unroll Match", "Unrolled Match (Factor 2)", "Unrolled Match (Factor 4)"), values=c("black", "gray", "white")) +
+  ggtitle("Forced No-Unroll Match vs Unroll Loop Match (T=1024)") +
+  xlab("Array Size") +
+  ylab("Time (ms)") +
+  theme(legend.position=c(0.3, 0.8),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+dev.off()
