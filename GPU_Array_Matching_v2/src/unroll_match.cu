@@ -8,18 +8,23 @@ __device__ void unroll_match(int* array2, int* next_arr1, int* next_arr2) {
     //Note: >> 2 is / 4 and << 2 is * 4
     for (int j = 0; j < ARRAY_SIZE; j += 4) {
       //int hoist_mult = j << 2;
+      bool isBreak = false;
 
       if (array2[i] == next_arr1[j + 0]) {
         array2[i] = next_arr2[j + 0];
-        break;
+        isBreak=true;
       } else if (array2[i] == next_arr1[j + 1]) {
         array2[i] = next_arr2[j + 1];
-        break;
+        isBreak=true;
       } else if (array2[i] == next_arr1[j + 2]) {
         array2[i] = next_arr2[j + 2];
-        break;
+        isBreak=true;
       } else if (array2[i] == next_arr1[j + 3]) {
         array2[i] = next_arr2[j + 3];
+        isBreak=true;
+      }
+
+      if (isBreak) {
         break;
       }
     }
