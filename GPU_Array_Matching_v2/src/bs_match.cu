@@ -3,7 +3,7 @@
 __device__ void bs_match(int* array2, int* next_arr1, int* next_arr2) {
 
   //Quick sort next_arr1 and next_arr2
-  quicksort(next_arr1, next_arr2, 0, ARRAY_SIZE - 1);
+  //quicksort(next_arr1, next_arr2, 0, ARRAY_SIZE - 1);
 
   //Binary search on array1
   for (int i = 0; i < ARRAY_SIZE; i++) {
@@ -42,7 +42,7 @@ __device__ int partition(int* arr1, int* arr2, int low, int high) {
     //Swap arr2[i] and arr2[j]
     temp = arr2[i];
     arr2[i] = arr2[j];
-      arr2[j] = temp;
+    arr2[j] = temp;
   }
 }
 

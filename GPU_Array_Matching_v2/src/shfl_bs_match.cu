@@ -21,6 +21,9 @@ __global__ void shfl_bs_match(int* global_arrays, int num_threads) {
     current_arr2[i] = global_arrays[arr2_index];
   }
 
+  //Sort first
+  quicksort(current_arr1, current_arr2, 0, ARRAY_SIZE-1);
+
   //Stage 1: Match by shuffle arrays with tree like reduction
   for (int delta = 1; delta < WARP_SIZE; delta = delta << 1) {
 
