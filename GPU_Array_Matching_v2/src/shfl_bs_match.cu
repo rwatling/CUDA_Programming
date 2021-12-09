@@ -22,7 +22,9 @@ __global__ void shfl_bs_match(int* global_arrays, int num_threads) {
   }
 
   //Sort first
-  quicksort(current_arr1, current_arr2, 0, ARRAY_SIZE-1);
+  if (thread_id != 0) {
+    quicksort(current_arr1, current_arr2, 0, ARRAY_SIZE-1);
+  }
 
   //Stage 1: Match by shuffle arrays with tree like reduction
   for (int delta = 1; delta < WARP_SIZE; delta = delta << 1) {

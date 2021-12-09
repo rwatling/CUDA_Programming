@@ -7,15 +7,33 @@ __device__ void bs_match(int* array2, int* next_arr1, int* next_arr2) {
 
   //Binary search on array1
   for (int i = 0; i < ARRAY_SIZE; i++) {
-    int rslt = binary_search(next_arr1, 0, ARRAY_SIZE - 1, array2[i]);
+    //int rslt = binary_search(next_arr1, 0, ARRAY_SIZE - 1, array2[i]);
+    int l = 0;
+    int r = ARRAY_SIZE -1;
+    int x = array2[i];
+    int rslt = -1;
 
-    //TO DO: No match
+    while (l <= r) {
+      int m = l + (r - l) / 2;
+
+      if (next_arr1[m] == x) {
+        rslt = m;
+      }
+
+      if (next_arr1[m] < x) {
+        l = m + 1;
+      } else {
+        r = m - 1;
+      }
+    }
+
     if (rslt != -1) {
       array2[i] = next_arr2[rslt];
     }
 
   }
 }
+
 __device__ int partition(int* arr1, int* arr2, int low, int high) {
   int pivot = arr1[low];
   int i = low - 1;
@@ -61,29 +79,4 @@ __device__ void quicksort(int* arr1, int* arr2, int low, int high) {
 
   // recur on subarray containing elements that are more than the pivot
   quicksort(arr1, arr2, pivot + 1, high);
-}
-
-//Implementation: https://www.geeksforgeeks.org/binary-search/
-__device__ int binary_search(int* arr, int l, int r, int target) {
-  if (r >= l) {
-    int mid = l + (r - l) / 2;
-
-    // If the element is present at the middle
-    // itself
-    if (arr[mid] == target)
-        return mid;
-
-    // If element is smaller than mid, then
-    // it can only be present in left subarray
-    if (arr[mid] > target)
-        return binary_search(arr, l, mid - 1, target);
-
-    // Else the element can only be present
-    // in right subarray
-    return binary_search(arr, mid + 1, r, target);
-  }
-
-  // We reach here when element is not
-  // present in array
-  return -1;
 }
