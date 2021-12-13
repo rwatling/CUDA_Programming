@@ -14,11 +14,11 @@ package.check <- lapply(
   }
 )
 
-file1 <- "data/fall2021-end/change_t_arr4.csv"
-file2 <- "data/fall2021-end/change_t_arr8.csv"
-file3 <- "data/fall2021-end/change_t_arr12.csv"
-file4 <- "data/fall2021-end/change_t_arr16.csv"
-file5 <- "data/fall2021-end/change_t_arr24.csv"
+file1 <- "data/fall2021-end-final/size4.csv"
+file2 <- "data/fall2021-end-final/size8.csv"
+file3 <- "data/fall2021-end-final/size12.csv"
+file4 <- "data/fall2021-end-final/size16.csv"
+file5 <- "data/fall2021-end-final/size24.csv"
 
 arr4Df <- read.csv(file1)
 arr8Df <- read.csv(file2)
@@ -381,11 +381,11 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
 dev.off()
 
 ### FORCE NO UNROLL EXPERIMENTS
-file1 <- "data/fall2021-end-nounroll/size4.csv"
-file2 <- "data/fall2021-end-nounroll/size8.csv"
-file3 <- "data/fall2021-end-nounroll/size12.csv"
-file4 <- "data/fall2021-end-nounroll/size16.csv"
-file5 <- "data/fall2021-end-nounroll/size24.csv"
+file1 <- "data/fall2021-end-final/size4.csv"
+file2 <- "data/fall2021-end-final/size8.csv"
+file3 <- "data/fall2021-end-final/size12.csv"
+file4 <- "data/fall2021-end-final/size16.csv"
+file5 <- "data/fall2021-end-final/size24.csv"
 
 arr4Df <- read.csv(file1)
 arr8Df <- read.csv(file2)
@@ -447,3 +447,13 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
         panel.background = element_rect(fill="white"),
         text = element_text(size=14))
 dev.off()
+
+
+# Speedup at 1024 Threads
+speedupDf = unroll24[which(unroll24$number_of_arrays == 1024),]
+speedup = mean(speedupDf[which(speedupDf$type == "Nested Shfl"),]$time)/mean(speedupDf[which(speedupDf$type == "Shfl Unroll"),]$time)
+print(speedup - 1.0)
+
+speedupDf = unroll24[which(unroll24$number_of_arrays == 1024),]
+speedup = mean(speedupDf[which(speedupDf$type == "Nested Shfl"),]$time)/mean(speedupDf[which(speedupDf$type == "Shfl Unroll 2"),]$time)
+print(speedup - 1.0)
