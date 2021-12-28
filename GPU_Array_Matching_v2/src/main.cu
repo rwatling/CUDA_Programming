@@ -144,6 +144,17 @@ int main(int argc, char** argv) {
   	}
   }
 
+  int cuda_device;
+  cudaGetDevice(&cuda_device);
+  cudaSetDevice(cuda_device);
+
+
+  nvmlReturn_t nvml_result;
+  nvmlDevice_t nvml_device;
+  nvml_result = nvmlInit_v2();
+  nvmlDeviceGetHandleByIndex( cuda_device, &nvml_device );
+  nvml_result = nvmlShutdown();
+
   /************************Experiment 1***************************************/
 
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
