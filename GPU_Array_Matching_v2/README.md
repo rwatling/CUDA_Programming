@@ -39,6 +39,8 @@ followed by a `make` <br>
   * `LG_REL_HASH=0` we choose `HASH_SIZE = <smallest prime greater than ARRAY_SIZE>` <br> approximately `1.3 * ARRAY_SIZE` <br>
   * `LG_REL_HASH=1` we choose `HASH_SIZE = <second smallest prime greater than ARRAY_SIZE>` <br> which is `> 1.3 * ARRAY_SIZE` <br>
 
+* `MEM_OPT=(0 or 1)` for obtaining memory profiling information
+
 ## Edit instructions
 Source files are in the `src/` folder <br>
 
@@ -47,6 +49,18 @@ Source files are in the `src/` folder <br>
 * `shfl_array_match.cu`: function that conducts the array matching via shuffling registers
 * `shm_hash_match.cu`: function that conducts the array matching via shared memory with hash table lookup
 * `shfl_hash_match.cu`: function that conducts the array matching via shuffling registers with hash table lookup
+* `bs_match.cu`
+* `cpu_array_match.cu`
+* `hash_match.cu`
+* `match.cu`
+* `shfl_bs_match`
+* `shfl_unroll_match`
+* `shfl_unroll2_match`
+* `unroll_match`
+* `unroll_match2`
+
+Important header files:
+* `include/nvmlClass.h`: Class for Nvidia Management Library for physical hardware information. Developed by Matthew Nicely, in the repository https://github.com/mnicely/nvml_examples
 
 ## Analysis instructions
 * `performance.sh` executes the program 3 times at thread numbers 2 to 1024
