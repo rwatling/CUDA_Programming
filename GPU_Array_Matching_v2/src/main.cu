@@ -13,6 +13,7 @@
 #include "shfl_bs_match.h"
 #include "shfl_hash_w_shared_match.h"
 #include "nvmlClass.h"
+
 #include <iostream>
 #include <sys/time.h>
 
@@ -20,6 +21,24 @@
 #define SHM_64_KB 65536
 
 using namespace std;
+
+// *************** FOR ERROR CHECKING from https://github.com/mnicely/nvml_examples *******************
+#ifndef CUDA_RT_CALL
+#define CUDA_RT_CALL( call )                                                                                           \
+    {                                                                                                                  \
+        auto status = static_cast<cudaError_t>( call );                                                                \
+        if ( status != cudaSuccess )                                                                                   \
+            fprintf( stderr,                                                                                           \
+                     "ERROR: CUDA RT call \"%s\" in line %d of file %s failed "                                        \
+                     "with "                                                                                           \
+                     "%s (%d).\n",                                                                                     \
+                     #call,                                                                                            \
+                     __LINE__,                                                                                         \
+                     __FILE__,                                                                                         \
+                     cudaGetErrorString( status ),                                                                     \
+                     status );                                                                                         \
+    }
+#endif  // CUDA_RT_CALL
 
 // For shuffling host arrays
 void shuffle(int *array, size_t n)
@@ -80,8 +99,9 @@ int main(int argc, char** argv) {
   }
 
   /* Defined by compiler flags:
-  ARRAY_SIZE
-  DEBUG */
+    ARRAY_SIZE
+    DEBUG
+  */
 
 	//Host allocation
 	one_t = (size_t) 1;
@@ -145,6 +165,15 @@ int main(int argc, char** argv) {
   	}
   }
 
+  /************************NVML Initialization********************************/
+  int dev {};
+  cudaGetDevice( &dev );
+  CUDA_RT_CALL( cudaSetDevice( dev ) );
+  std::string const filename = { "./analysis/data/hardwareStats.csv" };
+
+   // Create NVML class to retrieve GPU stats
+   nvmlClass nvml( dev, filename );
+
   /************************Experiment 1***************************************/
 
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
@@ -180,6 +209,10 @@ int main(int argc, char** argv) {
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
 
+  /* Create thread to gather GPU stats */
+  std::thread threadStart( &nvmlClass::getStats,
+                           &nvml );  // threadStart starts running
+
   //Kernel call
   shm_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
@@ -189,6 +222,14 @@ int main(int argc, char** argv) {
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  //NVML
+  /* Create thread to kill GPU stats */
+  /* Join both threads to main */
+  std::thread threadKill( &nvmlClass::killThread, &nvml );
+  threadStart.join( );
+  threadKill.join( );
+
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -480,60 +521,6 @@ int main(int argc, char** argv) {
       cout << "]" << endl;
     }
   }
-
-  /************************Experiment 8**************************************/
-  //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
-  /*cuda_err = cudaFuncSetAttribute(shfl_hash_w_shared_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
-
-  if (cuda_err != cudaSuccess) {
-    if (DEBUG) { cerr << endl << "Seventh attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
-    return -1;
-  }
-
-  if (DEBUG) {
-    cout << endl << "***Experiment 8 Shfl Hash in Shared***" << endl;
-
-    cout << "--------------------KERNEL CALL--------------------" << endl;
-  }
-
-  //Copy host arrays to device
-  cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
-
-  //Timing
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start, 0);
-
-  //Kernel call
-  shfl_hash_w_shared_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
-
-  //Timing
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  cudaEventElapsedTime(&milliseconds, start, stop);
-  cudaEventDestroy(start);
-  cudaEventDestroy(stop);
-
-  cout << "Shfl Hash in Shared" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
-
-  //Copy device arrays back to host
-  cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
-
-  if (DEBUG) {
-    //Print arrays after matching
-    for(int i = 0; i < 1; i++) {
-
-      cout << "Arrays " << i << ": [";
-
-      for(int j = 0; j < array_size * 2; j++) {
-        cout << experiment_arrays[(i * array_size * 2) + j] << " ";
-
-        if (j == array_size - 1) { cout << "]\t["; }
-      }
-
-      cout << "]" << endl;
-    }
-  }*/
 
   /************************CPU Verification***************************************/
   if (DEBUG) {
