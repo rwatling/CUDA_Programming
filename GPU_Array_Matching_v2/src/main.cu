@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
   int dev {};
   cudaGetDevice( &dev );
   CUDA_RT_CALL( cudaSetDevice( dev ) );
-  std::string const filename = { "./analysis/data/hardwareStats.csv" };
+  std::string filename = { "./analysis/data/hardwareStats.csv" };
 
    // Create NVML class to retrieve GPU stats
    nvmlClass nvml( dev, filename );

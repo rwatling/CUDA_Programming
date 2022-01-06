@@ -79,7 +79,7 @@ int constexpr nvml_device_name_buffer_size { 100 };
 
 class nvmlClass {
   public:
-    nvmlClass( int const &deviceID, std::string const &filename ) :
+    nvmlClass( int const &deviceID, std::string  &filename ) :
         time_steps_ {}, filename_ { filename }, outfile_ {}, device_ {}, loop_ { false } {
 
         char name[nvml_device_name_buffer_size];
@@ -123,14 +123,14 @@ class nvmlClass {
             NVML_RT_CALL( nvmlDeviceGetUtilizationRates( device_, &device_stats.utilization ) );
             NVML_RT_CALL( nvmlDeviceGetMemoryInfo( device_, &device_stats.memory ) );
             NVML_RT_CALL( nvmlDeviceGetCurrentClocksThrottleReasons( device_, &device_stats.throttleReasons ) );
-            NVML_RT_CALL( nvmlDeviceGetClock( device_, NVML_CLOCK_SM, NVML_CLOCK_ID_CURRENT, &device_stats.clockSM ) );
-            NVML_RT_CALL( nvmlDeviceGetClock(
-                device_, NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockGraphics ) );
-            NVML_RT_CALL(
-                nvmlDeviceGetClock( device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_CURRENT, &device_stats.clockMemory ) );
-            NVML_RT_CALL( nvmlDeviceGetClock(
-                device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockMemoryMax ) );
-            NVML_RT_CALL( nvmlDeviceGetPerformanceState( device_, &device_stats.performanceState ) );
+            //NVML_RT_CALL( nvmlDeviceGetClock( device_, NVML_CLOCK_SM, NVML_CLOCK_ID_CURRENT, &device_stats.clockSM ) );
+            //NVML_RT_CALL( nvmlDeviceGetClock(
+                //device_, NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockGraphics ) );
+            //NVML_RT_CALL(
+                //nvmlDeviceGetClock( device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_CURRENT, &device_stats.clockMemory ) );
+            //NVML_RT_CALL( nvmlDeviceGetClock(
+                //device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockMemoryMax ) );
+            //NVML_RT_CALL( nvmlDeviceGetPerformanceState( device_, &device_stats.performanceState ) );
 
             time_steps_.push_back( device_stats );
 
