@@ -180,7 +180,7 @@ class nvmlClass {
                      << time_steps_[i].powerUsage / 1000 << ", "  // mW to W
                      << time_steps_[i].powerLimit / 1000 << ", "  // mW to W
                      << time_steps_[i].memory.used / 1000000 << ", "  // B to MB
-                     << time_steps_[i].memory.free / 1000000 << ";";  // B to MB
+                     << time_steps_[i].memory.free / 1000000 << "\n";  // B to MB
         }
         outfile_.close( );
     }
