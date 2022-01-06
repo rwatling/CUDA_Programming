@@ -122,19 +122,19 @@ class nvmlClass {
             NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
             NVML_RT_CALL( nvmlDeviceGetUtilizationRates( device_, &device_stats.utilization ) );
             NVML_RT_CALL( nvmlDeviceGetMemoryInfo( device_, &device_stats.memory ) );
-            NVML_RT_CALL( nvmlDeviceGetCurrentClocksThrottleReasons( device_, &device_stats.throttleReasons ) );
-            //NVML_RT_CALL( nvmlDeviceGetClock( device_, NVML_CLOCK_SM, NVML_CLOCK_ID_CURRENT, &device_stats.clockSM ) );
-            //NVML_RT_CALL( nvmlDeviceGetClock(
-                //device_, NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockGraphics ) );
-            //NVML_RT_CALL(
-                //nvmlDeviceGetClock( device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_CURRENT, &device_stats.clockMemory ) );
-            //NVML_RT_CALL( nvmlDeviceGetClock(
-                //device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockMemoryMax ) );
-            //NVML_RT_CALL( nvmlDeviceGetPerformanceState( device_, &device_stats.performanceState ) );
+            /*NVML_RT_CALL( nvmlDeviceGetCurrentClocksThrottleReasons( device_, &device_stats.throttleReasons ) );
+            NVML_RT_CALL( nvmlDeviceGetClock( device_, NVML_CLOCK_SM, NVML_CLOCK_ID_CURRENT, &device_stats.clockSM ) );
+            NVML_RT_CALL( nvmlDeviceGetClock(
+                device_, NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockGraphics ) );
+            NVML_RT_CALL(
+                nvmlDeviceGetClock( device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_CURRENT, &device_stats.clockMemory ) );
+            NVML_RT_CALL( nvmlDeviceGetClock(
+                device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockMemoryMax ) );
+            NVML_RT_CALL( nvmlDeviceGetPerformanceState( device_, &device_stats.performanceState ) );*/
 
             time_steps_.push_back( device_stats );
 
-            std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
+            std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
         }
     }
 
@@ -170,13 +170,7 @@ class nvmlClass {
                                         "utilization_gpu",
                                         "utilization_memory",
                                         "memory_used_mib",
-                                        "memory_free_mib",
-                                        "clocks_throttle_reasons_active",
-                                        "clocks_current_sm_mhz",
-                                        "clocks_applications_graphics_mhz",
-                                        "clocks_current_memory_mhz",
-                                        "clocks_max_memory_mhz",
-                                        "pstate" };
+                                        "memory_free_mib" };
 
     std::vector<stats> time_steps_;
     std::string        filename_;
@@ -205,10 +199,7 @@ class nvmlClass {
                      << time_steps_[i].powerLimit / 1000 << ", "  // mW to W
                      << time_steps_[i].utilization.gpu << ", " << time_steps_[i].utilization.memory << ", "
                      << time_steps_[i].memory.used / 1000000 << ", "  // B to MB
-                     << time_steps_[i].memory.free / 1000000 << ", "  // B to MB
-                     << time_steps_[i].throttleReasons << ", " << time_steps_[i].clockSM << ", "
-                     << time_steps_[i].clockGraphics << ", " << time_steps_[i].clockMemory << ", "
-                     << time_steps_[i].clockMemoryMax << ", " << time_steps_[i].performanceState << "\n";
+                     << time_steps_[i].memory.free / 1000000 << ", ";  // B to MB
         }
         outfile_.close( );
     }
