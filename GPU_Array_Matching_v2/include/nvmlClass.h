@@ -122,15 +122,6 @@ class nvmlClass {
             NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
             NVML_RT_CALL( nvmlDeviceGetUtilizationRates( device_, &device_stats.utilization ) );
             NVML_RT_CALL( nvmlDeviceGetMemoryInfo( device_, &device_stats.memory ) );
-            /*NVML_RT_CALL( nvmlDeviceGetCurrentClocksThrottleReasons( device_, &device_stats.throttleReasons ) );
-            NVML_RT_CALL( nvmlDeviceGetClock( device_, NVML_CLOCK_SM, NVML_CLOCK_ID_CURRENT, &device_stats.clockSM ) );
-            NVML_RT_CALL( nvmlDeviceGetClock(
-                device_, NVML_CLOCK_GRAPHICS, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockGraphics ) );
-            NVML_RT_CALL(
-                nvmlDeviceGetClock( device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_CURRENT, &device_stats.clockMemory ) );
-            NVML_RT_CALL( nvmlDeviceGetClock(
-                device_, NVML_CLOCK_MEM, NVML_CLOCK_ID_APP_CLOCK_TARGET, &device_stats.clockMemoryMax ) );
-            NVML_RT_CALL( nvmlDeviceGetPerformanceState( device_, &device_stats.performanceState ) );*/
 
             time_steps_.push_back( device_stats );
 
@@ -155,12 +146,6 @@ class nvmlClass {
         uint               powerLimit;
         nvmlUtilization_t  utilization;
         nvmlMemory_t       memory;
-        unsigned long long throttleReasons;
-        uint               clockSM;
-        uint               clockGraphics;
-        uint               clockMemory;
-        uint               clockMemoryMax;
-        nvmlPstates_t      performanceState;
     } stats;
 
     std::vector<std::string> names_ = { "timestamp",
