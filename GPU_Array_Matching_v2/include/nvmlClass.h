@@ -120,12 +120,11 @@ class nvmlClass {
             NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
             NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
             NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
-            NVML_RT_CALL( nvmlDeviceGetUtilizationRates( device_, &device_stats.utilization ) );
             NVML_RT_CALL( nvmlDeviceGetMemoryInfo( device_, &device_stats.memory ) );
 
             time_steps_.push_back( device_stats );
 
-            std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
+            std::this_thread::sleep_for( std::chrono::milliseconds( 1 ) );
         }
     }
 
@@ -152,8 +151,6 @@ class nvmlClass {
                                         "temperature_gpu",
                                         "power_draw_w",
                                         "power_limit_w",
-                                        "utilization_gpu",
-                                        "utilization_memory",
                                         "memory_used_mib",
                                         "memory_free_mib" };
 
@@ -182,9 +179,8 @@ class nvmlClass {
             outfile_ << time_steps_[i].timestamp << ", " << time_steps_[i].temperature << ", "
                      << time_steps_[i].powerUsage / 1000 << ", "  // mW to W
                      << time_steps_[i].powerLimit / 1000 << ", "  // mW to W
-                     << time_steps_[i].utilization.gpu << ", " << time_steps_[i].utilization.memory << ", "
                      << time_steps_[i].memory.used / 1000000 << ", "  // B to MB
-                     << time_steps_[i].memory.free / 1000000 << ", ";  // B to MB
+                     << time_steps_[i].memory.free / 1000000 << ";";  // B to MB
         }
         outfile_.close( );
     }
