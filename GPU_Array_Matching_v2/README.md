@@ -49,15 +49,15 @@ Source files are in the `src/` folder <br>
 * `shfl_array_match.cu`: function that conducts the array matching via shuffling registers
 * `shm_hash_match.cu`: function that conducts the array matching via shared memory with hash table lookup
 * `shfl_hash_match.cu`: function that conducts the array matching via shuffling registers with hash table lookup
-* `bs_match.cu`
-* `cpu_array_match.cu`
-* `hash_match.cu`
-* `match.cu`
-* `shfl_bs_match`
-* `shfl_unroll_match`
-* `shfl_unroll2_match`
-* `unroll_match`
-* `unroll_match2`
+* `bs_match.cu`: function that assumes sorted arrays and uses binary search for finding the match
+* `cpu_array_match.cu`: function for sequentially finding the match arrays. Only used if DEBUG=1
+* `hash_match.cu`: function that performs the match with a hash table
+* `match.cu`: function that uses a naive nested loop implementation for finding a match
+* `shfl_bs_match`: shuffle communication function with binary search match
+* `shfl_unroll_match`: shuffle communication function with loop unrolling (factor 4)
+* `shfl_unroll2_match`: shuffle communication function with loop unrolling (factor 2)
+* `unroll_match`: match with loop unrolling (factor 4)
+* `unroll_match2`: match with loop unrolling (factor 2)
 
 Important header files:
 * `include/nvmlClass.h`: Class for Nvidia Management Library for physical hardware information. Developed by Matthew Nicely, in the repository https://github.com/mnicely/nvml_examples
