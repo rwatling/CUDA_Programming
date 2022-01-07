@@ -15,6 +15,8 @@
 #include "nvmlClass.h"
 #include "shuffle.h"
 
+#include <iostream>
+
 #define SHM_96_KB 98304
 #define SHM_64_KB 65536
 
