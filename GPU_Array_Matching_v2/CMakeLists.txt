@@ -24,6 +24,11 @@ if(NOT DEFINED MEM_OPT)
   set(MEM_OPT 0)
 endif()
 
+if(NOT DEFINED POW_OPT)
+  message("\n*** AUTOMATICALL SETTING POW_OPT to 0 ***")
+  set(POW_OPT 0)
+endif()
+
 if ((NOT ARRAY_SIZE EQUAL 4)
 AND (NOT ARRAY_SIZE EQUAL 8)
 AND (NOT ARRAY_SIZE EQUAL 12)
@@ -36,6 +41,7 @@ endif()
 add_compile_definitions(ARRAY_SIZE=${ARRAY_SIZE})
 add_compile_definitions(DEBUG=${DEBUG})
 add_compile_definitions(LG_REL_HASH=${LG_REL_HASH})
+add_compile_definitions(POW_OPT=${POW_OPT})
 
 # CMake variable definitions
 set(GPU_LIB "_gpu_lib")
@@ -61,7 +67,8 @@ file(GLOB gpu_source_files
 
 
 file(GLOB cpp_source_files
-  "${CMAKE_SOURCE_DIR}/src/cpu_array_match.cpp")
+  "${CMAKE_SOURCE_DIR}/src/cpu_array_match.cpp"
+  "${CMAKE_SOURCE_DIR}/src/shuffle.cpp")
 
 file(GLOB main_file "${CMAKE_SOURCE_DIR}/src/main.cu")
 
@@ -85,6 +92,7 @@ target_compile_features(${GPU_LIB} PUBLIC cxx_std_11)
 # to be built with -dc
 set_target_properties(${GPU_LIB} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
+# Add memory profiling option to program
 if (NOT MEM_OPT EQUAL 0)
   target_compile_options(${GPU_LIB} PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>)
 endif()
@@ -96,9 +104,9 @@ add_executable(${PROJECT_NAME} ${main_file})
 set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
 
 # NVML libraries?
-set(NVML_NAMES nvidia-ml)
-set(NVML_LIB_DIR "${CUDA_TOOLKIT_ROOT_DIR}/lib64/stubs")
-set(NVML_INCLUDE_DIR ${CUDA_INCLUDE_DIRS})
+#set(NVML_NAMES nvidia-ml)
+#set(NVML_LIB_DIR "${CUDA_TOOLKIT_ROOT_DIR}/lib64/stubs")
+#set(NVML_INCLUDE_DIR ${CUDA_INCLUDE_DIRS})
 
 find_library(NVML_LIB_PATH
 NO_DEFAULT_PATH

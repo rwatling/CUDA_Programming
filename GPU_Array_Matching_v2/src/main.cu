@@ -13,51 +13,12 @@
 #include "shfl_bs_match.h"
 #include "shfl_hash_w_shared_match.h"
 #include "nvmlClass.h"
-
-#include <iostream>
-#include <sys/time.h>
+#include "shuffle.h"
 
 #define SHM_96_KB 98304
 #define SHM_64_KB 65536
 
 using namespace std;
-
-// *************** FOR ERROR CHECKING from https://github.com/mnicely/nvml_examples *******************
-#ifndef CUDA_RT_CALL
-#define CUDA_RT_CALL( call )                                                                                           \
-    {                                                                                                                  \
-        auto status = static_cast<cudaError_t>( call );                                                                \
-        if ( status != cudaSuccess )                                                                                   \
-            fprintf( stderr,                                                                                           \
-                     "ERROR: CUDA RT call \"%s\" in line %d of file %s failed "                                        \
-                     "with "                                                                                           \
-                     "%s (%d).\n",                                                                                     \
-                     #call,                                                                                            \
-                     __LINE__,                                                                                         \
-                     __FILE__,                                                                                         \
-                     cudaGetErrorString( status ),                                                                     \
-                     status );                                                                                         \
-    }
-#endif  // CUDA_RT_CALL
-
-// For shuffling host arrays
-void shuffle(int *array, size_t n)
-{
-  struct timeval tp;
-  gettimeofday(&tp, NULL);
-  long int mytime = tp.tv_sec * 1000 + tp.tv_usec;
-  srand(mytime);
-
-  if (n > 1) {
-      int i;
-      for (i = 0; i < n - 1; i++){
-        int j = i + rand() / (RAND_MAX / (n - i) + 1);
-        int t = array[j];
-        array[j] = array[i];
-        array[i] = t;
-      }
-  }
-}
 
 int main(int argc, char** argv) {
 
