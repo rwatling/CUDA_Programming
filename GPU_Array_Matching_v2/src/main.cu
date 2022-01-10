@@ -39,6 +39,10 @@ int main(int argc, char** argv) {
 	size_t one_t;
 	size_t array_set_bytes;
 
+  //NVML output file
+  string base_nvml_filename = "./analysis/data/hardware_stats";
+  string nvml_filename;
+
   cudaEvent_t start, stop;
   cudaError_t cuda_err;
 
@@ -168,14 +172,16 @@ int main(int argc, char** argv) {
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
+
+  //Create nvml class
+  filename.append(base_nvml_filename);
+  filename.append("_shm_nested.csv");
+  nvmlClass nvml( dev, nvml_filename);
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
-
-  //Create nvml class
-  string filename = { "./analysis/data/hardwareStats.csv" };
-  nvmlClass nvml( dev, filename );
 
   // Create thread to gather GPU stats
   thread threadStart( &nvmlClass::getStats,
@@ -184,13 +190,6 @@ int main(int argc, char** argv) {
   //Kernel call
   shm_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
 
-  // NVML
-  // Create thread to kill GPU stats */
-  // Join both threads to main */
-  std::thread threadKill( &nvmlClass::killThread, &nvml );
-  threadStart.join( );
-  threadKill.join( );
-
   //Timing
   cudaEventRecord(stop, 0);
   cudaEventSynchronize(stop);
@@ -198,6 +197,12 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
+  // NVML
+  // Create thread to kill GPU stats */
+  // Join both threads to main */
+  std::thread threadKill( &nvmlClass::killThread, &nvml );
+  threadStart.join( );
+  threadKill.join( );
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
