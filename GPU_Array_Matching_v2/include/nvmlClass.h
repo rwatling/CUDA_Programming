@@ -124,14 +124,14 @@ class nvmlClass {
 
             time_steps_.push_back( device_stats );
 
-            std::this_thread::sleep_for( std::chrono::milliseconds( 10 ) );
+            std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
         }
     }
 
     void killThread( ) {
 
         // Retrieve a few empty samples
-        std::this_thread::sleep_for( std::chrono::seconds( 2 ) );
+        std::this_thread::sleep_for( std::chrono::seconds( 3 ) );
 
         // Set loop to false to exit while loop
         loop_ = false;

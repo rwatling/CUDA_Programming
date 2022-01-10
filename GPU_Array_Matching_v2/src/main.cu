@@ -16,6 +16,7 @@
 #include "shuffle.h"
 
 #include <iostream>
+#include <unistd.h>
 
 #define SHM_96_KB 98304
 #define SHM_64_KB 65536
@@ -201,6 +202,7 @@ int main(int argc, char** argv) {
   // Create thread to kill GPU stats */
   // Join both threads to main */
   cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
   for (auto& th : cpu_threads) {
     th.join();
     th.~thread();
