@@ -172,7 +172,7 @@ class nvmlClass {
 
     void writeData( ) {
 
-        printf( "Writing NVIDIA-SMI data -> %s\n\n", filename_.c_str( ) );
+        printf( "\nWriting NVIDIA-SMI data -> %s\n\n", filename_.c_str( ) );
 
         // Print data
         for ( int i = 0; i < static_cast<int>( time_steps_.size( ) ); i++ ) {
