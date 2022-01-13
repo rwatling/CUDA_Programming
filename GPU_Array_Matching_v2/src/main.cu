@@ -180,13 +180,14 @@ int main(int argc, char** argv) {
   nvml_filename.append("_shm_nested.csv");
   nvmlClass nvml( dev, nvml_filename);
 
+
+  vector<thread> cpu_threads;
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
-
-  vector<thread> cpu_threads;
-  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
   //Kernel call
   shm_array_match <<<num_blocks, num_threads, share_size>>> (device_arrays, num_threads);
@@ -198,6 +199,7 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
+  sleep(3);
   // NVML
   // Create thread to kill GPU stats */
   // Join both threads to main */

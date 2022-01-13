@@ -106,8 +106,6 @@ class nvmlClass {
     ~nvmlClass( ) {
 
         NVML_RT_CALL( nvmlShutdown( ) );
-
-        writeData( );
     }
 
     void getStats( ) {
@@ -120,18 +118,23 @@ class nvmlClass {
             NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
             NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
             NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
-            NVML_RT_CALL( nvmlDeviceGetMemoryInfo( device_, &device_stats.memory ) );
+            NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_GRAPHICS, &device_stats.graphicsClock));
+            NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
+            NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
+
 
             time_steps_.push_back( device_stats );
 
-            std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
+            //std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
         }
+
+        writeData();
     }
 
     void killThread( ) {
 
         // Retrieve a few empty samples
-        std::this_thread::sleep_for( std::chrono::seconds( 3 ) );
+        std::this_thread::sleep_for( std::chrono::seconds(3) );
 
         // Set loop to false to exit while loop
         loop_ = false;
@@ -143,16 +146,18 @@ class nvmlClass {
         uint               temperature;
         uint               powerUsage;
         uint               powerLimit;
-        nvmlUtilization_t  utilization;
-        nvmlMemory_t       memory;
+        uint               graphicsClock;
+        uint               smClock;
+        uint               memClock;
     } stats;
 
     std::vector<std::string> names_ = { "timestamp",
                                         "temperature_gpu",
                                         "power_draw_w",
                                         "power_limit_w",
-                                        "memory_used_mib",
-                                        "memory_free_mib" };
+                                        "g_clock_freq_mhz",
+                                        "mem_clock_freq_mhz",
+                                        "sm_clock_freq_mhz"};
 
     std::vector<stats> time_steps_;
     std::string        filename_;
@@ -178,9 +183,10 @@ class nvmlClass {
         for ( int i = 0; i < static_cast<int>( time_steps_.size( ) ); i++ ) {
             outfile_ << time_steps_[i].timestamp << ", " << time_steps_[i].temperature << ", "
                      << time_steps_[i].powerUsage / 1000 << ", "  // mW to W
-                     << time_steps_[i].powerLimit / 1000 << ", "  // mW to W
-                     << time_steps_[i].memory.used / 1000000 << ", "  // B to MB
-                     << time_steps_[i].memory.free / 1000000 << "\n";  // B to MB
+                     << time_steps_[i].powerLimit / 1000 << ","  // mW to W
+                     << time_steps_[i].graphicsClock << "," //MHz
+                     << time_steps_[i].memClock << "," //MHz
+                     << time_steps_[i].smClock << "\n"; //MHz
         }
         outfile_.close( );
     }
