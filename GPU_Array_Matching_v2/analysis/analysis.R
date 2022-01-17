@@ -457,3 +457,69 @@ print(speedup - 1.0)
 speedupDf = unroll24[which(unroll24$number_of_arrays == 1024),]
 speedup = mean(speedupDf[which(speedupDf$type == "Nested Shfl"),]$time)/mean(speedupDf[which(speedupDf$type == "Shfl Unroll 2"),]$time)
 print(speedup - 1.0)
+
+# Power consumption
+power1df = read.csv("./data/hardware_stats_shm_nested.csv")
+plot.new()
+ggplot(power1df, aes(x = timestamp, y=power_draw_w)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.3, 0.8),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestamp, y=g_clock_freq_mhz)) +
+  geom_line(show.legend = TRUE, color = "blue") +
+  xlab("Time") +
+  ylab("Graphics Clock (MHz)") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.3, 0.8),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestamp, y=mem_clock_freq_mhz)) +
+  geom_line(show.legend = TRUE, color = "green") +
+  xlab("Time") +
+  ylab("Memory Clock (MHz)") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.3, 0.8),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestamp, y=sm_clock_freq_mhz)) +
+  geom_line(show.legend = TRUE, color = "red") +
+  xlab("Time") +
+  ylab("SM Clock (MHz)") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.3, 0.8),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
