@@ -140,6 +140,13 @@ class nvmlClass {
         loop_ = false;
     }
 
+    void set_filename(std::string  &filename) {
+      filename_ = filename;
+
+      // Open file
+      outfile_.open( filename_, std::ios::out );
+    }
+
   private:
     typedef struct _stats {
         std::time_t        timestamp;

@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
   //NVML
   string base_nvml_filename = "./analysis/data/hardware_stats";
   string nvml_filename;
+  vector<thread> cpu_threads;
 
   //CUDA Error Checking
   cudaEvent_t start, stop;
@@ -134,7 +135,7 @@ int main(int argc, char** argv) {
   	}
   }
 
-  /************************NVML Initialization********************************/
+  /************************NVML get device********************************/
   int dev {};
   cudaGetDevice( &dev );
   cuda_err = cudaSetDevice( dev );
@@ -180,8 +181,6 @@ int main(int argc, char** argv) {
   nvml_filename.append("_shm_nested.csv");
   nvmlClass nvml( dev, nvml_filename);
 
-
-  vector<thread> cpu_threads;
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
   //Timing
@@ -199,16 +198,18 @@ int main(int argc, char** argv) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  sleep(3);
   // NVML
-  // Create thread to kill GPU stats */
-  // Join both threads to main */
+  // Create thread to kill GPU stats
+  // Join both threads to main
   cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
 
   for (auto& th : cpu_threads) {
     th.join();
     th.~thread();
   }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -249,6 +250,13 @@ int main(int argc, char** argv) {
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
+  //Create nvml class
+  nvml_filename.append(base_nvml_filename);
+  nvml_filename.append("_shfl_nested.csv");
+  nvml.set_filename(nvml_filename);
+
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -263,6 +271,19 @@ int main(int argc, char** argv) {
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
 
   cout << "Nested Shfl" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
