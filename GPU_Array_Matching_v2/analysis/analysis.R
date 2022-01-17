@@ -462,14 +462,14 @@ print(speedup - 1.0)
 power1df = read.csv("./data/hardware_stats_shm_nested.csv")
 power2df = read.csv("./data/hardware_stats_shfl_nested.csv")
 power3df = read.csv("./data/hardware_stats_shfl_unroll.csv")
-power4df = read.csv("./data/hardware_stats_shfl_unroll_2.csv")
+power4df = read.csv("./data/hardware_stats_shfl_unroll2.csv")
 power5df = read.csv("./data/hardware_stats_shfl_hash.csv")
 power6df = read.csv("./data/hardware_stats_shfl_bs.csv")
 
 combined = rbind(power1df, power2df, power3df, power4df, power5df, power6df)
 
 plot.new()
-ggplot(power1df, aes(x = timestamp, y=power_draw_w)) +
+ggplot(combined, aes(x = timestep, y=power_draw_w, linetype = type)) +
   geom_line(show.legend = TRUE, color = "black") +
   xlab("Time") +
   ylab("Power (W)") +
