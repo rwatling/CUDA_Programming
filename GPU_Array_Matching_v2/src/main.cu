@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
   //NVML
   string base_nvml_filename = "./analysis/data/hardware_stats";
   string nvml_filename;
+  string type;
   vector<thread> cpu_threads;
 
   //CUDA Error Checking
@@ -179,7 +180,8 @@ int main(int argc, char** argv) {
   //Create nvml class
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shm_nested.csv");
-  nvmlClass nvml( dev, nvml_filename);
+  type.append("shm_nested");
+  nvmlClass nvml( dev, nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
@@ -210,6 +212,7 @@ int main(int argc, char** argv) {
 
   cpu_threads.clear();
   nvml_filename.clear();
+  type.clear();
 
   //Copy device arrays back to host
   cudaMemcpy(experiment_arrays, device_arrays, array_set_bytes, cudaMemcpyDeviceToHost);
@@ -253,7 +256,8 @@ int main(int argc, char** argv) {
   //Create new nvml file
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_nested.csv");
-  nvml.set_filename(nvml_filename);
+  type.append("shfl_nested");
+  nvml.new_experiment(nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
@@ -284,6 +288,7 @@ int main(int argc, char** argv) {
 
   cpu_threads.clear();
   nvml_filename.clear();
+  type.clear();
 
   cout << "Nested Shfl" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -327,7 +332,8 @@ int main(int argc, char** argv) {
   //Create new nvml file
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_hash.csv");
-  nvml.set_filename(nvml_filename);
+  type.append("shfl_hash");
+  nvml.new_experiment(nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
@@ -335,6 +341,16 @@ int main(int argc, char** argv) {
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
+
+  //Kernel call
+  shfl_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
   // NVML
   // Create thread to kill GPU stats
@@ -348,16 +364,7 @@ int main(int argc, char** argv) {
 
   cpu_threads.clear();
   nvml_filename.clear();
-
-  //Kernel call
-  shfl_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
-
-  //Timing
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  cudaEventElapsedTime(&milliseconds, start, stop);
-  cudaEventDestroy(start);
-  cudaEventDestroy(stop);
+  type.clear();
 
   cout << "Shfl Hash" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -400,8 +407,9 @@ int main(int argc, char** argv) {
 
   //Create new nvml file
   nvml_filename.append(base_nvml_filename);
-  nvml_filename.append("_shfl_unroll_2.csv");
-  nvml.set_filename(nvml_filename);
+  nvml_filename.append("_shfl_unroll2.csv");
+  type.append("shfl_unroll2");
+  nvml.new_experiment(nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
@@ -432,6 +440,7 @@ int main(int argc, char** argv) {
 
   cpu_threads.clear();
   nvml_filename.clear();
+  type.clear();
 
   cout << "Shfl Unroll 2" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -475,7 +484,8 @@ int main(int argc, char** argv) {
   //Create new nvml file
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_unroll.csv");
-  nvml.set_filename(nvml_filename);
+  type.append("shfl_unroll");
+  nvml.new_experiment(nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
@@ -506,6 +516,7 @@ int main(int argc, char** argv) {
 
   cpu_threads.clear();
   nvml_filename.clear();
+  type.clear();
 
   cout << "Shfl Unroll" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -549,7 +560,8 @@ int main(int argc, char** argv) {
   //Create new nvml file
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_bs.csv");
-  nvml.set_filename(nvml_filename);
+  type.append("shfl_bs");
+  nvml.new_experiment(nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
@@ -580,6 +592,7 @@ int main(int argc, char** argv) {
 
   cpu_threads.clear();
   nvml_filename.clear();
+  type.clear();
 
   cout << "Shfl Sort Search" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 

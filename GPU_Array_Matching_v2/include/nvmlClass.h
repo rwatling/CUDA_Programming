@@ -79,8 +79,8 @@ int constexpr nvml_device_name_buffer_size { 100 };
 
 class nvmlClass {
   public:
-    nvmlClass( int const &deviceID, std::string  &filename ) :
-        time_steps_ {}, filename_ { filename }, outfile_ {}, device_ {}, loop_ { false } {
+    nvmlClass( int const &deviceID, std::string  &filename, std::string type ) :
+        time_steps_ {}, filename_ { filename }, outfile_ {}, device_ {}, loop_ { false } , type_ { type } {
 
         char name[nvml_device_name_buffer_size];
 
@@ -122,10 +122,9 @@ class nvmlClass {
             NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
             NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
 
-
             time_steps_.push_back( device_stats );
 
-            //std::this_thread::sleep_for( std::chrono::milliseconds( 2 ) );
+            std::this_thread::sleep_for( std::chrono::microseconds(1) );
         }
 
         writeData();
@@ -140,8 +139,9 @@ class nvmlClass {
         loop_ = false;
     }
 
-    void set_filename(std::string  &filename) {
+    void new_experiment(std::string  &filename, std::string &type) {
       filename_ = filename;
+      type_ = type;
 
       // Open file
       outfile_.open( filename_, std::ios::out );
@@ -161,7 +161,8 @@ class nvmlClass {
         uint               memClock;
     } stats;
 
-    std::vector<std::string> names_ = { "timestamp",
+    std::vector<std::string> names_ = { "timestep"
+                                        "type",
                                         "temperature_gpu",
                                         "power_draw_w",
                                         "power_limit_w",
@@ -171,6 +172,7 @@ class nvmlClass {
 
     std::vector<stats> time_steps_;
     std::string        filename_;
+    std::string        type_;
     std::ofstream      outfile_;
     nvmlDevice_t       device_;
     bool               loop_;
@@ -191,7 +193,8 @@ class nvmlClass {
 
         // Print data
         for ( int i = 0; i < static_cast<int>( time_steps_.size( ) ); i++ ) {
-            outfile_ << time_steps_[i].timestamp << ", " << time_steps_[i].temperature << ", "
+            outfile_ << i << ", " << time_steps_[i].temperature << ", "
+                     << type_ << ", "
                      << time_steps_[i].powerUsage / 1000 << ", "  // mW to W
                      << time_steps_[i].powerLimit / 1000 << ","  // mW to W
                      << time_steps_[i].graphicsClock << "," //MHz
