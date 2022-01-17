@@ -145,6 +145,9 @@ class nvmlClass {
 
       // Open file
       outfile_.open( filename_, std::ios::out );
+
+      // Print header
+      printHeader( );
     }
 
   private:
