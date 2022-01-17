@@ -250,7 +250,7 @@ int main(int argc, char** argv) {
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
-  //Create nvml class
+  //Create new nvml file
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_nested.csv");
   nvml.set_filename(nvml_filename);
@@ -306,17 +306,17 @@ int main(int argc, char** argv) {
     }
   }
 
-  /************************Experiment 4***************************************/
+  /************************Experiment 3***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shfl_hash_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (DEBUG) { cerr << endl << "Fourth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Third attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
 	}
 
   if (DEBUG) {
-    cout << endl << "***Experiment 4 Shuffle with Hash***" << endl;
+    cout << endl << "***Experiment 3 Shuffle with Hash***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
@@ -324,10 +324,28 @@ int main(int argc, char** argv) {
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
 
+  //Create new nvml file
+  nvml_filename.append(base_nvml_filename);
+  nvml_filename.append("_shfl_hash.csv");
+  nvml.set_filename(nvml_filename);
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
 
   //Kernel call
   shfl_hash_match<<<num_blocks, num_threads, share_size>>>(device_arrays, num_threads);
@@ -360,23 +378,28 @@ int main(int argc, char** argv) {
     }
   }
 
-  /************************Experiment 5***************************************/
+  /************************Experiment 4***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shfl_unroll2_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (DEBUG) { cerr << endl << "Fifth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Fourth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
   }
 
   if (DEBUG) {
-    cout << endl << "***Experiment 5 Shfl Unroll 2***" << endl;
+    cout << endl << "***Experiment 4 Shfl Unroll 2***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+  //Create new nvml file
+  nvml_filename.append(base_nvml_filename);
+  nvml_filename.append("_shfl_unroll_2.csv");
+  nvml.set_filename(nvml_filename);
 
   //Timing
   cudaEventCreate(&start);
@@ -392,6 +415,19 @@ int main(int argc, char** argv) {
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
 
   cout << "Shfl Unroll 2" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -414,23 +450,28 @@ int main(int argc, char** argv) {
     }
   }
 
-  /************************Experiment 6***************************************/
+  /************************Experiment 5***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shfl_unroll_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (DEBUG) { cerr << endl << "Sixth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Fifth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
   }
 
   if (DEBUG) {
-    cout << endl << "***Experiment 6 Shfl with Unroll***" << endl;
+    cout << endl << "***Experiment 5 Shfl with Unroll***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+  //Create new nvml file
+  nvml_filename.append(base_nvml_filename);
+  nvml_filename.append("_shfl_unroll.csv");
+  nvml.set_filename(nvml_filename);
 
   //Timing
   cudaEventCreate(&start);
@@ -446,6 +487,19 @@ int main(int argc, char** argv) {
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
 
   cout << "Shfl Unroll" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
@@ -468,23 +522,28 @@ int main(int argc, char** argv) {
     }
   }
 
-  /************************Experiment 7***************************************/
+  /************************Experiment 6***************************************/
   //Set max dynamic shared memory size to either 96 kibibytes or 64 kibibytes
   cuda_err = cudaFuncSetAttribute(shfl_bs_match, cudaFuncAttributeMaxDynamicSharedMemorySize, share_size);
 
   if (cuda_err != cudaSuccess) {
-    if (DEBUG) { cerr << endl << "Seventh attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
+    if (DEBUG) { cerr << endl << "Sixth attempt of defining dynamic shared memory size of 96kb for array set failed" << endl << endl; }
     return -1;
   }
 
   if (DEBUG) {
-    cout << endl << "***Experiment 7 Shfl with Binary Search***" << endl;
+    cout << endl << "***Experiment 6 Shfl with Binary Search***" << endl;
 
     cout << "--------------------KERNEL CALL--------------------" << endl;
   }
 
   //Copy host arrays to device
   cudaMemcpy(device_arrays, host_arrays, array_set_bytes, cudaMemcpyHostToDevice);
+
+  //Create new nvml file
+  nvml_filename.append(base_nvml_filename);
+  nvml_filename.append("_shfl_bs.csv");
+  nvml.set_filename(nvml_filename);
 
   //Timing
   cudaEventCreate(&start);
@@ -500,6 +559,19 @@ int main(int argc, char** argv) {
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
 
   cout << "Shfl Sort Search" << "," << num_threads << "," << array_size << "," << milliseconds << endl;
 
