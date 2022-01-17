@@ -161,9 +161,9 @@ class nvmlClass {
         uint               memClock;
     } stats;
 
-    std::vector<std::string> names_ = { "timestep",
-                                        "type",
+    std::vector<std::string> names_ = { "timestep",                                        
                                         "temperature_gpu",
+                                        "type",
                                         "power_draw_w",
                                         "power_limit_w",
                                         "g_clock_freq_mhz",
