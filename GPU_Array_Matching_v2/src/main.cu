@@ -329,6 +329,8 @@ int main(int argc, char** argv) {
   nvml_filename.append("_shfl_hash.csv");
   nvml.set_filename(nvml_filename);
 
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -400,6 +402,8 @@ int main(int argc, char** argv) {
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_unroll_2.csv");
   nvml.set_filename(nvml_filename);
+
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
   //Timing
   cudaEventCreate(&start);
@@ -473,6 +477,8 @@ int main(int argc, char** argv) {
   nvml_filename.append("_shfl_unroll.csv");
   nvml.set_filename(nvml_filename);
 
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -544,6 +550,8 @@ int main(int argc, char** argv) {
   nvml_filename.append(base_nvml_filename);
   nvml_filename.append("_shfl_bs.csv");
   nvml.set_filename(nvml_filename);
+
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
   //Timing
   cudaEventCreate(&start);
