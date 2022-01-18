@@ -469,12 +469,131 @@ power6df = read.csv("./data/hardware_stats_shfl_bs.csv")
 combined = rbind(power1df, power2df, power3df, power4df, power5df, power6df)
 
 plot.new()
-ggplot(combined, aes(x = timestep, y=power_draw_w, linetype = type)) +
-  geom_line(show.legend = TRUE, color = "black") +
+ggplot(combined, aes(x = timestep, y=power_draw_w, group = type, color = type)) +
+  geom_smooth(show.legend = TRUE) +
   xlab("Time") +
   ylab("Power (W)") +
   scale_x_discrete(labels = NULL, breaks = NULL) +
-  theme(legend.position=c(0.3, 0.8),
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(combined, aes(x = timestep, y=power_draw_w, group = type, color = type)) +
+  geom_line(show.legend = TRUE) +
+  xlab("Time") +
+  ylab("Power (W)") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestep, y=power_draw_w, group = type)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  ggtitle("Nested Shared Mem Power Consumption") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+
+plot.new()
+ggplot(power2df, aes(x = timestep, y=power_draw_w, group = type)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  ggtitle("Unroll Power Consumption") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestep, y=power_draw_w, group = type)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  ggtitle("Unroll 2 Power Consumption") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestep, y=power_draw_w, group = type)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  ggtitle("Nested Shared Mem Power Consumption") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestep, y=power_draw_w, group = type)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  ggtitle("Nested Shared Mem Power Consumption") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+
+plot.new()
+ggplot(power1df, aes(x = timestep, y=power_draw_w, group = type)) +
+  geom_line(show.legend = TRUE, color = "black") +
+  xlab("Time") +
+  ylab("Power (W)") +
+  ggtitle("Nested Shared Mem Power Consumption") +
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.3),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
