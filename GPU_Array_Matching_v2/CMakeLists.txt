@@ -97,29 +97,11 @@ if (NOT MEM_OPT EQUAL 0)
   target_compile_options(${GPU_LIB} PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:--ptxas-options=-v>)
 endif()
 
-# Create executable
+# Create executable for main file
 add_executable(${PROJECT_NAME} ${main_file})
 
 # Cuda seperable compilation
 set_target_properties(${PROJECT_NAME} PROPERTIES CUDA_SEPARABLE_COMPILATION ON)
-
-# NVML libraries?
-#set(NVML_NAMES nvidia-ml)
-#set(NVML_LIB_DIR "${CUDA_TOOLKIT_ROOT_DIR}/lib64/stubs")
-#set(NVML_INCLUDE_DIR ${CUDA_INCLUDE_DIRS})
-
-find_library(NVML_LIB_PATH
-NO_DEFAULT_PATH
-NAMES ${NVML_NAMES}
-PATHS ${NVML_LIB_DIR})
-
-find_path(NVML_INCLUDE_PATH
-NO_DEFAULT_PATH
-NAMES nvml.h
-PATHS ${NVML_INCLUDE_DIR})
-
-include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(NVML DEFAULT_MSG NVML_LIB_PATH NVML_INCLUDE_PATH)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PRIVATE ${GPU_LIB})
