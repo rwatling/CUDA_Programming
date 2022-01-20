@@ -10,3 +10,8 @@ cmake_install.cmake
 gpu_matching
 Makefile
 TODO
+sample_kernels/compute/nvJPEG/nvJPEG
+sample_kernels/compute/cuSolverDN_LinearSolver/cuSolverDN_LinearSolver
+sample_kernels/hybrid/simpleCUFFT/simpleCUFFT
+sample_kernels/compute/simpleCUBLAS/simpleCUBLAS
+sample_kernels/bin/*
