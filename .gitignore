@@ -7,7 +7,7 @@ CMakeFiles/*
 CMakeFiles
 CMakeCache.txt
 cmake_install.cmake
-gpu_matching
+gpu_match
 Makefile
 TODO
 sample_kernels/compute/nvJPEG/nvJPEG
@@ -15,3 +15,6 @@ sample_kernels/compute/cuSolverDN_LinearSolver/cuSolverDN_LinearSolver
 sample_kernels/hybrid/simpleCUFFT/simpleCUFFT
 sample_kernels/compute/simpleCUBLAS/simpleCUBLAS
 sample_kernels/bin/*
+sample_kernels/hybrid/finite-difference/finite-difference
+sample_kernels/memory/transpose/transpose
+sample_kernels/memory/coalescing-global/coalescing
