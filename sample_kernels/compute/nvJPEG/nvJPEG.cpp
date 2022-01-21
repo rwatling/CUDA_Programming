@@ -31,6 +31,7 @@
 
 #include <cuda_runtime_api.h>
 #include "helper_nvJPEG.hxx"
+#include "nvmlClass.h"
 
 int dev_malloc(void **p, size_t s) { return (int)cudaMalloc(p, s); }
 
@@ -210,19 +211,19 @@ int prepare_buffers(FileData &file_data, std::vector<size_t> &file_len,
 void create_decoupled_api_handles(decode_params_t& params){
 
   checkCudaErrors(nvjpegDecoderCreate(params.nvjpeg_handle, NVJPEG_BACKEND_DEFAULT, &params.nvjpeg_decoder));
-  checkCudaErrors(nvjpegDecoderStateCreate(params.nvjpeg_handle, params.nvjpeg_decoder, &params.nvjpeg_decoupled_state));   
-  
+  checkCudaErrors(nvjpegDecoderStateCreate(params.nvjpeg_handle, params.nvjpeg_decoder, &params.nvjpeg_decoupled_state));
+
   checkCudaErrors(nvjpegBufferPinnedCreate(params.nvjpeg_handle, NULL, &params.pinned_buffers[0]));
   checkCudaErrors(nvjpegBufferPinnedCreate(params.nvjpeg_handle, NULL, &params.pinned_buffers[1]));
   checkCudaErrors(nvjpegBufferDeviceCreate(params.nvjpeg_handle, NULL, &params.device_buffer));
-  
+
   checkCudaErrors(nvjpegJpegStreamCreate(params.nvjpeg_handle, &params.jpeg_streams[0]));
   checkCudaErrors(nvjpegJpegStreamCreate(params.nvjpeg_handle, &params.jpeg_streams[1]));
 
   checkCudaErrors(nvjpegDecodeParamsCreate(params.nvjpeg_handle, &params.nvjpeg_decode_params));
 }
 
-void destroy_decoupled_api_handles(decode_params_t& params){  
+void destroy_decoupled_api_handles(decode_params_t& params){
 
   checkCudaErrors(nvjpegDecodeParamsDestroy(params.nvjpeg_decode_params));
   checkCudaErrors(nvjpegJpegStreamDestroy(params.jpeg_streams[0]));
@@ -230,7 +231,7 @@ void destroy_decoupled_api_handles(decode_params_t& params){
   checkCudaErrors(nvjpegBufferPinnedDestroy(params.pinned_buffers[0]));
   checkCudaErrors(nvjpegBufferPinnedDestroy(params.pinned_buffers[1]));
   checkCudaErrors(nvjpegBufferDeviceDestroy(params.device_buffer));
-  checkCudaErrors(nvjpegJpegStateDestroy(params.nvjpeg_decoupled_state));  
+  checkCudaErrors(nvjpegJpegStateDestroy(params.nvjpeg_decoupled_state));
   checkCudaErrors(nvjpegDecoderDestroy(params.nvjpeg_decoder));
 }
 
@@ -246,8 +247,8 @@ int decode_images(const FileData &img_data, const std::vector<size_t> &img_len,
                   double &time) {
   checkCudaErrors(cudaStreamSynchronize(params.stream));
   cudaEvent_t startEvent = NULL, stopEvent = NULL;
-  float loopTime = 0; 
-  
+  float loopTime = 0;
+
   checkCudaErrors(cudaEventCreate(&startEvent, cudaEventBlockingSync));
   checkCudaErrors(cudaEventCreate(&stopEvent, cudaEventBlockingSync));
 
@@ -270,13 +271,13 @@ int decode_images(const FileData &img_data, const std::vector<size_t> &img_len,
       checkCudaErrors(nvjpegDecodeParamsSetOutputFormat(params.nvjpeg_decode_params, params.fmt));
       for (int i = 0; i < params.batch_size; i++) {
       checkCudaErrors(
-          nvjpegJpegStreamParse(params.nvjpeg_handle, (const unsigned char *)img_data[i].data(), img_len[i], 
+          nvjpegJpegStreamParse(params.nvjpeg_handle, (const unsigned char *)img_data[i].data(), img_len[i],
           0, 0, params.jpeg_streams[buffer_index]));
-                                
+
       checkCudaErrors(nvjpegStateAttachPinnedBuffer(params.nvjpeg_decoupled_state,
           params.pinned_buffers[buffer_index]));
-      
-      checkCudaErrors(nvjpegDecodeJpegHost(params.nvjpeg_handle, params.nvjpeg_decoder, params.nvjpeg_decoupled_state, 
+
+      checkCudaErrors(nvjpegDecodeJpegHost(params.nvjpeg_handle, params.nvjpeg_decoder, params.nvjpeg_decoupled_state,
           params.nvjpeg_decode_params, params.jpeg_streams[buffer_index]));
 
       checkCudaErrors(cudaStreamSynchronize(params.stream));
@@ -303,7 +304,7 @@ int decode_images(const FileData &img_data, const std::vector<size_t> &img_len,
         params.nvjpeg_handle, params.nvjpeg_state, raw_inputs.data(),
         img_len.data(), out.data(), params.stream));
     checkCudaErrors(cudaEventRecord(stopEvent, params.stream));
-  
+
   }
   checkCudaErrors(cudaEventSynchronize(stopEvent));
   checkCudaErrors(cudaEventElapsedTime(&loopTime, startEvent, stopEvent));
@@ -602,7 +603,7 @@ int main(int argc, const char *argv[]) {
                         params.batch_size)
             << std::endl;
 
-  if(params.pipelined ){ 
+  if(params.pipelined ){
     destroy_decoupled_api_handles(params);
   }
 

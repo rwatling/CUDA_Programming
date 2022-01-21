@@ -27,6 +27,8 @@
 
 /* Example showing the use of CUFFT for fast 1D-convolution using FFT. */
 
+#include "nvmlClass.h"
+
 // includes, system
 #include <math.h>
 #include <stdio.h>

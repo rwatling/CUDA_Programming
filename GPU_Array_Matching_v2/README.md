@@ -11,6 +11,7 @@ This is the second version of the GPU match experiment.
 * CMake version >= 3.8
 * Make
 * CUDA library and compiler `nvcc`
+* C++11 enabled
 
 ## Build instructions
 This project relies on the `nvcc` compiler and `cmake` commands.

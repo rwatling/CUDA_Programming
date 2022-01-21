@@ -41,6 +41,7 @@
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
 
+#include "nvmlClass.h"
 /* Matrix size */
 #define N (275)
 

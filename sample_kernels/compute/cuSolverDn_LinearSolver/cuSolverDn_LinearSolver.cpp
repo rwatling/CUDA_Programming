@@ -68,6 +68,8 @@
 
 #include "helper_cusolver.h"
 
+#include "nvmlClass.h"
+
 template <typename T_ELEM>
 int loadMMSparseMatrix(char *filename, char elem_type, bool csrFormat, int *m,
                        int *n, int *nnz, T_ELEM **aVal, int **aRowInd,

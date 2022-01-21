@@ -24,6 +24,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include "nvmlClass.h"
+
 #include <stdio.h>
 #include <assert.h>
 
@@ -63,7 +65,7 @@ void runTest(int deviceId, int nMB)
 
   T *d_a;
   cudaEvent_t startEvent, stopEvent;
-    
+
   int n = nMB*1024*1024/sizeof(T);
 
   // NB:  d_a(33*nMB) for stride case
@@ -73,7 +75,7 @@ void runTest(int deviceId, int nMB)
   checkCuda( cudaEventCreate(&stopEvent) );
 
   printf("Offset, Bandwidth (GB/s):\n");
-  
+
   offset<<<n/blockSize, blockSize>>>(d_a, 0); // warm up
 
   for (int i = 0; i <= 32; i++) {
@@ -115,23 +117,23 @@ int main(int argc, char **argv)
   int deviceId = 0;
   bool bFp64 = false;
 
-  for (int i = 1; i < argc; i++) {    
+  for (int i = 1; i < argc; i++) {
     if (!strncmp(argv[i], "dev=", 4))
       deviceId = atoi((char*)(&argv[i][4]));
     else if (!strcmp(argv[i], "fp64"))
       bFp64 = true;
   }
-  
+
   cudaDeviceProp prop;
-  
+
   checkCuda( cudaSetDevice(deviceId) )
   ;
   checkCuda( cudaGetDeviceProperties(&prop, deviceId) );
   printf("Device: %s\n", prop.name);
   printf("Transfer size (MB): %d\n", nMB);
-  
+
   printf("%s Precision\n", bFp64 ? "Double" : "Single");
-  
+
   if (bFp64) runTest<double>(deviceId, nMB);
   else       runTest<float>(deviceId, nMB);
 }
