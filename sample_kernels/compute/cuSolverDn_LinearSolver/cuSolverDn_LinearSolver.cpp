@@ -501,6 +501,27 @@ int main(int argc, char *argv[]) {
   checkCudaErrors(
       cudaMemcpy(d_b, h_b, sizeof(double) * rowsA, cudaMemcpyHostToDevice));
 
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+    return -1;
+  }
+
+  std::string nvml_filename = "./hardware_stats.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("cuSolverDn_LinearSolver");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+
   printf("step 5: solve A*x = b \n");
   // d_A and d_b are read-only
   if (0 == strcmp(opts.testFunc, "chol")) {
@@ -513,6 +534,21 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Error: %s is unknown function\n", opts.testFunc);
     exit(EXIT_FAILURE);
   }
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
   printf("step 6: evaluate residual\n");
   checkCudaErrors(
       cudaMemcpy(d_r, d_b, sizeof(double) * rowsA, cudaMemcpyDeviceToDevice));

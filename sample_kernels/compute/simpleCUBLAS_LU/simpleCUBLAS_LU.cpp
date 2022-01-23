@@ -317,6 +317,35 @@ int main(int argc, char** argv) {
                              BATCH_SIZE * sizeof(DATA_TYPE*),
                              cudaMemcpyHostToDevice));
 
+   /************************NVML get device********************************/
+   int nvml_dev {};
+   cudaError_t cuda_err;
+   cudaGetDevice( &nvml_dev );
+   cuda_err = cudaSetDevice( nvml_dev );
+
+   /*************************CUDA Timing***********************************/
+   cudaEvent_t start, stop;
+   float milliseconds;
+
+   if (cuda_err != cudaSuccess) {
+     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+     return -1;
+   }
+
+   std::string nvml_filename = "./hardware_stats.csv";
+   std::vector<std::thread> cpu_threads;
+   std::string type;
+
+   type.append("simpleCUBLAS_LU");
+   nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+   //Timing
+   cudaEventCreate(&start);
+   cudaEventCreate(&stop);
+   cudaEventRecord(start, 0);
+
   // perform LU decomposition
   printf("> performing LU decomposition..\n");
 #ifdef PIVOT
@@ -331,6 +360,29 @@ int main(int argc, char** argv) {
            _cudaGetErrorEnum(status));
     return (EXIT_FAILURE);
   }
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
+  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
   // copy data to host from device
   printf("> copying data from GPU memory to host memory..\n");
