@@ -14,6 +14,7 @@ sample_kernels/compute/nvJPEG/nvJPEG
 sample_kernels/compute/cuSolverDn_LinearSolver/cuSolverDn_LinearSolver
 sample_kernels/hybrid/simpleCUFFT/simpleCUFFT
 sample_kernels/compute/simpleCUBLAS/simpleCUBLAS
+sample_kernels/compute/simpleCUBLAS_LU/simpleCUBLAS_LU
 sample_kernels/bin/*
 sample_kernels/hybrid/finite-difference/finite-difference
 sample_kernels/memory/transpose/transpose

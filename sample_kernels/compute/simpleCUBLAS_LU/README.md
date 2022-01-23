@@ -1,12 +1,12 @@
-# nvJPEG - NVJPEG simple
+# simpleCUBLAS_LU - Simple CUBLAS LU
 
 ## Description
 
-A CUDA Sample that demonstrates single and batched decoding of jpeg images using NVJPEG Library.
+CUDA sample demonstrating cuBLAS API cublasDgetrfBatched() for lower-upper (LU) decomposition of a matrix.
 
 ## Key Concepts
 
-Image Decoding, NVJPEG Library
+CUBLAS Library, LU decomposition
 
 ## Supported SM Architectures
 
@@ -14,7 +14,7 @@ Image Decoding, NVJPEG Library
 
 ## Supported OSes
 
-Linux, Windows, QNX
+Linux, Windows
 
 ## Supported CPU Architecture
 
@@ -23,10 +23,10 @@ x86_64, ppc64le, aarch64
 ## CUDA APIs involved
 
 ### [CUDA Runtime API](http://docs.nvidia.com/cuda/cuda-runtime-api/index.html)
-cudaStreamDestroy, cudaFree, cudaEventRecord, cudaHostAlloc, cudaEventCreate, cudaEventElapsedTime, cudaEventSynchronize, cudaFreeHost, cudaMalloc, cudaStreamCreateWithFlags, cudaStreamSynchronize, cudaGetDeviceProperties
+cudaGetErrorEnum, cudaFree, cudaMalloc, cudaMemcpy
 
 ## Dependencies needed to build/run
-[NVJPEG](../../README.md#nvjpeg)
+[CUBLAS](../../README.md#cublas)
 
 ## Prerequisites
 

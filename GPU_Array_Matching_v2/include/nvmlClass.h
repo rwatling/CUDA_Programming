@@ -161,7 +161,8 @@ class nvmlClass {
         uint               memClock;
     } stats;
 
-    std::vector<std::string> names_ = { "timestep",                                        
+    std::vector<std::string> names_ = { "timestep",
+                                        "timestamp",
                                         "temperature_gpu",
                                         "type",
                                         "power_draw_w",
@@ -193,7 +194,9 @@ class nvmlClass {
 
         // Print data
         for ( int i = 0; i < static_cast<int>( time_steps_.size( ) ); i++ ) {
-            outfile_ << i << ", " << time_steps_[i].temperature << ", "
+            outfile_ << i << ", "
+                     << time_steps_[i].timestamp << ","
+                     << time_steps_[i].temperature << ", "
                      << type_ << ", "
                      << time_steps_[i].powerUsage / 1000 << ", "  // mW to W
                      << time_steps_[i].powerLimit / 1000 << ","  // mW to W
