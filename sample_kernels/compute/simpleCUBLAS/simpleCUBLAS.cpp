@@ -42,6 +42,8 @@
 #include <helper_cuda.h>
 
 #include "nvmlClass.h"
+using namespace std;
+
 /* Matrix size */
 #define N (275)
 
@@ -174,9 +176,61 @@ int main(int argc, char **argv) {
   simple_sgemm(N, alpha, h_A, h_B, beta, h_C);
   h_C_ref = h_C;
 
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+
+  if (cuda_err != cudaSuccess) {
+		cerr << "cudaSetDevice failed for nvml\n" << endl;
+		return -1;
+	}
+
+  string nvml_filename = "./hardware_stats.csv";
+  vector<thread> cpu_threads;
+  string type;
+
+  type.append("simpleCUBLAS");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
+
+  //Timing
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
+
   /* Performs operation using cublas */
   status = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, N, N, &alpha, d_A,
                        N, d_B, N, &beta, d_C, N);
+
+   //Timing
+   cudaEventRecord(stop, 0);
+   cudaEventSynchronize(stop);
+   cudaEventElapsedTime(&milliseconds, start, stop);
+   cudaEventDestroy(start);
+   cudaEventDestroy(stop);
+
+   // NVML
+   // Create thread to kill GPU stats
+   // Join both threads to main
+   cpu_threads.emplace_back(thread( &nvmlClass::killThread, &nvml));
+
+   for (auto& th : cpu_threads) {
+     th.join();
+     th.~thread();
+   }
+
+   cpu_threads.clear();
+   nvml_filename.clear();
+   type.clear();
+
+   cout << "Kernel elapsed time: " << milliseconds << " (ms)" << endl << endl;
 
   if (status != CUBLAS_STATUS_SUCCESS) {
     fprintf(stderr, "!!!! kernel execution error.\n");

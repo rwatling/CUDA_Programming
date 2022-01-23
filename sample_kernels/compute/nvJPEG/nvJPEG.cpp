@@ -245,6 +245,7 @@ void release_buffers(std::vector<nvjpegImage_t> &ibuf) {
 int decode_images(const FileData &img_data, const std::vector<size_t> &img_len,
                   std::vector<nvjpegImage_t> &out, decode_params_t &params,
                   double &time) {
+
   checkCudaErrors(cudaStreamSynchronize(params.stream));
   cudaEvent_t startEvent = NULL, stopEvent = NULL;
   float loopTime = 0;
