@@ -1,3 +1,5 @@
+//From https://github.com/JonathanWatkins/CUDA/blob/master/NvidiaCourse/Exercises/transpose/transpose.cu
+
 /*
  * Copyright 1993-2007 NVIDIA Corporation.  All rights reserved.
  *
@@ -48,12 +50,10 @@
 #include <string.h>
 #include <math.h>
 
-// includes, project
-#include <cutil_inline.h>
-
 #include "nvmlClass.h"
+#include "cuda_includes.h"
 
-#define BLOCK_DIM 16
+#define BLOCK_DIM 1
 
 // This kernel is optimized to ensure all global reads and writes are coalesced,
 // and to avoid bank conflicts in shared memory.  This kernel is up to 11x faster
@@ -117,8 +117,6 @@ int
 main( int argc, char** argv)
 {
     runTest( argc, argv);
-
-    cutilExit(argc, argv);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -127,109 +125,101 @@ main( int argc, char** argv)
 void
 runTest( int argc, char** argv)
 {
-    // size of the matrix
-#ifdef __DEVICE_EMULATION__
-    const unsigned int size_x = 32;
+    const unsigned int size_x = 128;
     const unsigned int size_y = 128;
-#else
-    const unsigned int size_x = 256;
-    const unsigned int size_y = 4096;
-#endif
+
     // size of memory required to store the matrix
     const unsigned int mem_size = sizeof(float) * size_x * size_y;
 
-    unsigned int timer;
-    cutCreateTimer(&timer);
-
-    // use command-line specified CUDA device, otherwise use device with highest Gflops/s
-  	if( cutCheckCmdLineFlag(argc, (const char**)argv, "device") )
-  		cutilDeviceInit(argc, argv);
-  	else
-  		cudaSetDevice( cutGetMaxGflopsDeviceId() );
-
     // allocate host memory
     float* h_idata = (float*) malloc(mem_size);
+
     // initalize the memory
-    srand(15235911);
-    for( unsigned int i = 0; i < (size_x * size_y); ++i)
+    for (unsigned int i = 0; i < (size_x * size_y); ++i)
     {
-        h_idata[i] = (float) i;    // rand();
+        h_idata[i] = (float) i;
     }
 
     // allocate device memory
     float* d_idata;
     float* d_odata;
-    cutilSafeCall( cudaMalloc( (void**) &d_idata, mem_size));
-    cutilSafeCall( cudaMalloc( (void**) &d_odata, mem_size));
+    cudaMalloc( (void**) &d_idata, mem_size);
+    cudaMalloc( (void**) &d_odata, mem_size);
 
     // copy host memory to device
-    cutilSafeCall( cudaMemcpy( d_idata, h_idata, mem_size,
-                                cudaMemcpyHostToDevice) );
+    cudaMemcpy(d_idata, h_idata, mem_size, cudaMemcpyHostToDevice);
 
     // setup execution parameters
     dim3 grid(size_x / BLOCK_DIM, size_y / BLOCK_DIM, 1);
     dim3 threads(BLOCK_DIM, BLOCK_DIM, 1);
 
-    // warmup so we don't time CUDA startup
-    transpose_naive<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
-    transpose<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
-
-	// synchronize here, so we make sure that we don't count any time from the asynchronize kernel launches.
-	cudaThreadSynchronize();
-
-    int numIterations = 1;
-
     printf("Transposing a %d by %d matrix of floats...\n", size_x, size_y);
 
     // execute the kernel
-    cutStartTimer(timer);
-    for (int i = 0; i < numIterations; ++i)
-    {
-        transpose_naive<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+    transpose_naive<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+
+		printf("Naive transpose done. Not measuring its power consumption.\n");
+
+		/************************NVML get device********************************/
+    int nvml_dev {};
+    cudaError_t cuda_err;
+    cudaGetDevice( &nvml_dev );
+    cuda_err = cudaSetDevice( nvml_dev );
+
+    /*************************CUDA Timing***********************************/
+    cudaEvent_t start, stop;
+    float milliseconds;
+
+    if (cuda_err != cudaSuccess) {
+      std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
     }
-    cudaThreadSynchronize();
-    cutStopTimer(timer);
-    float naiveTime = cutGetTimerValue(timer);
 
-    // execute the kernel
+    std::string nvml_filename = "./hardware_stats.csv";
+    std::vector<std::thread> cpu_threads;
+    std::string type;
 
-    cutResetTimer(timer);
-    cutStartTimer(timer);
-    for (int i = 0; i < numIterations; ++i)
-    {
-        transpose<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
-    }
-    cudaThreadSynchronize();
-    cutStopTimer(timer);
-    float optimizedTime = cutGetTimerValue(timer);
+    type.append("simpleCUBLAS_LU");
+    nvmlClass nvml( nvml_dev, nvml_filename, type);
 
-    printf("Naive transpose average time:     %0.3f ms\n", naiveTime / numIterations);
-    printf("Optimized transpose average time: %0.3f ms\n\n", optimizedTime / numIterations);
+    cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-    // check if kernel execution generated and error
-    cutilCheckMsg("Kernel execution failed");
+    //Timing
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+		transpose<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+
+		//Timing
+	  cudaEventRecord(stop, 0);
+	  cudaEventSynchronize(stop);
+	  cudaEventElapsedTime(&milliseconds, start, stop);
+	  cudaEventDestroy(start);
+	  cudaEventDestroy(stop);
+
+	  // NVML
+	  // Create thread to kill GPU stats
+	  // Join both threads to main
+	  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+	  for (auto& th : cpu_threads) {
+	    th.join();
+	    th.~thread();
+	  }
+
+	  cpu_threads.clear();
+	  nvml_filename.clear();
+	  type.clear();
+
+	  std::cout << "Shared mem on one block kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
     // copy result from device to    host
     float* h_odata = (float*) malloc(mem_size);
-    cutilSafeCall( cudaMemcpy( h_odata, d_odata, mem_size,
-                                cudaMemcpyDeviceToHost) );
-
-    // compute reference solution
-    float* reference = (float*) malloc( mem_size);
-
-    computeGold( reference, h_idata, size_x, size_y);
-
-    // check result
-    CUTBoolean res = cutComparef( reference, h_odata, size_x * size_y);
-    printf(    "Test %s\n", (1    == res)    ? "PASSED" : "FAILED");
+    cudaMemcpy(h_odata, d_odata, mem_size, cudaMemcpyDeviceToHost);
 
     // cleanup memory
     free(h_idata);
     free(h_odata);
-    free( reference);
-    cutilSafeCall(cudaFree(d_idata));
-    cutilSafeCall(cudaFree(d_odata));
-    cutilCheckError( cutDeleteTimer(timer));
-
-    cudaThreadExit();
+    cudaFree(d_idata);
+    cudaFree(d_odata);
 }

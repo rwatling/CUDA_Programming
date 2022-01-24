@@ -13,4 +13,4 @@ transpose.o:
 
 clean:
 	-rm -f *.o transpose
-	rm -f hardware_stats.csv
+	-rm -f hardware_stats.csv
