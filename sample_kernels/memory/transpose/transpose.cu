@@ -1,225 +1,281 @@
-//From https://github.com/JonathanWatkins/CUDA/blob/master/NvidiaCourse/Exercises/transpose/transpose.cu
-
-/*
- * Copyright 1993-2007 NVIDIA Corporation.  All rights reserved.
+/* Copyright (c) 1993-2015, NVIDIA CORPORATION. All rights reserved.
  *
- * NOTICE TO USER:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *  * Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ *  * Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *  * Neither the name of NVIDIA CORPORATION nor the names of its
+ *    contributors may be used to endorse or promote products derived
+ *    from this software without specific prior written permission.
  *
- * This source code is subject to NVIDIA ownership rights under U.S. and
- * international Copyright laws.  Users and possessors of this source code
- * are hereby granted a nonexclusive, royalty-free license to use this code
- * in individual and commercial software.
- *
- * NVIDIA MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
- * CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR
- * IMPLIED WARRANTY OF ANY KIND.  NVIDIA DISCLAIMS ALL WARRANTIES WITH
- * REGARD TO THIS SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF
- * MERCHANTABILITY, NONINFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL NVIDIA BE LIABLE FOR ANY SPECIAL, INDIRECT, INCIDENTAL,
- * OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS
- * OF USE, DATA OR PROFITS,  WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
- * OR OTHER TORTIOUS ACTION,  ARISING OUT OF OR IN CONNECTION WITH THE USE
- * OR PERFORMANCE OF THIS SOURCE CODE.
- *
- * U.S. Government End Users.   This source code is a "commercial item" as
- * that term is defined at  48 C.F.R. 2.numIterations1 (OCT 1995), consisting  of
- * "commercial computer  software"  and "commercial computer software
- * documentation" as such terms are  used in 48 C.F.R. 12.212 (SEPT 1995)
- * and is provided to the U.S. Government only as a commercial end item.
- * Consistent with 48 C.F.R.12.212 and 48 C.F.R. 227.7202-1 through
- * 227.7202-4 (JUNE 1995), all U.S. Government End Users acquire the
- * source code with only those rights set forth herein.
- *
- * Any use of this source code in individual and commercial software must
- * include, in the user documentation and internal comments to the code,
- * the above Disclaimer and U.S. Government End Users Notice.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* Matrix transpose with Cuda
- * Host code.
- * This example transposes arbitrary-size matrices.  It compares a naive
- * transpose kernel that suffers from non-coalesced writes, to an optimized
- * transpose with fully coalesced memory access and no bank conflicts.  On
- * a G80 GPU, the optimized transpose can be more than 10x faster for large
- * matrices.
- */
-
-// includes, system
-#include <stdlib.h>
 #include <stdio.h>
-#include <string.h>
-#include <math.h>
+#include <assert.h>
 
-#include "nvmlClass.h"
 #include "cuda_includes.h"
+#include "nvmlClass.h"
 
-#define BLOCK_DIM 1
-
-// This kernel is optimized to ensure all global reads and writes are coalesced,
-// and to avoid bank conflicts in shared memory.  This kernel is up to 11x faster
-// than the naive kernel below.  Note that the shared memory array is sized to
-// (BLOCK_DIM+1)*BLOCK_DIM.  This pads each row of the 2D block in shared memory
-// so that bank conflicts do not occur when threads address the array column-wise.
-__global__ void transpose(float *odata, float *idata, int width, int height)
+// Convenience function for checking CUDA runtime API results
+// can be wrapped around any runtime API call. No-op in release builds.
+inline
+cudaError_t checkCuda(cudaError_t result)
 {
-	__shared__ float block[BLOCK_DIM][BLOCK_DIM+1];
-
-	// read the matrix tile into shared memory
-        // load one element per thread from device memory (idata) and store it
-        // in transposed order in block[][]
-	unsigned int xIndex = blockIdx.x * BLOCK_DIM + threadIdx.x;
-	unsigned int yIndex = blockIdx.y * BLOCK_DIM + threadIdx.y;
-	if((xIndex < width) && (yIndex < height))
-	{
-		unsigned int index_in = yIndex * width + xIndex;
-		block[threadIdx.y][threadIdx.x] = idata[index_in];
-	}
-
-        // synchronise to ensure all writes to block[][] have completed
-	__syncthreads();
-
-	// write the transposed matrix tile to global memory (odata) in linear order
-	xIndex = blockIdx.y * BLOCK_DIM + threadIdx.x;
-	yIndex = blockIdx.x * BLOCK_DIM + threadIdx.y;
-	if((xIndex < height) && (yIndex < width))
-	{
-		unsigned int index_out = yIndex * height + xIndex;
-		odata[index_out] = block[threadIdx.x][threadIdx.y];
-	}
+#if defined(DEBUG) || defined(_DEBUG)
+  if (result != cudaSuccess) {
+    fprintf(stderr, "CUDA Runtime Error: %s\n", cudaGetErrorString(result));
+    assert(result == cudaSuccess);
+  }
+#endif
+  return result;
 }
 
+const int TILE_DIM = 32;
+const int BLOCK_ROWS = 8;
+const int NUM_REPS = 1;
 
-// This naive transpose kernel suffers from completely non-coalesced writes.
-// It can be up to 10x slower than the kernel above for large matrices.
-__global__ void transpose_naive(float *odata, float* idata, int width, int height)
+// Check errors and print GB/s
+void postprocess(const float *ref, const float *res, int n, float ms)
 {
-   unsigned int xIndex = blockDim.x * blockIdx.x + threadIdx.x;
-   unsigned int yIndex = blockDim.y * blockIdx.y + threadIdx.y;
-
-   if (xIndex < width && yIndex < height)
-   {
-       unsigned int index_in  = xIndex + width * yIndex;
-       unsigned int index_out = yIndex + height * xIndex;
-       odata[index_out] = idata[index_in];
-   }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// declaration, forward
-void runTest( int argc, char** argv);
-extern "C" void computeGold( float* reference, float* idata,
-                         const unsigned int size_x, const unsigned int size_y );
-
-////////////////////////////////////////////////////////////////////////////////
-// Program main
-////////////////////////////////////////////////////////////////////////////////
-int
-main( int argc, char** argv)
-{
-    runTest( argc, argv);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-//! Run a simple test for CUDA
-////////////////////////////////////////////////////////////////////////////////
-void
-runTest( int argc, char** argv)
-{
-    const unsigned int size_x = 128;
-    const unsigned int size_y = 128;
-
-    // size of memory required to store the matrix
-    const unsigned int mem_size = sizeof(float) * size_x * size_y;
-
-    // allocate host memory
-    float* h_idata = (float*) malloc(mem_size);
-
-    // initalize the memory
-    for (unsigned int i = 0; i < (size_x * size_y); ++i)
-    {
-        h_idata[i] = (float) i;
+  bool passed = true;
+  for (int i = 0; i < n; i++)
+    if (res[i] != ref[i]) {
+      printf("%d %f %f\n", i, res[i], ref[i]);
+      printf("%25s\n", "*** FAILED ***");
+      passed = false;
+      break;
     }
+  if (passed) {
+    printf("%25.2f", 2 * n * sizeof(float) * 1e-6 * NUM_REPS / ms );
+    printf("%25.4f\n", ms / NUM_REPS );
+  }
+}
 
-    // allocate device memory
-    float* d_idata;
-    float* d_odata;
-    cudaMalloc( (void**) &d_idata, mem_size);
-    cudaMalloc( (void**) &d_odata, mem_size);
+// simple copy kernel
+// Used as reference case representing best effective bandwidth.
+__global__ void copy(float *odata, const float *idata)
+{
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
 
-    // copy host memory to device
-    cudaMemcpy(d_idata, h_idata, mem_size, cudaMemcpyHostToDevice);
+  for (int j = 0; j < TILE_DIM; j+= BLOCK_ROWS)
+    odata[(y+j)*width + x] = idata[(y+j)*width + x];
+}
 
-    // setup execution parameters
-    dim3 grid(size_x / BLOCK_DIM, size_y / BLOCK_DIM, 1);
-    dim3 threads(BLOCK_DIM, BLOCK_DIM, 1);
+// copy kernel using shared memory
+// Also used as reference case, demonstrating effect of using shared memory.
+__global__ void copySharedMem(float *odata, const float *idata)
+{
+  __shared__ float tile[TILE_DIM * TILE_DIM];
 
-    printf("Transposing a %d by %d matrix of floats...\n", size_x, size_y);
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
 
-    // execute the kernel
-    transpose_naive<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     tile[(threadIdx.y+j)*TILE_DIM + threadIdx.x] = idata[(y+j)*width + x];
 
-		printf("Naive transpose done. Not measuring its power consumption.\n");
+  __syncthreads();
 
-		/************************NVML get device********************************/
-    int nvml_dev {};
-    cudaError_t cuda_err;
-    cudaGetDevice( &nvml_dev );
-    cuda_err = cudaSetDevice( nvml_dev );
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     odata[(y+j)*width + x] = tile[(threadIdx.y+j)*TILE_DIM + threadIdx.x];
+}
 
-    /*************************CUDA Timing***********************************/
-    cudaEvent_t start, stop;
-    float milliseconds;
+// naive transpose
+// Simplest transpose; doesn't use shared memory.
+// Global memory reads are coalesced but writes are not.
+__global__ void transposeNaive(float *odata, const float *idata)
+{
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
 
-    if (cuda_err != cudaSuccess) {
-      std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-    }
+  for (int j = 0; j < TILE_DIM; j+= BLOCK_ROWS)
+    odata[x*width + (y+j)] = idata[(y+j)*width + x];
+}
 
-    std::string nvml_filename = "./hardware_stats.csv";
-    std::vector<std::thread> cpu_threads;
-    std::string type;
+// coalesced transpose
+// Uses shared memory to achieve coalesing in both reads and writes
+// Tile width == #banks causes shared memory bank conflicts.
+__global__ void transposeCoalesced(float *odata, const float *idata)
+{
+  __shared__ float tile[TILE_DIM][TILE_DIM];
 
-    type.append("simpleCUBLAS_LU");
-    nvmlClass nvml( nvml_dev, nvml_filename, type);
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
 
-    cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
 
-    //Timing
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start, 0);
+  __syncthreads();
 
-		transpose<<< grid, threads >>>(d_odata, d_idata, size_x, size_y);
+  x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
+  y = blockIdx.x * TILE_DIM + threadIdx.y;
 
-		//Timing
-	  cudaEventRecord(stop, 0);
-	  cudaEventSynchronize(stop);
-	  cudaEventElapsedTime(&milliseconds, start, stop);
-	  cudaEventDestroy(start);
-	  cudaEventDestroy(stop);
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
+}
 
-	  // NVML
-	  // Create thread to kill GPU stats
-	  // Join both threads to main
-	  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
 
-	  for (auto& th : cpu_threads) {
-	    th.join();
-	    th.~thread();
-	  }
+// No bank-conflict transpose
+// Same as transposeCoalesced except the first tile dimension is padded
+// to avoid shared memory bank conflicts.
+__global__ void transposeNoBankConflicts(float *odata, const float *idata)
+{
+  __shared__ float tile[TILE_DIM][TILE_DIM+1];
 
-	  cpu_threads.clear();
-	  nvml_filename.clear();
-	  type.clear();
+  int x = blockIdx.x * TILE_DIM + threadIdx.x;
+  int y = blockIdx.y * TILE_DIM + threadIdx.y;
+  int width = gridDim.x * TILE_DIM;
 
-	  std::cout << "Shared mem on one block kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
 
-    // copy result from device to    host
-    float* h_odata = (float*) malloc(mem_size);
-    cudaMemcpy(h_odata, d_odata, mem_size, cudaMemcpyDeviceToHost);
+  __syncthreads();
 
-    // cleanup memory
-    free(h_idata);
-    free(h_odata);
-    cudaFree(d_idata);
-    cudaFree(d_odata);
+  x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
+  y = blockIdx.x * TILE_DIM + threadIdx.y;
+
+  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+     odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
+}
+
+int main(int argc, char **argv)
+{
+  const int nx = 1024;
+  const int ny = 1024;
+  const int mem_size = nx*ny*sizeof(float);
+
+  dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);
+  dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
+
+  int devId = 0;
+  if (argc > 1) devId = atoi(argv[1]);
+
+  cudaDeviceProp prop;
+  checkCuda( cudaGetDeviceProperties(&prop, devId));
+  printf("\nDevice : %s\n", prop.name);
+  printf("Matrix size: %d %d, Block size: %d %d, Tile size: %d %d\n",
+         nx, ny, TILE_DIM, BLOCK_ROWS, TILE_DIM, TILE_DIM);
+  printf("dimGrid: %d %d %d. dimBlock: %d %d %d\n",
+         dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+
+  checkCuda( cudaSetDevice(devId) );
+
+  float *h_idata = (float*)malloc(mem_size);
+  float *h_cdata = (float*)malloc(mem_size);
+  float *h_tdata = (float*)malloc(mem_size);
+  float *gold    = (float*)malloc(mem_size);
+
+  float *d_idata, *d_cdata, *d_tdata;
+  checkCuda( cudaMalloc(&d_idata, mem_size) );
+  checkCuda( cudaMalloc(&d_cdata, mem_size) );
+  checkCuda( cudaMalloc(&d_tdata, mem_size) );
+
+
+  //NVML Stuff
+  std::string nvml_filename = "./hardware_stats.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("transpose");
+  nvmlClass nvml( devId, nvml_filename, type);
+
+  // check parameters and calculate execution configuration
+  if (nx % TILE_DIM || ny % TILE_DIM) {
+    printf("nx and ny must be a multiple of TILE_DIM\n");
+    goto error_exit;
+  }
+
+  if (TILE_DIM % BLOCK_ROWS) {
+    printf("TILE_DIM must be a multiple of BLOCK_ROWS\n");
+    goto error_exit;
+  }
+
+  // host
+  for (int j = 0; j < ny; j++)
+    for (int i = 0; i < nx; i++)
+      h_idata[j*nx + i] = j*nx + i;
+
+  // correct result for error checking
+  for (int j = 0; j < ny; j++)
+    for (int i = 0; i < nx; i++)
+      gold[j*nx + i] = h_idata[i*nx + j];
+
+  // device
+  checkCuda( cudaMemcpy(d_idata, h_idata, mem_size, cudaMemcpyHostToDevice) );
+
+  // events for timing
+  cudaEvent_t startEvent, stopEvent;
+  checkCuda( cudaEventCreate(&startEvent) );
+  checkCuda( cudaEventCreate(&stopEvent) );
+  float ms;
+
+  // ------------------
+  // transposeCoalesced
+  // ------------------
+  checkCuda( cudaMemset(d_tdata, 0, mem_size) );
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  checkCuda( cudaEventRecord(startEvent, 0) );
+
+  transposeCoalesced<<<dimGrid, dimBlock>>>(d_tdata, d_idata);
+
+  checkCuda( cudaEventRecord(stopEvent, 0) );
+  checkCuda( cudaEventSynchronize(stopEvent) );
+  checkCuda( cudaEventElapsedTime(&ms, startEvent, stopEvent) );
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
+  checkCuda( cudaMemcpy(h_tdata, d_tdata, mem_size, cudaMemcpyDeviceToHost) );
+
+  // ------------
+  // time kernels
+  // ------------
+  printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
+  printf("%25s", "coalesced transpose");
+  postprocess(gold, h_tdata, nx * ny, ms);
+
+
+error_exit:
+  // cleanup
+  checkCuda( cudaEventDestroy(startEvent) );
+  checkCuda( cudaEventDestroy(stopEvent) );
+  checkCuda( cudaFree(d_tdata) );
+  checkCuda( cudaFree(d_cdata) );
+  checkCuda( cudaFree(d_idata) );
+  free(h_idata);
+  free(h_tdata);
+  free(h_cdata);
+  free(gold);
 }
