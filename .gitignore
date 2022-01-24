@@ -19,3 +19,4 @@ sample_kernels/bin/*
 sample_kernels/hybrid/finite-difference/finite-difference
 sample_kernels/memory/transpose/transpose
 sample_kernels/memory/coalescing-global/coalescing
+sample_kernels/memory/word_count/c++11_cuda

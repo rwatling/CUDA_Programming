@@ -228,6 +228,7 @@ int main(int argc, char **argv)
   checkCuda( cudaMemset(d_cdata, 0, mem_size) );
   // warm up
   copy<<<dimGrid, dimBlock>>>(d_cdata, d_idata);
+
   checkCuda( cudaEventRecord(startEvent, 0) );
   for (int i = 0; i < NUM_REPS; i++)
      copy<<<dimGrid, dimBlock>>>(d_cdata, d_idata);

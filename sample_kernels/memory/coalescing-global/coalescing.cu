@@ -93,7 +93,59 @@ void runTest(int deviceId, int nMB)
   printf("\n");
   printf("Stride, Bandwidth (GB/s):\n");
 
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+  std::string nvml_filename = "./hardware_stats.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("global-stride");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  //Timing
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
+
   stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
+  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
+
   for (int i = 1; i <= 32; i++) {
     checkCuda( cudaMemset(d_a, 0, n * sizeof(T)) );
 

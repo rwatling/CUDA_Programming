@@ -188,7 +188,6 @@ int main(int argc, char **argv) {
 
   if (cuda_err != cudaSuccess) {
 		cerr << "cudaSetDevice failed for nvml\n" << endl;
-		return -1;
 	}
 
   string nvml_filename = "./hardware_stats.csv";

@@ -165,8 +165,8 @@ class nvmlClass {
                                         "timestamp",
                                         "temperature_gpu",
                                         "type",
-                                        "power_draw_w",
-                                        "power_limit_w",
+                                        "power_draw_mW",
+                                        "power_limit_mW",
                                         "g_clock_freq_mhz",
                                         "mem_clock_freq_mhz",
                                         "sm_clock_freq_mhz"};
@@ -198,8 +198,8 @@ class nvmlClass {
                      << time_steps_[i].timestamp << ","
                      << time_steps_[i].temperature << ", "
                      << type_ << ", "
-                     << time_steps_[i].powerUsage / 1000 << ", "  // mW to W
-                     << time_steps_[i].powerLimit / 1000 << ","  // mW to W
+                     << time_steps_[i].powerUsage << ", "  // mW
+                     << time_steps_[i].powerLimit << ","  // mW
                      << time_steps_[i].graphicsClock << "," //MHz
                      << time_steps_[i].memClock << "," //MHz
                      << time_steps_[i].smClock << "\n"; //MHz

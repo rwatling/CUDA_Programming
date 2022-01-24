@@ -329,7 +329,6 @@ int main(int argc, char** argv) {
 
    if (cuda_err != cudaSuccess) {
      std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-     return -1;
    }
 
    std::string nvml_filename = "./hardware_stats.csv";
