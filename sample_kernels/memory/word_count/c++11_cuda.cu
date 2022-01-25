@@ -147,7 +147,7 @@ int main(int argc, char** argv)
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("simpleCUBLAS_LU");
+  type.append("word_count");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
