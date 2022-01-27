@@ -1,5 +1,3 @@
-setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/GPU_Array_Matching_v2/analysis")
-
 #packages required
 packages = c("gbutils", "ggplot2", "ggthemes")
 
@@ -14,7 +12,8 @@ package.check <- lapply(
   }
 )
 
-# Power consumption matching
+##### Power consumption matching #####
+setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/GPU_Array_Matching_v2/analysis")
 power1df = read.csv("./data/hardware_stats_shm_nested.csv")
 power2df = read.csv("./data/hardware_stats_shfl_nested.csv")
 power3df = read.csv("./data/hardware_stats_shfl_unroll.csv")
@@ -24,14 +23,16 @@ power6df = read.csv("./data/hardware_stats_shfl_bs.csv")
 
 combined = rbind(power1df, power2df, power3df, power4df, power5df, power6df)
 
+png("../../sample_kernels/analysis/match_kernels_power.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type)) +
   geom_line(show.legend = TRUE) +
   xlab("Time") +
   ylab("Power (mW)") +
-  ggtitle("Matching Problem Power Consumption")+
+  ggtitle("Matching Kernels Power Consumption")+
   scale_x_discrete(labels = NULL, breaks = NULL) +
-  theme(legend.position=c(0.8, 0.3),
+  theme(legend.position=c(0.7, 0.4),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -40,10 +41,10 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
         axis.line = element_line(colour = "black"),
         panel.background = element_rect(fill="white"),
         text = element_text(size=14))
+dev.off()
 
+##### Power consumption samples #####
 setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/sample_kernels/analysis")
-
-# Power consumption
 power7df = read.csv("../compute/cuSolverDn_LinearSolver/hardware_stats.csv")
 power8df = read.csv("../compute/simpleCUBLAS/hardware_stats.csv")
 power9df = read.csv("../compute/simpleCUBLAS_LU/hardware_stats.csv")
@@ -52,16 +53,18 @@ powerBdf = read.csv("../memory/coalescing-global/hardware_stats.csv")
 powerCdf = read.csv("../memory/transpose/hardware_stats.csv")
 powerDdf = read.csv("../memory/word_count/hardware_stats.csv")
 
-combined = rbind(power7df, power8df, powerAdf, powerBdf, powerCdf, powerDdf)
+combined = rbind(power7df, power8df, power9df,powerAdf, powerBdf, powerCdf, powerDdf)
 
+png("sample_kernels_power.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type)) +
   geom_line(show.legend = TRUE) +
   xlab("Time") +
   ylab("Power (mW)") +
-  ggtitle("Matching Problem Power Consumption")+
+  ggtitle("Sample Kernels Power Consumption")+
   scale_x_discrete(labels = NULL, breaks = NULL) +
-  theme(legend.position=c(0.8, 0.3),
+  theme(legend.position=c(0.8, 0.4),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -70,3 +73,461 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
         axis.line = element_line(colour = "black"),
         panel.background = element_rect(fill="white"),
         text = element_text(size=14))
+dev.off()
+
+##### All power consumption #####
+combined = rbind(power1df, power2df, power3df, power4df, power5df, power6df, power7df, power8df, power9df,powerAdf, powerBdf, powerCdf, powerDdf)
+combined = combined[which(combined$timestep < 1500),]
+
+png("all_kernels_power.png")
+plot.new()
+ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type)) +
+  geom_line(show.legend = TRUE) +
+  xlab("Time") +
+  ylab("Power (mW)") +
+  ggtitle("All Kernels Power Consumption")+
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.4),
+        plot.title = element_text(size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+dev.off()
+
+# Clock frequency for each type
+plot.new()
+ggplot(power1df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Shm Nested Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power2df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Shfl Nested Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power3df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Shfl Unroll Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power4df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Shfl Unroll2 Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power5df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Shfl Hash Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power6df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Shfl BS Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power7df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("cuLinearSolver Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power8df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Simple cuBLASClock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(power9df, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Simple cuBLASLU Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(powerAdf, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Simple cuFFTClock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(powerBdf, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Clock Freq Mhz",
+       color = "Legend") +
+  ggtitle("Global-StrideClock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(powerCdf, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Power (mW)",
+       color = "Legend") +
+  ggtitle("Transpose Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+plot.new()
+ggplot(powerDdf, aes(x = timestep)) +
+  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
+  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
+  labs(x = "Time",
+       y = "Power (mW)",
+       color = "Legend") +
+  ggtitle("Word Count Clock Rate")+
+  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
+  theme(legend.position=c(0.8, 0.3),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14), aspect.ratio = 1/2)
+
+##### MEDIAN CLOCK RATES (Note that they are constant) #####
+messages = c()
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                   power1df$type[1], 
+                   median(power1df$mem_clock_freq_mhz), 
+                   median(power1df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power1df$type[1], 
+                                    median(power1df$mem_clock_freq_mhz), 
+                                    median(power1df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power2df$type[1], 
+                                    median(power2df$mem_clock_freq_mhz), 
+                                    median(power2df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power3df$type[1], 
+                                    median(power3df$mem_clock_freq_mhz), 
+                                    median(power3df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power4df$type[1], 
+                                    median(power4df$mem_clock_freq_mhz), 
+                                    median(power4df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power5df$type[1], 
+                                    median(power5df$mem_clock_freq_mhz), 
+                                    median(power5df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power6df$type[1], 
+                                    median(power6df$mem_clock_freq_mhz), 
+                                    median(power6df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power7df$type[1], 
+                                    median(power7df$mem_clock_freq_mhz), 
+                                    median(power7df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power8df$type[1], 
+                                    median(power8df$mem_clock_freq_mhz), 
+                                    median(power8df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    power9df$type[1], 
+                                    median(power9df$mem_clock_freq_mhz), 
+                                    median(power9df$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    powerAdf$type[1], 
+                                    median(powerAdf$mem_clock_freq_mhz), 
+                                    median(powerAdf$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    powerBdf$type[1], 
+                                    median(powerBdf$mem_clock_freq_mhz), 
+                                    median(powerBdf$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    powerCdf$type[1], 
+                                    median(powerCdf$mem_clock_freq_mhz), 
+                                    median(powerCdf$sm_clock_freq_mhz)))
+
+messages = append(messages, sprintf("%s MemClockFreq: %f SMClockFreq: %f", 
+                                    powerDdf$type[1], 
+                                    median(powerDdf$mem_clock_freq_mhz), 
+                                    median(powerDdf$sm_clock_freq_mhz)))
+
+write.table(messages, file = "./median_clock_rates", sep = "\n", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+##### MAXIMUM POWER CONSUMPTION #####
+messages = c()
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power1df$type[1], 
+                                    max(power1df$power_draw_mW), 
+                                    max(power1df$power_limit_mW)))
+maxPowerDf1 <- c(power1df$type[1], max(power1df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power2df$type[1], 
+                                    max(power2df$power_draw_mW), 
+                                    max(power2df$power_limit_mW)))
+maxPowerDf2 <- c(power2df$type[1], max(power2df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power1df$type[1], 
+                                    max(power3df$power_draw_mW), 
+                                    max(power3df$power_limit_mW)))
+maxPowerDf3 <- c(power3df$type[1], max(power3df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power4df$type[1], 
+                                    max(power4df$power_draw_mW), 
+                                    max(power4df$power_limit_mW)))
+maxPowerDf4 <- c(power4df$type[1], max(power4df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power5df$type[1], 
+                                    max(power5df$power_draw_mW), 
+                                    max(power5df$power_limit_mW)))
+maxPowerDf5 <- c(power5df$type[1], max(power5df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power6df$type[1], 
+                                    max(power6df$power_draw_mW), 
+                                    max(power6df$power_limit_mW)))
+maxPowerDf6 <- c(power6df$type[1], max(power6df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power7df$type[1], 
+                                    max(power7df$power_draw_mW), 
+                                    max(power7df$power_limit_mW)))
+maxPowerDf7 <- c(power7df$type[1], max(power7df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power8df$type[1], 
+                                    max(power8df$power_draw_mW), 
+                                    max(power8df$power_limit_mW)))
+maxPowerDf8 <- c(power8df$type[1], max(power8df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    power9df$type[1], 
+                                    max(power9df$power_draw_mW), 
+                                    max(power9df$power_limit_mW)))
+maxPowerDf9 <- c(power9df$type[1], max(power9df$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    powerAdf$type[1], 
+                                    max(powerAdf$power_draw_mW), 
+                                    max(powerAdf$power_limit_mW)))
+maxPowerDfA <- c(powerAdf$type[1], max(powerAdf$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    powerBdf$type[1], 
+                                    max(powerBdf$power_draw_mW), 
+                                    max(powerBdf$power_limit_mW)))
+maxPowerDfB <- c(powerBdf$type[1], max(powerBdf$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    powerCdf$type[1], 
+                                    max(powerCdf$power_draw_mW), 
+                                    max(powerCdf$power_limit_mW)))
+maxPowerDfC <- c(powerCdf$type[1], max(powerCdf$power_draw_mW))
+
+messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
+                                    powerDdf$type[1], 
+                                    max(powerDdf$power_draw_mW), 
+                                    max(powerDdf$power_limit_mW)))
+maxPowerDfD <- c(powerDdf$type[1], max(powerDdf$power_draw_mW))
+
+# Text File
+write.table(messages, file = "./max_power", sep = "\n", row.names = FALSE, col.names = FALSE, quote = FALSE)
+
+##### PLOT MAXIMUM POWER #####
+combined <- t(data.frame(maxPowerDf1, maxPowerDf2, maxPowerDf3, maxPowerDf4, 
+                       maxPowerDf5, maxPowerDf6, maxPowerDf7, maxPowerDf8, 
+                       maxPowerDf9, maxPowerDfA, maxPowerDfB, maxPowerDfC, 
+                       maxPowerDfD))
+row.names(combined) <- NULL
+colnames(combined) <- c("type", "power")
+combined <- data.frame(combined)
+
+png("maximum_power_bar.png")
+plot.new()
+ggplot(combined, aes(x=type, y=power)) + 
+  geom_bar(position = "dodge", stat="identity", show.legend = FALSE, fill = "gold1") +
+  labs(x = "Benchmark",
+       y = "Max Power (mW)") +
+  theme(plot.title = element_text(size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14),
+        aspect.ratio = 1/2)
+dev.off()

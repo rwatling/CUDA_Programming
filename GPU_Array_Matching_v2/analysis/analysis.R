@@ -65,6 +65,7 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
   xlab("Array Size") +
   ylab("Time (ms)") +
   theme(legend.position=c(0.3, 0.8),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -128,6 +129,7 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
   xlab("Array Size") +
   ylab("Time (ms)") +
   theme(legend.position=c(0.3, 0.8),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -190,6 +192,7 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
   xlab("Array Size") +
   ylab("Time (ms)") +
   theme(legend.position=c(0.3, 0.8),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -257,6 +260,7 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
   xlab("Array Size") +
   ylab("Time (ms)") +
   theme(legend.position=c(0.3, 0.8),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -370,6 +374,7 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
   xlab("Array Size") +
   ylab("Time (ms)") +
   theme(legend.position=c(0.3, 0.8),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -438,6 +443,7 @@ ggplot(combined, aes(x=Group.2, y=x, fill=Group.1, label=Group.2)) +
   xlab("Array Size") +
   ylab("Time (ms)") +
   theme(legend.position=c(0.3, 0.8),
+        plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),

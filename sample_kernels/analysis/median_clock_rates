@@ -1,0 +1,14 @@
+ shm_nested MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ shm_nested MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ shfl_nested MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ shfl_unroll MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ shfl_unroll2 MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ shfl_hash MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ shfl_bs MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ cuSolverDn_LinearSolver MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ simpleCUBLAS MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ simpleCUBLAS_LU MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ simpleCUFFT MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ global-stride MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ transpose MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ word_count MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
