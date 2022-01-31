@@ -151,7 +151,7 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("simpleCUBLAS_LU");
+  type.append("cuSolverDn_QR");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -164,6 +164,27 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
   // compute QR factorization
   checkCudaErrors(
       cusolverDnDgeqrf(handle, n, n, A, lda, tau, buffer, bufferSize, info));
+
+  checkCudaErrors(
+      cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
+
+  if (0 != h_info) {
+    fprintf(stderr, "Error: LU factorization failed\n");
+  }
+
+  checkCudaErrors(
+      cudaMemcpy(x, b, sizeof(double) * n, cudaMemcpyDeviceToDevice));
+
+  // compute Q^T*b
+  checkCudaErrors(cusolverDnDormqr(handle, CUBLAS_SIDE_LEFT, CUBLAS_OP_T, n, 1,
+                                   n, A, lda, tau, x, n, buffer, bufferSize,
+                                   info));
+
+  // x = R \ Q^T*b
+  checkCudaErrors(cublasDtrsm(cublasHandle, CUBLAS_SIDE_LEFT,
+                              CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N,
+                              CUBLAS_DIAG_NON_UNIT, n, 1, &one, A, lda, x, n));
+  checkCudaErrors(cudaDeviceSynchronize());
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -188,31 +209,6 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
-  checkCudaErrors(
-      cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
-
-  if (0 != h_info) {
-    fprintf(stderr, "Error: LU factorization failed\n");
-  }
-
-  checkCudaErrors(
-      cudaMemcpy(x, b, sizeof(double) * n, cudaMemcpyDeviceToDevice));
-
-  // compute Q^T*b
-  checkCudaErrors(cusolverDnDormqr(handle, CUBLAS_SIDE_LEFT, CUBLAS_OP_T, n, 1,
-                                   n, A, lda, tau, x, n, buffer, bufferSize,
-                                   info));
-
-  // x = R \ Q^T*b
-  checkCudaErrors(cublasDtrsm(cublasHandle, CUBLAS_SIDE_LEFT,
-                              CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N,
-                              CUBLAS_DIAG_NON_UNIT, n, 1, &one, A, lda, x, n));
-  checkCudaErrors(cudaDeviceSynchronize());
-  stop = second();
-
-  time_solve = stop - start;
-  fprintf(stdout, "timing: QR = %10.6f sec\n", time_solve);
-
   if (cublasHandle) {
     checkCudaErrors(cublasDestroy(cublasHandle));
   }
@@ -230,46 +226,6 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
   }
 
   return 0;
-}
-
-void parseCommandLineArguments(int argc, char *argv[], struct testOpts &opts) {
-  memset(&opts, 0, sizeof(opts));
-
-  if (checkCmdLineFlag(argc, (const char **)argv, "-h")) {
-    UsageDN();
-  }
-
-  if (checkCmdLineFlag(argc, (const char **)argv, "R")) {
-    char *solverType = NULL;
-    getCmdLineArgumentString(argc, (const char **)argv, "R", &solverType);
-
-    if (solverType) {
-      if ((STRCASECMP(solverType, "chol") != 0) &&
-          (STRCASECMP(solverType, "lu") != 0) &&
-          (STRCASECMP(solverType, "qr") != 0)) {
-        printf("\nIncorrect argument passed to -R option\n");
-        UsageDN();
-      } else {
-        opts.testFunc = solverType;
-      }
-    }
-  }
-
-  if (checkCmdLineFlag(argc, (const char **)argv, "file")) {
-    char *fileName = 0;
-    getCmdLineArgumentString(argc, (const char **)argv, "file", &fileName);
-
-    if (fileName) {
-      opts.sparse_mat_filename = fileName;
-    } else {
-      printf("\nIncorrect filename passed to -file \n ");
-      UsageDN();
-    }
-  }
-
-  if (checkCmdLineFlag(argc, (const char **)argv, "lda")) {
-    opts.lda = getCmdLineArgumentInt(argc, (const char **)argv, "lda");
-  }
 }
 
 int main(int argc, char *argv[]) {
@@ -307,13 +263,6 @@ int main(int argc, char *argv[]) {
   double r_inf = 0.0;
   double A_inf = 0.0;
   int errors = 0;
-
-  parseCommandLineArguments(argc, argv, opts);
-
-  if (NULL == opts.testFunc) {
-    opts.testFunc = "chol";  // By default running Cholesky as NO solver
-                             // selected with -R option.
-  }
 
   findCudaDevice(argc, (const char **)argv);
 
