@@ -90,135 +90,6 @@ void UsageDN(void) {
 }
 
 /*
- *  solve A*x = b by Cholesky factorization
- *
- */
-int linearSolverCHOL(cusolverDnHandle_t handle, int n, const double *Acopy,
-                     int lda, const double *b, double *x) {
-  int bufferSize = 0;
-  int *info = NULL;
-  double *buffer = NULL;
-  double *A = NULL;
-  int h_info = 0;
-  double start, stop;
-  double time_solve;
-  cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
-
-  checkCudaErrors(cusolverDnDpotrf_bufferSize(handle, uplo, n, (double *)Acopy,
-                                              lda, &bufferSize));
-
-  checkCudaErrors(cudaMalloc(&info, sizeof(int)));
-  checkCudaErrors(cudaMalloc(&buffer, sizeof(double) * bufferSize));
-  checkCudaErrors(cudaMalloc(&A, sizeof(double) * lda * n));
-
-  // prepare a copy of A because potrf will overwrite A with L
-  checkCudaErrors(
-      cudaMemcpy(A, Acopy, sizeof(double) * lda * n, cudaMemcpyDeviceToDevice));
-  checkCudaErrors(cudaMemset(info, 0, sizeof(int)));
-
-  start = second();
-  start = second();
-
-  checkCudaErrors(
-      cusolverDnDpotrf(handle, uplo, n, A, lda, buffer, bufferSize, info));
-
-  checkCudaErrors(
-      cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
-
-  if (0 != h_info) {
-    fprintf(stderr, "Error: Cholesky factorization failed\n");
-  }
-
-  checkCudaErrors(
-      cudaMemcpy(x, b, sizeof(double) * n, cudaMemcpyDeviceToDevice));
-
-  checkCudaErrors(cusolverDnDpotrs(handle, uplo, n, 1, A, lda, x, n, info));
-
-  checkCudaErrors(cudaDeviceSynchronize());
-  stop = second();
-
-  time_solve = stop - start;
-  fprintf(stdout, "timing: cholesky = %10.6f sec\n", time_solve);
-
-  if (info) {
-    checkCudaErrors(cudaFree(info));
-  }
-  if (buffer) {
-    checkCudaErrors(cudaFree(buffer));
-  }
-  if (A) {
-    checkCudaErrors(cudaFree(A));
-  }
-
-  return 0;
-}
-
-/*
- *  solve A*x = b by LU with partial pivoting
- *
- */
-int linearSolverLU(cusolverDnHandle_t handle, int n, const double *Acopy,
-                   int lda, const double *b, double *x) {
-  int bufferSize = 0;
-  int *info = NULL;
-  double *buffer = NULL;
-  double *A = NULL;
-  int *ipiv = NULL;  // pivoting sequence
-  int h_info = 0;
-  double start, stop;
-  double time_solve;
-
-  checkCudaErrors(cusolverDnDgetrf_bufferSize(handle, n, n, (double *)Acopy,
-                                              lda, &bufferSize));
-
-  checkCudaErrors(cudaMalloc(&info, sizeof(int)));
-  checkCudaErrors(cudaMalloc(&buffer, sizeof(double) * bufferSize));
-  checkCudaErrors(cudaMalloc(&A, sizeof(double) * lda * n));
-  checkCudaErrors(cudaMalloc(&ipiv, sizeof(int) * n));
-
-  // prepare a copy of A because getrf will overwrite A with L
-  checkCudaErrors(
-      cudaMemcpy(A, Acopy, sizeof(double) * lda * n, cudaMemcpyDeviceToDevice));
-  checkCudaErrors(cudaMemset(info, 0, sizeof(int)));
-
-  start = second();
-  start = second();
-
-  checkCudaErrors(cusolverDnDgetrf(handle, n, n, A, lda, buffer, ipiv, info));
-  checkCudaErrors(
-      cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
-
-  if (0 != h_info) {
-    fprintf(stderr, "Error: LU factorization failed\n");
-  }
-
-  checkCudaErrors(
-      cudaMemcpy(x, b, sizeof(double) * n, cudaMemcpyDeviceToDevice));
-  checkCudaErrors(
-      cusolverDnDgetrs(handle, CUBLAS_OP_N, n, 1, A, lda, ipiv, x, n, info));
-  checkCudaErrors(cudaDeviceSynchronize());
-  stop = second();
-
-  time_solve = stop - start;
-  fprintf(stdout, "timing: LU = %10.6f sec\n", time_solve);
-
-  if (info) {
-    checkCudaErrors(cudaFree(info));
-  }
-  if (buffer) {
-    checkCudaErrors(cudaFree(buffer));
-  }
-  if (A) {
-    checkCudaErrors(cudaFree(A));
-  }
-  if (ipiv) {
-    checkCudaErrors(cudaFree(ipiv));
-  }
-
-  return 0;
-}
-
-/*
  *  solve A*x = b by QR
  *
  */
@@ -262,12 +133,60 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
 
   checkCudaErrors(cudaMemset(info, 0, sizeof(int)));
 
-  start = second();
-  start = second();
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+  std::string nvml_filename = "./hardware_stats.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("simpleCUBLAS_LU");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  //Timing
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   // compute QR factorization
   checkCudaErrors(
       cusolverDnDgeqrf(handle, n, n, A, lda, tau, buffer, bufferSize, info));
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
+  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
   checkCudaErrors(
       cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
@@ -501,17 +420,6 @@ int main(int argc, char *argv[]) {
   checkCudaErrors(
       cudaMemcpy(d_b, h_b, sizeof(double) * rowsA, cudaMemcpyHostToDevice));
 
-  /************************NVML get device********************************/
-  int nvml_dev {};
-  cudaError_t cuda_err;
-  cudaGetDevice( &nvml_dev );
-  cuda_err = cudaSetDevice( nvml_dev );
-
-  if (cuda_err != cudaSuccess) {
-    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-    return -1;
-  }
-
   std::string nvml_filename = "./hardware_stats.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
@@ -523,31 +431,8 @@ int main(int argc, char *argv[]) {
 
 
   printf("step 5: solve A*x = b \n");
-  // d_A and d_b are read-only
-  if (0 == strcmp(opts.testFunc, "chol")) {
-    linearSolverCHOL(handle, rowsA, d_A, lda, d_b, d_x);
-  } else if (0 == strcmp(opts.testFunc, "lu")) {
-    linearSolverLU(handle, rowsA, d_A, lda, d_b, d_x);
-  } else if (0 == strcmp(opts.testFunc, "qr")) {
-    linearSolverQR(handle, rowsA, d_A, lda, d_b, d_x);
-  } else {
-    fprintf(stderr, "Error: %s is unknown function\n", opts.testFunc);
-    exit(EXIT_FAILURE);
-  }
 
-  // NVML
-  // Create thread to kill GPU stats
-  // Join both threads to main
-  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
-
-  for (auto& th : cpu_threads) {
-    th.join();
-    th.~thread();
-  }
-
-  cpu_threads.clear();
-  nvml_filename.clear();
-  type.clear();
+  linearSolverQR(handle, rowsA, d_A, lda, d_b, d_x);
 
   printf("step 6: evaluate residual\n");
   checkCudaErrors(

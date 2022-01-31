@@ -30,7 +30,7 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("Matching Kernels Power Consumption")+
-  scale_x_discrete(labels = NULL, breaks = NULL) +
+  scale_x_discrete() +
   theme(legend.position=c(0.7, 0.4),
         plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
@@ -46,12 +46,12 @@ dev.off()
 png("../../sample_kernels/analysis/match_kernels_temp.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type)) +
-  geom_line(show.legend = TRUE) +
+  geom_smooth(show.legend = TRUE) +
   xlab("Time") +
   ylab("Temperature (C)") +
   ggtitle("Matching Kernels Time vs Temperature")+
-  scale_x_discrete(labels = NULL, breaks = NULL) +
-  theme(legend.position=c(0.7, 0.4),
+  scale_x_discrete( ) +
+  theme(legend.position=c(0.8, 0.2),
         plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
@@ -82,7 +82,7 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("Sample Kernels Power Consumption")+
-  scale_x_discrete(labels = NULL, breaks = NULL) +
+  scale_x_discrete() +
   theme(legend.position=c(0.8, 0.4),
         plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
@@ -98,12 +98,12 @@ dev.off()
 png("sample_kernels_temp.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type)) +
-  geom_line(show.legend = TRUE) +
+  geom_smooth(show.legend = TRUE) +
   xlab("Time") +
   ylab("Temperature (C)") +
   ggtitle("Sample Kernels Time vs Temperature")+
-  scale_x_discrete(labels = NULL, breaks = NULL) +
-  theme(legend.position=c(0.8, 0.4),
+  scale_x_discrete() +
+  theme(legend.position=c(0.8, 0.2),
         plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
@@ -126,7 +126,7 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("All Kernels Power Consumption")+
-  scale_x_discrete(labels = NULL, breaks = NULL) +
+  scale_x_discrete( ) +
   theme(legend.position=c(0.8, 0.4),
         plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
