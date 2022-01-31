@@ -43,6 +43,26 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
         text = element_text(size=14))
 dev.off()
 
+png("../../sample_kernels/analysis/match_kernels_temp.png")
+plot.new()
+ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type)) +
+  geom_line(show.legend = TRUE) +
+  xlab("Time") +
+  ylab("Temperature (C)") +
+  ggtitle("Matching Kernels Time vs Temperature")+
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.7, 0.4),
+        plot.title = element_text(size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+dev.off()
+
 ##### Power consumption samples #####
 setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/sample_kernels/analysis")
 power7df = read.csv("../compute/cuSolverDn_LinearSolver/hardware_stats.csv")
@@ -62,6 +82,26 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("Sample Kernels Power Consumption")+
+  scale_x_discrete(labels = NULL, breaks = NULL) +
+  theme(legend.position=c(0.8, 0.4),
+        plot.title = element_text(size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14))
+dev.off()
+
+png("sample_kernels_temp.png")
+plot.new()
+ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type)) +
+  geom_line(show.legend = TRUE) +
+  xlab("Time") +
+  ylab("Temperature (C)") +
+  ggtitle("Sample Kernels Time vs Temperature")+
   scale_x_discrete(labels = NULL, breaks = NULL) +
   theme(legend.position=c(0.8, 0.4),
         plot.title = element_text(size = 14),
@@ -516,7 +556,7 @@ combined <- data.frame(combined)
 png("maximum_power_bar.png")
 plot.new()
 ggplot(combined, aes(x=type, y=power)) + 
-  geom_bar(position = "dodge", stat="identity", show.legend = FALSE, fill = "gold1") +
+  geom_bar(position = "dodge", stat="identity", show.legend = FALSE, color="black", fill = "gold1") +
   labs(x = "Benchmark",
        y = "Max Power (mW)") +
   theme(plot.title = element_text(size = 14),
