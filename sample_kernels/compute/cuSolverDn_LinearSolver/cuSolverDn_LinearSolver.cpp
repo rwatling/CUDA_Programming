@@ -294,26 +294,6 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
   checkCudaErrors(
       cusolverDnDgeqrf(handle, n, n, A, lda, tau, buffer, bufferSize, info));
 
-  checkCudaErrors(
-      cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
-
-  if (0 != h_info) {
-    fprintf(stderr, "Error: LU factorization failed\n");
-  }
-
-  checkCudaErrors(
-      cudaMemcpy(x, b, sizeof(double) * n, cudaMemcpyDeviceToDevice));
-
-  // compute Q^T*b
-  checkCudaErrors(cusolverDnDormqr(handle, CUBLAS_SIDE_LEFT, CUBLAS_OP_T, n, 1,
-                                   n, A, lda, tau, x, n, buffer, bufferSize,
-                                   info));
-
-  // x = R \ Q^T*b
-  checkCudaErrors(cublasDtrsm(cublasHandle, CUBLAS_SIDE_LEFT,
-                              CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N,
-                              CUBLAS_DIAG_NON_UNIT, n, 1, &one, A, lda, x, n));
-  checkCudaErrors(cudaDeviceSynchronize());
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -337,6 +317,27 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
   type.clear();
 
   cout << "Kernel elapsed time: " << milliseconds << " (ms)" << endl << endl;
+
+  checkCudaErrors(
+      cudaMemcpy(&h_info, info, sizeof(int), cudaMemcpyDeviceToHost));
+
+  if (0 != h_info) {
+    fprintf(stderr, "Error: LU factorization failed\n");
+  }
+
+  checkCudaErrors(
+      cudaMemcpy(x, b, sizeof(double) * n, cudaMemcpyDeviceToDevice));
+
+  // compute Q^T*b
+  checkCudaErrors(cusolverDnDormqr(handle, CUBLAS_SIDE_LEFT, CUBLAS_OP_T, n, 1,
+                                   n, A, lda, tau, x, n, buffer, bufferSize,
+                                   info));
+
+  // x = R \ Q^T*b
+  checkCudaErrors(cublasDtrsm(cublasHandle, CUBLAS_SIDE_LEFT,
+                              CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N,
+                              CUBLAS_DIAG_NON_UNIT, n, 1, &one, A, lda, x, n));
+  checkCudaErrors(cudaDeviceSynchronize());
 
   if (cublasHandle) {
     checkCudaErrors(cublasDestroy(cublasHandle));
