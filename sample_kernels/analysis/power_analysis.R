@@ -26,7 +26,7 @@ combined = rbind(power1df, power2df, power3df, power4df, power5df, power6df)
 png("../../sample_kernels/analysis/match_kernels_power.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type)) +
-  geom_line(show.legend = TRUE) +
+  geom_line(show.legend = TRUE, size = 2) +
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("Matching Kernels Power Consumption")+
@@ -78,12 +78,12 @@ combined = rbind(power7df, power8df, power9df,powerAdf, powerBdf, powerCdf, powe
 png("sample_kernels_power.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type)) +
-  geom_line(show.legend = TRUE) +
+  geom_line(show.legend = TRUE, size = 2) +
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("Sample Kernels Power Consumption")+
   scale_x_discrete() +
-  theme(legend.position=c(0.8, 0.4),
+  theme(legend.position=c(0.8, 0.2),
         plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
@@ -98,13 +98,12 @@ dev.off()
 png("sample_kernels_temp.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type)) +
-  geom_smooth(show.legend = TRUE) +
+  geom_smooth(show.legend = TRUE, size = 2) +
   xlab("Time") +
   ylab("Temperature (C)") +
   ggtitle("Sample Kernels Time vs Temperature")+
   scale_x_discrete() +
-  theme(legend.position=c(0.8, 0.2),
-        plot.title = element_text(size = 14),
+  theme(plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -122,13 +121,12 @@ combined = combined[which(combined$timestep < 1500),]
 png("all_kernels_power.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type)) +
-  geom_line(show.legend = TRUE) +
+  geom_line(show.legend = TRUE, size = 2) +
   xlab("Time") +
   ylab("Power (mW)") +
   ggtitle("All Kernels Power Consumption")+
   scale_x_discrete( ) +
-  theme(legend.position=c(0.8, 0.4),
-        plot.title = element_text(size = 14),
+  theme(plot.title = element_text(size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -149,234 +147,6 @@ ggplot(power1df, aes(x = timestep)) +
        color = "Legend") +
   ggtitle("Shm Nested Clock Rate")+
   scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power2df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Shfl Nested Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power3df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Shfl Unroll Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power4df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Shfl Unroll2 Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power5df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Shfl Hash Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power6df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Shfl BS Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power7df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("cuLinearSolver Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power8df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Simple cuBLASClock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(power9df, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Simple cuBLASLU Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(powerAdf, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Simple cuFFTClock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(powerBdf, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Clock Freq Mhz",
-       color = "Legend") +
-  ggtitle("Global-StrideClock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(powerCdf, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Power (mW)",
-       color = "Legend") +
-  ggtitle("Transpose Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
-  theme(legend.position=c(0.8, 0.3),
-        # Hide panel borders and remove grid lines
-        panel.border = element_blank(),
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        # Change axis line
-        axis.line = element_line(colour = "black"),
-        panel.background = element_rect(fill="white"),
-        text = element_text(size=14), aspect.ratio = 1/2)
-
-plot.new()
-ggplot(powerDdf, aes(x = timestep)) +
-  geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
-  geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
-  labs(x = "Time",
-       y = "Power (mW)",
-       color = "Legend") +
-  ggtitle("Word Count Clock Rate")+
-  scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue"))+
   theme(legend.position=c(0.8, 0.3),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
@@ -556,7 +326,7 @@ combined <- data.frame(combined)
 png("maximum_power_bar.png")
 plot.new()
 ggplot(combined, aes(x=type, y=power)) + 
-  geom_bar(position = "dodge", stat="identity", show.legend = FALSE, color="black", fill = "gold1") +
+  geom_bar(position = "dodge", stat="identity", show.legend = FALSE, color="black", fill = "white") +
   labs(x = "Benchmark",
        y = "Max Power (mW)") +
   theme(plot.title = element_text(size = 14),

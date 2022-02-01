@@ -5,7 +5,7 @@
  shfl_unroll2 MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
  shfl_hash MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
  shfl_bs MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
- cuSolverDn_LinearSolver MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
+ linearSolverQR MemClockFreq: 9501.000000 SMClockFreq: 1965.000000
  simpleCUBLAS MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
  simpleCUBLAS_LU MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
  simpleCUFFT MemClockFreq: 9501.000000 SMClockFreq: 1695.000000
