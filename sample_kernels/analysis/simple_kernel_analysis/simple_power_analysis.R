@@ -43,7 +43,7 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
         text = element_text(size=14))
 dev.off()
 
-png("../../sample_kernels/analysis/match_kernels_temp.png")
+png("../../sample_kernels/analysis/simple_kernel_analysis/match_kernels_temp.png")
 plot.new()
 ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type)) +
   geom_smooth(show.legend = TRUE) +
@@ -64,14 +64,14 @@ ggplot(combined, aes(x = timestep, y=temperature_gpu, group = type, color = type
 dev.off()
 
 ##### Power consumption samples #####
-setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/sample_kernels/analysis")
-power7df = read.csv("../compute/cuSolverDn_LinearSolver/hardware_stats.csv")
-power8df = read.csv("../compute/simpleCUBLAS/hardware_stats.csv")
-power9df = read.csv("../compute/simpleCUBLAS_LU/hardware_stats.csv")
-powerAdf = read.csv("../hybrid/simpleCUFFT/hardware_stats.csv")
-powerBdf = read.csv("../memory/coalescing-global/hardware_stats.csv")
-powerCdf = read.csv("../memory/transpose/hardware_stats.csv")
-powerDdf = read.csv("../memory/word_count/hardware_stats.csv")
+setwd("/home/rwatling/Academics/mtu/masters/programming/CUDA_Programming/sample_kernels/analysis/simple_kernel_analysis")
+power7df = read.csv("./cuSolverDn_LinearSolver_hardware_stats.csv")
+power8df = read.csv("./simpleCUBLAS_hardware_stats.csv")
+power9df = read.csv("./simpleCUBLAS_LU_hardware_stats.csv")
+powerAdf = read.csv("./simpleCUFFT_hardware_stats.csv")
+powerBdf = read.csv("./coalescing_hardware_stats.csv")
+powerCdf = read.csv("./transpose_hardware_stats.csv")
+powerDdf = read.csv("./word_count_hardware_stats.csv")
 
 combined = rbind(power7df, power8df, power9df,powerAdf, powerBdf, powerCdf, powerDdf)
 
@@ -138,16 +138,17 @@ ggplot(combined, aes(x = timestep, y=power_draw_mW, group = type, color = type))
 dev.off()
 
 # Clock frequency for each type
+png("linearSolver_clock.png")
 plot.new()
-ggplot(power1df, aes(x = timestep)) +
+ggplot(power7df, aes(x = timestep)) +
   geom_line(aes(y=mem_clock_freq_mhz, color = "Memory Clock Freq")) +
   geom_line(aes(y=sm_clock_freq_mhz, color = "SM Clock Freq")) +
   labs(x = "Time",
        y = "Clock Freq Mhz",
        color = "Legend") +
-  ggtitle("Shm Nested Clock Rate")+
+  ggtitle("Linear Solver Clock Rate")+
   scale_color_manual(values = c("Memory Clock Freq" = "red", "SM Clock Freq" = "blue")) +
-  theme(legend.position=c(0.8, 0.3),
+  theme(legend.position=c(0.8, 0.4),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
         panel.grid.major = element_blank(),
@@ -156,6 +157,7 @@ ggplot(power1df, aes(x = timestep)) +
         axis.line = element_line(colour = "black"),
         panel.background = element_rect(fill="white"),
         text = element_text(size=14), aspect.ratio = 1/2)
+dev.off()
 
 ##### MEDIAN CLOCK RATES (Note that they are constant) #####
 messages = c()
