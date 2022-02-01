@@ -326,6 +326,6 @@ testrun: build
 clean:
 	rm -f simpleCUBLAS simpleCUBLAS.o
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleCUBLAS
-	rm hardware_stats.csv
+	rm simpleCUBLAS_hardware_stats.csv
 
 clobber: clean

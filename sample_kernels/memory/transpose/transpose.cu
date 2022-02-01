@@ -191,9 +191,10 @@ int main(int argc, char **argv)
 
 
   //NVML Stuff
-  std::string nvml_filename = "./hardware_stats.csv";
+  std::string nvml_filename = "./transpose_hardware_stats.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
+  int iterations = 10000;
 
   type.append("transpose");
   nvmlClass nvml( devId, nvml_filename, type);
@@ -237,7 +238,9 @@ int main(int argc, char **argv)
 
   checkCuda( cudaEventRecord(startEvent, 0) );
 
-  transposeCoalesced<<<dimGrid, dimBlock>>>(d_tdata, d_idata);
+  for (int i = 0; i < iterations; i++) {
+    transposeCoalesced<<<dimGrid, dimBlock>>>(d_tdata, d_idata);
+  }
 
   checkCuda( cudaEventRecord(stopEvent, 0) );
   checkCuda( cudaEventSynchronize(stopEvent) );

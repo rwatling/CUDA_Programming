@@ -138,16 +138,17 @@ int main(int argc, char** argv)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
+  int iterations = 250;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./hardware_stats.csv";
+  std::string nvml_filename = "./wordcount_hardware_stats.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("word_count");
+  type.append("wordcount");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -157,8 +158,10 @@ int main(int argc, char** argv)
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
 
-  // Try uncommenting one kernel call at a time
-  xyzw_frequency<<<8, 256>>>(d_count, d_text, len);
+  for (int i = 0; i < iterations; i++) {
+    // Try uncommenting one kernel call at a time
+    xyzw_frequency<<<8, 256>>>(d_count, d_text, len);
+  }
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -182,7 +185,7 @@ int main(int argc, char** argv)
   type.clear();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
-  
+
   //xyzw_frequency_thrust_device<<<1, 1>>>(d_count, d_text, len);
   cudaMemcpy(&count, d_count, sizeof(int), cudaMemcpyDeviceToHost);
 

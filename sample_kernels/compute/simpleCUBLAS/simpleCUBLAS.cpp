@@ -47,6 +47,10 @@ using namespace std;
 /* Matrix size */
 #define N (275)
 
+#include <chrono>
+#include <cstdint>
+#include <iostream>
+
 /* Host implementation of a simple version of sgemm */
 static void simple_sgemm(int n, float alpha, const float *A, const float *B,
                          float beta, float *C) {
@@ -185,12 +189,13 @@ int main(int argc, char **argv) {
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
+  int iterations = 10000;
 
   if (cuda_err != cudaSuccess) {
 		cerr << "cudaSetDevice failed for nvml\n" << endl;
 	}
 
-  string nvml_filename = "./hardware_stats.csv";
+  string nvml_filename = "./simpleCUBLAS_hardware_stats.csv";
   vector<thread> cpu_threads;
   string type;
 
@@ -204,9 +209,11 @@ int main(int argc, char **argv) {
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
 
-  /* Performs operation using cublas */
-  status = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, N, N, &alpha, d_A,
-                       N, d_B, N, &beta, d_C, N);
+  for (uint i = 0; i < iterations; i++) {
+    /* Performs operation using cublas */
+    status = cublasSgemm(handle, CUBLAS_OP_N, CUBLAS_OP_N, N, N, N, &alpha, d_A,
+                        N, d_B, N, &beta, d_C, N);
+  }
 
    //Timing
    cudaEventRecord(stop, 0);
@@ -253,7 +260,7 @@ int main(int argc, char **argv) {
   }
 
   /* Check result against reference */
-  error_norm = 0;
+  /*error_norm = 0;
   ref_norm = 0;
 
   for (i = 0; i < n2; ++i) {
@@ -268,7 +275,7 @@ int main(int argc, char **argv) {
   if (fabs(ref_norm) < 1e-7) {
     fprintf(stderr, "!!!! reference norm is 0\n");
     return EXIT_FAILURE;
-  }
+  }*/
 
   /* Memory clean up */
   free(h_A);

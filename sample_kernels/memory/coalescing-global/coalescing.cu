@@ -61,20 +61,20 @@ template <typename T>
 void runTest(int deviceId, int nMB)
 {
   int blockSize = 256;
-  float ms;
+  //float ms;
 
   T *d_a;
-  cudaEvent_t startEvent, stopEvent;
+  //cudaEvent_t startEvent, stopEvent;
 
   int n = nMB*1024*1024/sizeof(T);
 
   // NB:  d_a(33*nMB) for stride case
   checkCuda( cudaMalloc(&d_a, n * 33 * sizeof(T)) );
 
-  checkCuda( cudaEventCreate(&startEvent) );
-  checkCuda( cudaEventCreate(&stopEvent) );
+  /*checkCuda( cudaEventCreate(&startEvent) );
+  checkCuda( cudaEventCreate(&stopEvent) );*/
 
-  printf("Offset, Bandwidth (GB/s):\n");
+  /*printf("Offset, Bandwidth (GB/s):\n");
 
   offset<<<n/blockSize, blockSize>>>(d_a, 0); // warm up
 
@@ -91,7 +91,7 @@ void runTest(int deviceId, int nMB)
   }
 
   printf("\n");
-  printf("Stride, Bandwidth (GB/s):\n");
+  printf("Stride, Bandwidth (GB/s):\n");*/
 
   /************************NVML get device********************************/
   int nvml_dev {};
@@ -102,12 +102,13 @@ void runTest(int deviceId, int nMB)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
+  int iterations = 10000;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./hardware_stats.csv";
+  std::string nvml_filename = "./coalescing_hardware_stats.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
@@ -121,7 +122,9 @@ void runTest(int deviceId, int nMB)
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
 
-  stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
+  for (int i = 0; i < iterations; i++) {
+    stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
+  }
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -146,7 +149,7 @@ void runTest(int deviceId, int nMB)
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
-  for (int i = 1; i <= 32; i++) {
+  /*for (int i = 1; i <= 32; i++) {
     checkCuda( cudaMemset(d_a, 0, n * sizeof(T)) );
 
     checkCuda( cudaEventRecord(startEvent,0) );
@@ -159,7 +162,7 @@ void runTest(int deviceId, int nMB)
   }
 
   checkCuda( cudaEventDestroy(startEvent) );
-  checkCuda( cudaEventDestroy(stopEvent) );
+  checkCuda( cudaEventDestroy(stopEvent) );*/
   cudaFree(d_a);
 }
 

@@ -326,12 +326,13 @@ int main(int argc, char** argv) {
    /*************************CUDA Timing***********************************/
    cudaEvent_t start, stop;
    float milliseconds;
+   int iterations = 10000;
 
    if (cuda_err != cudaSuccess) {
      std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
    }
 
-   std::string nvml_filename = "./hardware_stats.csv";
+   std::string nvml_filename = "./simpleCUBLAS_LU_hardware_stats.csv";
    std::vector<std::thread> cpu_threads;
    std::string type;
 
@@ -347,6 +348,8 @@ int main(int argc, char** argv) {
 
   // perform LU decomposition
   printf("> performing LU decomposition..\n");
+
+  for (int i = 0; i < iterations; i++) {
 #ifdef PIVOT
   status = cublasXgetrfBatched(handle, N, d_ptr_array, N, d_pivotArray,
                                d_infoArray, BATCH_SIZE);
@@ -354,11 +357,13 @@ int main(int argc, char** argv) {
   status = cublasXgetrfBatched(handle, N, d_ptr_array, N, NULL, d_infoArray,
                                BATCH_SIZE);
 #endif /* PIVOT */
-  if (status != CUBLAS_STATUS_SUCCESS) {
+
+  }
+  /*if (status != CUBLAS_STATUS_SUCCESS) {
     printf("> ERROR: cublasDgetrfBatched() failed with error %s..\n",
            _cudaGetErrorEnum(status));
     return (EXIT_FAILURE);
-  }
+  }*/
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -421,13 +426,13 @@ int main(int argc, char** argv) {
       matrixMultiply(LxU, L, U);
 
       // check for equality of matrices
-      if (!checkRelativeError(PxA, LxU, (DATA_TYPE)MAX_ERROR)) {
+      /*if (!checkRelativeError(PxA, LxU, (DATA_TYPE)MAX_ERROR)) {
         printf("> ERROR: accuracy check failed for matrix number %05d..\n",
                i + 1);
         err_count++;
-      }
+      }*/
 
-    } else if (h_infoArray[i] > 0) {
+    } /*else if (h_infoArray[i] > 0) {
       printf(
           "> execution for matrix %05d is successful, but U is singular and "
           "U(%d,%d) = 0..\n",
@@ -437,7 +442,7 @@ int main(int argc, char** argv) {
       printf("> ERROR: matrix %05d have an illegal value at index %d = %lf..\n",
              i + 1, -h_infoArray[i],
              *(h_AarrayInput + (i * N * N) + (-h_infoArray[i])));
-    }
+    }*/
   }
 
   // free device variables
@@ -459,12 +464,12 @@ int main(int argc, char** argv) {
     return (EXIT_FAILURE);
   }
 
-  if (err_count > 0) {
+  /*if (err_count > 0) {
     printf("> TEST FAILED for %d matrices, with precision: %g\n", err_count,
            MAX_ERROR);
     return (EXIT_FAILURE);
   }
 
   printf("> TEST SUCCESSFUL, with precision: %g\n", MAX_ERROR);
-  return (EXIT_SUCCESS);
+  return (EXIT_SUCCESS);*/
 }

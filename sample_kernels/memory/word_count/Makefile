@@ -29,4 +29,4 @@ c++11_cuda : c++11_cuda.cu
 
 clean:
 	rm -rf c++11_cuda
-	rm -rf hardware_stats.csv
+	rm -rf wordcount_hardware_stats.csv

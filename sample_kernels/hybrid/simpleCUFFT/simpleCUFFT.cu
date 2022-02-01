@@ -157,6 +157,7 @@ void runTest(int argc, char **argv) {
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
+  int iterations = 10000;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
@@ -176,8 +177,10 @@ void runTest(int argc, char **argv) {
   cudaEventCreate(&stop);
   cudaEventRecord(start, 0);
 
-  ComplexPointwiseMulAndScale<<<32, 256>>>(d_signal, d_filter_kernel, new_size,
+  for (int i = 0; i < iterations; i++) {
+    ComplexPointwiseMulAndScale<<<32, 256>>>(d_signal, d_filter_kernel, new_size,
                                            1.0f / new_size);
+  }
 
    //Timing
    cudaEventRecord(stop, 0);
@@ -206,28 +209,28 @@ void runTest(int argc, char **argv) {
   getLastCudaError("Kernel execution failed [ ComplexPointwiseMulAndScale ]");
 
   // Transform signal back
-  printf("Transforming signal back cufftExecC2C\n");
+  /*printf("Transforming signal back cufftExecC2C\n");
   checkCudaErrors(cufftExecC2C(plan, reinterpret_cast<cufftComplex *>(d_signal),
                                reinterpret_cast<cufftComplex *>(d_signal),
-                               CUFFT_INVERSE));
+                               CUFFT_INVERSE));*/
 
   // Copy device memory to host
-  Complex *h_convolved_signal = h_padded_signal;
+  /*Complex *h_convolved_signal = h_padded_signal;
   checkCudaErrors(cudaMemcpy(h_convolved_signal, d_signal, mem_size,
-                             cudaMemcpyDeviceToHost));
+                             cudaMemcpyDeviceToHost));*/
 
   // Allocate host memory for the convolution result
-  Complex *h_convolved_signal_ref =
-      reinterpret_cast<Complex *>(malloc(sizeof(Complex) * SIGNAL_SIZE));
+  /*Complex *h_convolved_signal_ref =
+      reinterpret_cast<Complex *>(malloc(sizeof(Complex) * SIGNAL_SIZE));*/
 
   // Convolve on the host
-  Convolve(h_signal, SIGNAL_SIZE, h_filter_kernel, FILTER_KERNEL_SIZE,
-           h_convolved_signal_ref);
+  /*Convolve(h_signal, SIGNAL_SIZE, h_filter_kernel, FILTER_KERNEL_SIZE,
+           h_convolved_signal_ref);*/
 
   // check result
-  bool bTestResult = sdkCompareL2fe(
+  /*bool bTestResult = sdkCompareL2fe(
       reinterpret_cast<float *>(h_convolved_signal_ref),
-      reinterpret_cast<float *>(h_convolved_signal), 2 * SIGNAL_SIZE, 1e-5f);
+      reinterpret_cast<float *>(h_convolved_signal), 2 * SIGNAL_SIZE, 1e-5f);*/
 
   // Destroy CUFFT context
   checkCudaErrors(cufftDestroy(plan));
@@ -238,11 +241,11 @@ void runTest(int argc, char **argv) {
   free(h_filter_kernel);
   free(h_padded_signal);
   free(h_padded_filter_kernel);
-  free(h_convolved_signal_ref);
+  //free(h_convolved_signal_ref);
   checkCudaErrors(cudaFree(d_signal));
   checkCudaErrors(cudaFree(d_filter_kernel));
 
-  exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
+  //exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
 // Pad data
