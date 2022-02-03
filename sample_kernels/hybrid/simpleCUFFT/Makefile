@@ -338,6 +338,5 @@ testrun: build
 clean:
 	rm -f simpleCUFFT simpleCUFFT.o
 	rm -rf ../../bin/$(TARGET_ARCH)/$(TARGET_OS)/$(BUILD_TYPE)/simpleCUFFT
-	rm -rf simpleCUFFT_hardware_stats.csv
 
 clobber: clean
