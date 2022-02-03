@@ -248,7 +248,7 @@ messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power
 maxPowerDf2 <- c(power2df$type[1], max(power2df$power_draw_mW))
 
 messages = append(messages, sprintf("%s Max Power Consumption: %d (mW) Max Power Limit: %d (mW)", 
-                                    power1df$type[1], 
+                                    power3df$type[1], 
                                     max(power3df$power_draw_mW), 
                                     max(power3df$power_limit_mW)))
 maxPowerDf3 <- c(power3df$type[1], max(power3df$power_draw_mW))
