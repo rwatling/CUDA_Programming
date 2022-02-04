@@ -140,15 +140,34 @@ int main(int argc, char** argv)
   float milliseconds;
   int iterations = 250;
 
+  // threads and blocks configurations
+  // Original: 8, 256
+
+  // Keep ratio the same
+  // Test1: 16, 128
+  // Test2: 4, 512
+  // Test3: 32, 64
+
+  // Change blocks
+  // Test4: 1, 256
+  // Test5: 4, 256
+  // Test6: 16, 256
+  // Test7: 32, 256
+
+  //Change threads
+  // Test8: 8, 512
+  // Test9: 8, 128
+  // Test10: 8, 1024
+
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./wordcount_hardware_stats.csv";
+  std::string nvml_filename = "./wordcount_b8_t1024.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("wordcount");
+  type.append("8 blocks 1024 threads");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -160,7 +179,7 @@ int main(int argc, char** argv)
 
   for (int i = 0; i < iterations; i++) {
     // Try uncommenting one kernel call at a time
-    xyzw_frequency<<<8, 256>>>(d_count, d_text, len);
+    xyzw_frequency<<<8, 1024>>>(d_count, d_text, len);
   }
 
   //Timing

@@ -170,11 +170,12 @@ void runTest(int argc, char **argv) {
   // Test4: 64, 256
   // Test5: 16, 256
   // Test6: 8, 256
+  // Test7: 1, 256
 
   //Change threads
-  // Test7: 32, 512
-  // Test8: 32, 128
-  // Test9: 32, 64
+  // Test8: 32, 512
+  // Test9: 32, 128
+  // Test10: 32, 1024
 
   int iterations = 10000;
 
@@ -182,11 +183,11 @@ void runTest(int argc, char **argv) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./simpleCUFFT_ratio_b16_t512.csv";
+  std::string nvml_filename = "./simpleCUFFT_ratio_b32_t1024.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("16 Blocks 512 Threads");
+  type.append("32 Blocks 1024 Threads");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -197,7 +198,7 @@ void runTest(int argc, char **argv) {
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    ComplexPointwiseMulAndScale<<<16, 512>>>(d_signal, d_filter_kernel, new_size,
+    ComplexPointwiseMulAndScale<<<32, 1024>>>(d_signal, d_filter_kernel, new_size,
                                            1.0f / new_size);
   }
 
