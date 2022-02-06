@@ -108,17 +108,32 @@ void runTest(int deviceId, int nMB)
   int iterations = 10000;
 
   // Original
-  // 524288 / 256 (blockSize) = 2048
+  // n/blockSize = 4096 blocks
+  // blockSize = 256 threads
+
+  //Same ratio
+  // blocks 2048, threads 512
+  // blocks 1024, threads 1024
+
+  // Change Blocks
+  // blocks 2048 threads 256
+  // blocks 1024 threads 256
+  // blocks 512 threads 256
+
+  // Change Threads
+  // blocks 4096 threads 512
+  // block 4096 threads 128
+  // block 4096 threads 64
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./coalescing_hardware_stats.csv";
+  std::string nvml_filename = "./coalescing_b4096_t64.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("global-stride");
+  type.append("4096 blocks 64 threads");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -129,7 +144,8 @@ void runTest(int deviceId, int nMB)
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
+    //stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
+    stride<<<4096, 64>>>(d_a, 1);
   }
 
   //Timing

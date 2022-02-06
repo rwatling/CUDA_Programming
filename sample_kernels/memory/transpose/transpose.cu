@@ -46,7 +46,7 @@ cudaError_t checkCuda(cudaError_t result)
 }
 
 const int TILE_DIM = 32;
-const int BLOCK_ROWS = 8;
+const int BLOCK_ROWS = 4;
 const int NUM_REPS = 1;
 
 // Check errors and print GB/s
@@ -194,14 +194,13 @@ int main(int argc, char **argv)
   checkCuda( cudaMalloc(&d_cdata, mem_size) );
   checkCuda( cudaMalloc(&d_tdata, mem_size) );
 
-
   //NVML Stuff
-  std::string nvml_filename = "./transpose_hardware_stats.csv";
+  std::string nvml_filename = "./transpose_tile32_b4.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
   int iterations = 10000;
 
-  type.append("transpose");
+  type.append("Tile 32 Block 8");
   nvmlClass nvml( devId, nvml_filename, type);
 
   // check parameters and calculate execution configuration
@@ -233,6 +232,38 @@ int main(int argc, char **argv)
   checkCuda( cudaEventCreate(&startEvent) );
   checkCuda( cudaEventCreate(&stopEvent) );
   float ms;
+
+  //Defaults:
+  /*
+  const int TILE_DIM = 32;
+  const int BLOCK_ROWS = 8;
+  const int NUM_REPS = 1;
+  */
+
+  //Tests
+  /*
+  const int TILE_DIM = 16;
+  const int BLOCK_ROWS = 8;
+  const int NUM_REPS = 1;
+  */
+
+  /*
+  const int TILE_DIM = 64;
+  const int BLOCK_ROWS = 8;
+  const int NUM_REPS = 1;
+  */
+
+  /*
+  const int TILE_DIM = 32;
+  const int BLOCK_ROWS = 16;
+  const int NUM_REPS = 1;
+  */
+
+  /*
+  const int TILE_DIM = 32;
+  const int BLOCK_ROWS = 4;
+  const int NUM_REPS = 1;
+  */
 
   // ------------------
   // transposeCoalesced

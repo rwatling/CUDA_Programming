@@ -12,4 +12,3 @@ coalescing.o:
 
 clean:
 	-rm -f *.o coalescing
-	rm -f coalescing_hardware_stats.csv
