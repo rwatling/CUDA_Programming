@@ -161,6 +161,11 @@ int main(int argc, char **argv)
 {
   const int nx = 1024;
   const int ny = 1024;
+
+  //const int TILE_DIM = 32;
+  //const int BLOCK_ROWS = 8;
+  //const int NUM_REPS = 1;
+
   const int mem_size = nx*ny*sizeof(float);
 
   dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);

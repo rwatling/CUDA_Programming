@@ -66,6 +66,9 @@ void runTest(int deviceId, int nMB)
   T *d_a;
   //cudaEvent_t startEvent, stopEvent;
 
+
+  //Default, nMB = 4
+  //Sp 4 * 1024 * 1024 / sizeof(double) = 4 * 1024 * 1024 / 8 = 524288
   int n = nMB*1024*1024/sizeof(T);
 
   // NB:  d_a(33*nMB) for stride case
@@ -103,6 +106,9 @@ void runTest(int deviceId, int nMB)
   cudaEvent_t start, stop;
   float milliseconds;
   int iterations = 10000;
+
+  // Original
+  // 524288 / 256 (blockSize) = 2048
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
