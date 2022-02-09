@@ -80,7 +80,8 @@ int constexpr nvml_device_name_buffer_size { 100 };
 class nvmlClass {
   public:
     nvmlClass( int const &deviceID, std::string  &filename, std::string type ) :
-        time_steps_ {}, filename_ { filename }, outfile_ {}, device_ {}, loop_ { false } , type_ { type } {
+        time_steps_ {}, filename_ { filename }, outfile_ {}, start_stop_file_ {},
+        device_ {}, loop_ { false } , start_flag_ { false }, stop_flag_ {false}, type_ { type } {
 
         char name[nvml_device_name_buffer_size];
 
@@ -99,6 +100,14 @@ class nvmlClass {
         // Open file
         outfile_.open( filename_, std::ios::out );
 
+        //Start stop name
+        start_stop_name_ = "./start_stop_";
+        start_stop_name_.append(type);
+        start_stop_name_.append(".csv");
+
+        //Open start start stop
+        start_stop_file_.open(start_stop_name_, std::ios::out);
+
         // Print header
         printHeader( );
     }
@@ -112,6 +121,8 @@ class nvmlClass {
 
         stats device_stats {};
         loop_ = true;
+        start_flag_ = false;
+        stop_flag_ = false;
 
         while ( loop_ ) {
             device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
@@ -124,6 +135,16 @@ class nvmlClass {
 
             time_steps_.push_back( device_stats );
 
+            if (start_flag_) {
+              start_stop_file_ << "type,time,power\n";
+              start_stop_file_ << type_ << "," << device_stats.timestamp << "," << device_stats.powerUsage <<"\n";
+              start_flag_ = false;
+            } else if (stop_flag_) {
+              start_stop_file_ << type_ << "," <<  device_stats.timestamp << "," << device_stats.powerUsage <<"\n";
+              start_stop_file_.close();
+              stop_flag_ = false;
+            }
+
             std::this_thread::sleep_for( std::chrono::microseconds(1) );
         }
 
@@ -131,7 +152,6 @@ class nvmlClass {
     }
 
     void killThread( ) {
-
         // Retrieve a few empty samples
         std::this_thread::sleep_for( std::chrono::seconds(3) );
 
@@ -146,8 +166,27 @@ class nvmlClass {
       // Open file
       outfile_.open( filename_, std::ios::out );
 
+      //Start stop name
+      start_stop_name_ = "./start_stop_";
+      start_stop_name_.append(type);
+      start_stop_name_.append(".csv");
+
+      //Open start start stop
+      start_stop_file_.open(start_stop_name_, std::ios::out);
+
       // Print header
       printHeader( );
+    }
+
+    void log_start() {
+      // Retrieve a few empty samples
+      std::this_thread::sleep_for( std::chrono::seconds(3) );
+
+      start_flag_ = true;
+    }
+
+    void log_stop() {
+      stop_flag_ = true;
     }
 
   private:
@@ -173,10 +212,14 @@ class nvmlClass {
 
     std::vector<stats> time_steps_;
     std::string        filename_;
+    std::string        start_stop_name_;
     std::string        type_;
     std::ofstream      outfile_;
+    std::ofstream      start_stop_file_;
     nvmlDevice_t       device_;
     bool               loop_;
+    bool               start_flag_;
+    bool               stop_flag_;
 
     void printHeader( ) {
 
@@ -190,7 +233,7 @@ class nvmlClass {
 
     void writeData( ) {
 
-        printf( "\nWriting NVIDIA-SMI data -> %s\n\n", filename_.c_str( ) );
+        //printf( "\nWriting NVIDIA-SMI data -> %s\n\n", filename_.c_str( ) );
 
         // Print data
         for ( int i = 0; i < static_cast<int>( time_steps_.size( ) ); i++ ) {

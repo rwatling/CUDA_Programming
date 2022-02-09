@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
 	size_t array_set_bytes;
 
   //NVML
-  string base_nvml_filename = "./analysis/data/hardware_stats";
+  string base_nvml_filename = "./hardware_stats";
   string nvml_filename;
   string type;
   vector<thread> cpu_threads;
@@ -184,6 +184,8 @@ int main(int argc, char** argv) {
   nvmlClass nvml( dev, nvml_filename, type);
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
 
   //Timing
   cudaEventCreate(&start);

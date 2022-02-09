@@ -285,6 +285,8 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
 
   cpu_threads.emplace_back(thread(&nvmlClass::getStats, &nvml));
 
+  nvml.log_start();
+
   //Timing
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
@@ -301,6 +303,8 @@ int linearSolverQR(cusolverDnHandle_t handle, int n, const double *Acopy,
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  nvml.log_stop();
 
   // NVML
   // Create thread to kill GPU stats
