@@ -256,6 +256,10 @@ int MatrixMultiply(int argc, char **argv,
       cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
   checkCudaErrors(cudaStreamSynchronize(stream));
 
+
+
+      nvml.log_stop();
+
   // Clean up memory
   checkCudaErrors(cudaFreeHost(h_A));
   checkCudaErrors(cudaFreeHost(h_B));
@@ -263,9 +267,6 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaFree(d_A));
   checkCudaErrors(cudaFree(d_B));
   checkCudaErrors(cudaFree(d_C));
-
-
-    nvml.log_stop();
 
   // NVML
   // Create thread to kill GPU stats
