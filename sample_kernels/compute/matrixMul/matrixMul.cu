@@ -244,6 +244,8 @@ int MatrixMultiply(int argc, char **argv,
     //}
   }
 
+  nvml.log_stop();
+
   //Timing
   cudaEventRecord(stop, 0);
   cudaEventSynchronize(stop);
@@ -258,7 +260,7 @@ int MatrixMultiply(int argc, char **argv,
 
 
 
-      nvml.log_stop();
+
 
   // Clean up memory
   checkCudaErrors(cudaFreeHost(h_A));
