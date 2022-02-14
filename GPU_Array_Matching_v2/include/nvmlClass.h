@@ -155,14 +155,6 @@ class nvmlClass {
       // Open file
       outfile_.open( filename_, std::ios::out );
 
-      //Start stop name
-      start_stop_name_ = "./start_stop_";
-      start_stop_name_.append(type);
-      start_stop_name_.append(".csv");
-
-      //Open start start stop
-      start_stop_file_.open(start_stop_name_, std::ios::out);
-
       // Print header
       printHeader( );
     }
@@ -177,16 +169,29 @@ class nvmlClass {
       start_stop_file_.open(start_stop_name_, std::ios::out);
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(3));
+      //std::this_thread::sleep_for( std::chrono::seconds(3));
 
-      start_flag_ = true;
+      uint temp_power_usage = 0;
+      NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
+
+      start_stop_file_ << "type,timestamp,power\n";
+      start_stop_file_ << type_ << ","
+       << std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( ) << ","
+       << temp_power_usage <<"\n";
     }
 
     void log_stop() {
-      stop_flag_ = true;
+
+      uint temp_power_usage = 0;
+      NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
+
+      start_stop_file_ << type_ << ","
+      <<  std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( ) << ","
+      << temp_power_usage <<"\n";
+      start_stop_file_.close();
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(3));
+      //std::this_thread::sleep_for( std::chrono::seconds(3));
     }
 
   private:
