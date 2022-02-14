@@ -49,11 +49,11 @@ ggplot(combined, aes(x = timestep, y = power_draw_mW, group = type, color = type
   geom_point(aes(x = simpleCUFFT_df_startstop[1, 2], y = simpleCUFFT_df_startstop[1,3], color = simpleCUFFT_df_startstop[1,1])) +
   geom_point(aes(x = simpleCUFFT_df_startstop[2, 2], y = simpleCUFFT_df_startstop[2,3], color = simpleCUFFT_df_startstop[2,1])) +
   # matrixMul start stop
-  #geom_point(aes(x = matrixMul_df_startstop[1, 2], y = matrixMul_df_startstop[1,3], color = matrixMul_df_startstop[1,1])) +
-  #geom_point(aes(x = matrixMul_df_startstop[2, 2], y = matrixMul_df_startstop[2,3], color = matrixMul_df_startstop[2,1])) +
+  geom_point(aes(x = matrixMul_df_startstop[1, 2], y = matrixMul_df_startstop[1,3], color = matrixMul_df_startstop[1,1])) +
+  geom_point(aes(x = matrixMul_df_startstop[2, 2], y = matrixMul_df_startstop[2,3], color = matrixMul_df_startstop[2,1])) +
   # vectorAdd start stop
-  #geom_point(aes(x = vectorAdd_df_startstop[1, 2], y = vectorAdd_df_startstop[1,3], color = vectorAdd_df_startstop[1,1])) +
-  #geom_point(aes(x = vectorAdd_df_startstop[2, 2], y = vectorAdd_df_startstop[2,3], color = vectorAdd_df_startstop[2,1])) +
+  geom_point(aes(x = vectorAdd_df_startstop[1, 2], y = vectorAdd_df_startstop[1,3], color = vectorAdd_df_startstop[1,1])) +
+  geom_point(aes(x = vectorAdd_df_startstop[2, 2], y = vectorAdd_df_startstop[2,3], color = vectorAdd_df_startstop[2,1])) +
   ylab("Power (mW)") +
   xlab("Timestep") +
   ggtitle("Sample Kernels Power Consumption")+
