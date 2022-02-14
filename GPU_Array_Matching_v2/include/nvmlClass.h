@@ -137,16 +137,13 @@ class nvmlClass {
               stop_flag_ = false;
             }
 
-            std::this_thread::sleep_for( std::chrono::microseconds(500) );
+            std::this_thread::sleep_for( std::chrono::microseconds(250));
         }
 
         writeData();
     }
 
     void killThread( ) {
-        // Retrieve a few empty samples
-        std::this_thread::sleep_for( std::chrono::seconds(1) );
-
         // Set loop to false to exit while loop
         loop_ = false;
     }
@@ -180,13 +177,16 @@ class nvmlClass {
       start_stop_file_.open(start_stop_name_, std::ios::out);
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(1) );
+      std::this_thread::sleep_for( std::chrono::seconds(3));
 
       start_flag_ = true;
     }
 
     void log_stop() {
       stop_flag_ = true;
+
+      // Retrieve a few empty samples
+      std::this_thread::sleep_for( std::chrono::seconds(3));
     }
 
   private:
@@ -225,7 +225,7 @@ class nvmlClass {
 
         // Print header
         for ( int i = 0; i < ( static_cast<int>( names_.size( ) ) - 1 ); i++ )
-            outfile_ << names_[i] << ", ";
+            outfile_ << names_[i] << ",";
         // Leave off the last comma
         outfile_ << names_[static_cast<int>( names_.size( ) ) - 1];
         outfile_ << "\n";
@@ -237,11 +237,11 @@ class nvmlClass {
 
         // Print data
         for ( int i = 0; i < static_cast<int>( time_steps_.size( ) ); i++ ) {
-            outfile_ << i << ", "
+            outfile_ << i << ","
                      << time_steps_[i].timestamp << ","
-                     << time_steps_[i].temperature << ", "
-                     << type_ << ", "
-                     << time_steps_[i].powerUsage << ", "  // mW
+                     << time_steps_[i].temperature << ","
+                     << type_ << ","
+                     << time_steps_[i].powerUsage << ","  // mW
                      << time_steps_[i].powerLimit << ","  // mW
                      << time_steps_[i].graphicsClock << "," //MHz
                      << time_steps_[i].memClock << "," //MHz
