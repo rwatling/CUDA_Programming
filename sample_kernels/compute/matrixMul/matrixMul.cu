@@ -254,8 +254,8 @@ int MatrixMultiply(int argc, char **argv,
   nvml.log_stop();
 
   // Copy result from device to host
-  checkCudaErrors(
-      cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
+  //checkCudaErrors(
+      //cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
   checkCudaErrors(cudaStreamSynchronize(stream));
 
   // Clean up memory
