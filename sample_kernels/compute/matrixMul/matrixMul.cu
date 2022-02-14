@@ -142,6 +142,28 @@ void ConstantInit(float *data, int size, float val) {
 int MatrixMultiply(int argc, char **argv,
                    int block_size, const dim3 &dimsA,
                    const dim3 &dimsB) {
+
+
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+
+  if (cuda_err != cudaSuccess) {
+   std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+ std::string nvml_filename = "./matrixMul_default.csv";
+ std::vector<std::thread> cpu_threads;
+ std::string type;
+
+ type.append("matrixMul_compute");
+ nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+ cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
   // Allocate host memory for matrices A and B
   unsigned int size_A = dimsA.x * dimsA.y;
   unsigned int mem_size_A = sizeof(float) * size_A;
@@ -192,17 +214,6 @@ int MatrixMultiply(int argc, char **argv,
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  /************************NVML get device********************************/
-  int nvml_dev {};
-  cudaError_t cuda_err;
-  cudaGetDevice( &nvml_dev );
-  cuda_err = cudaSetDevice( nvml_dev );
-
-
-  if (cuda_err != cudaSuccess) {
-    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-  }
-
   // Defaults:
   // Blocks: 200
   // Threads: 1024
@@ -210,15 +221,6 @@ int MatrixMultiply(int argc, char **argv,
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-
-  std::string nvml_filename = "./matrixMul_default.csv";
-  std::vector<std::thread> cpu_threads;
-  std::string type;
-
-  type.append("matrixMul_compute");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
-
-  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
   nvml.log_start();
 
@@ -251,6 +253,19 @@ int MatrixMultiply(int argc, char **argv,
 
   nvml.log_stop();
 
+  // Copy result from device to host
+  checkCudaErrors(
+      cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
+  checkCudaErrors(cudaStreamSynchronize(stream));
+
+  // Clean up memory
+  checkCudaErrors(cudaFreeHost(h_A));
+  checkCudaErrors(cudaFreeHost(h_B));
+  checkCudaErrors(cudaFreeHost(h_C));
+  checkCudaErrors(cudaFree(d_A));
+  checkCudaErrors(cudaFree(d_B));
+  checkCudaErrors(cudaFree(d_C));
+
   // NVML
   // Create thread to kill GPU stats
   // Join both threads to main
@@ -270,18 +285,6 @@ int MatrixMultiply(int argc, char **argv,
   std::cout << "Total blocks: " << (dimsB.x / threads.x) * (dimsA.y / threads.y) << std::endl;
   std::cout << "Threads per block: " << threads.x * threads.y << std::endl;
 
-  // Copy result from device to host
-  checkCudaErrors(
-      cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
-  checkCudaErrors(cudaStreamSynchronize(stream));
-
-  // Clean up memory
-  checkCudaErrors(cudaFreeHost(h_A));
-  checkCudaErrors(cudaFreeHost(h_B));
-  checkCudaErrors(cudaFreeHost(h_C));
-  checkCudaErrors(cudaFree(d_A));
-  checkCudaErrors(cudaFree(d_B));
-  checkCudaErrors(cudaFree(d_C));
 
   return EXIT_SUCCESS;
 }
