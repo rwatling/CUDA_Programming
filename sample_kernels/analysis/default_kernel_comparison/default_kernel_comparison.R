@@ -69,3 +69,29 @@ ggplot(combined, aes(x = timestep, y = power_draw_mW, group = type, color = type
         panel.background = element_rect(fill="white"),
         text = element_text(size=14),)
 
+
+matrixMul_df <- read.csv("matrixMul_default.csv")
+matrixMul_df$type <- "matrixMul_compute"
+matrixMul_df_startstop <- read.csv("start_stop_matrixMul_compute.csv")
+
+plot.new()
+ggplot(matrixMul_df, aes(x = timestamp, y = power_draw_mW, group = type, color = type)) +
+  geom_line() +
+  # matrixMul start stop
+  geom_point(aes(x = matrixMul_df_startstop[1, 2], y = matrixMul_df_startstop[1,3], color = matrixMul_df_startstop[1,1])) +
+  geom_point(aes(x = matrixMul_df_startstop[2, 2], y = matrixMul_df_startstop[2,3], color = matrixMul_df_startstop[2,1])) +
+  ylab("Power (mW)") +
+  xlab("Timestep") +
+  ggtitle("Sample Kernels Power Consumption")+
+  scale_color_manual(values = cols) +
+  theme(legend.position=c(0.8, 0.2),
+        plot.title = element_text(hjust = 0.5 , size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14),
+        axis.text.x = element_blank())
