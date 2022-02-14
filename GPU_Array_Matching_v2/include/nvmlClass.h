@@ -100,14 +100,6 @@ class nvmlClass {
         // Open file
         outfile_.open( filename_, std::ios::out );
 
-        //Start stop name
-        start_stop_name_ = "./start_stop_";
-        start_stop_name_.append(type);
-        start_stop_name_.append(".csv");
-
-        //Open start start stop
-        start_stop_file_.open(start_stop_name_, std::ios::out);
-
         // Print header
         printHeader( );
     }
@@ -179,6 +171,14 @@ class nvmlClass {
     }
 
     void log_start() {
+      //Start stop name
+      start_stop_name_ = "./start_stop_";
+      start_stop_name_.append(type_);
+      start_stop_name_.append(".csv");
+
+      //Open start start stop
+      start_stop_file_.open(start_stop_name_, std::ios::out);
+
       // Retrieve a few empty samples
       std::this_thread::sleep_for( std::chrono::seconds(3) );
 

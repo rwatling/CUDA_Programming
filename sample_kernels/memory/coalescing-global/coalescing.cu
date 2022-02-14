@@ -60,7 +60,7 @@ __global__ void stride(T* a, int s)
 template <typename T>
 void runTest(int deviceId, int nMB)
 {
-  int blockSize = 256;
+  //int blockSize = 256;
   //float ms;
 
   T *d_a;
@@ -129,14 +129,16 @@ void runTest(int deviceId, int nMB)
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./coalescing_b4096_t64.csv";
+  std::string nvml_filename = "./coalescing_default.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("4096 blocks 64 threads");
+  type.append("coalescing_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
 
   //Timing
   cudaEventCreate(&start);
@@ -145,7 +147,7 @@ void runTest(int deviceId, int nMB)
 
   for (int i = 0; i < iterations; i++) {
     //stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
-    stride<<<4096, 64>>>(d_a, 1);
+    stride<<<4096, 256>>>(d_a, 1);
   }
 
   //Timing
@@ -154,6 +156,8 @@ void runTest(int deviceId, int nMB)
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  nvml.log_stop();
 
   // NVML
   // Create thread to kill GPU stats

@@ -39,6 +39,8 @@
 #include <cuda_runtime.h>
 
 #include <helper_cuda.h>
+
+#include "nvmlClass.h"
 /**
  * CUDA Kernel Device code
  *
@@ -144,8 +146,75 @@ int main(void) {
   int blocksPerGrid = (numElements + threadsPerBlock - 1) / threadsPerBlock;
   printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid,
          threadsPerBlock);
-  vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, numElements);
-  err = cudaGetLastError();
+
+   /************************NVML get device********************************/
+   int nvml_dev {};
+   cudaError_t cuda_err;
+   cudaGetDevice( &nvml_dev );
+   cuda_err = cudaSetDevice( nvml_dev );
+
+
+   if (cuda_err != cudaSuccess) {
+     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+   }
+
+   //Default:
+   //Blocks: 196
+   //Threads: 256
+
+   /*************************CUDA Timing***********************************/
+   cudaEvent_t start, stop;
+   float milliseconds;
+   int iterations = 10000;
+
+   std::string nvml_filename = "./vectorAdd_default.csv";
+   std::vector<std::thread> cpu_threads;
+   std::string type;
+
+   type.append("vectorAdd_compute");
+   nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+   nvml.log_start();
+
+   //Timing
+   cudaEventCreate(&start);
+   cudaEventCreate(&stop);
+   cudaEventRecord(start, 0);
+
+   for (int i = 0; i < iterations; i++) {
+     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, numElements);
+     err = cudaGetLastError();
+   }
+
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
+
+  nvml.log_stop();
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
+  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
+
+  //std::cout << "Total blocks: " << blocksPerGrid << std::endl;
+  //std::cout << "Threads per block: " << threadsPerBlock << std::endl;
 
   if (err != cudaSuccess) {
     fprintf(stderr, "Failed to launch vectorAdd kernel (error code %s)!\n",

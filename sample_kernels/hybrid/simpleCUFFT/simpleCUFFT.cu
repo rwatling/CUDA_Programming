@@ -183,14 +183,16 @@ void runTest(int argc, char **argv) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./simpleCUFFT_ratio_b32_t1024.csv";
+  std::string nvml_filename = "./simpleCUFFT_default.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("32 Blocks 1024 Threads");
+  type.append("simpleCUFFT_hybrid");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
 
   //Timing
   cudaEventCreate(&start);
@@ -198,7 +200,7 @@ void runTest(int argc, char **argv) {
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    ComplexPointwiseMulAndScale<<<32, 1024>>>(d_signal, d_filter_kernel, new_size,
+    ComplexPointwiseMulAndScale<<<32, 256>>>(d_signal, d_filter_kernel, new_size,
                                            1.0f / new_size);
   }
 
@@ -208,6 +210,8 @@ void runTest(int argc, char **argv) {
    cudaEventElapsedTime(&milliseconds, start, stop);
    cudaEventDestroy(start);
    cudaEventDestroy(stop);
+
+   nvml.log_stop();
 
    // NVML
    // Create thread to kill GPU stats

@@ -163,14 +163,16 @@ int main(int argc, char** argv)
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./wordcount_b8_t1024.csv";
+  std::string nvml_filename = "./wordcount_default.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("8 blocks 1024 threads");
+  type.append("wordcount_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
 
   //Timing
   cudaEventCreate(&start);
@@ -179,7 +181,7 @@ int main(int argc, char** argv)
 
   for (int i = 0; i < iterations; i++) {
     // Try uncommenting one kernel call at a time
-    xyzw_frequency<<<8, 1024>>>(d_count, d_text, len);
+    xyzw_frequency<<<8, 256>>>(d_count, d_text, len);
   }
 
   //Timing
@@ -188,6 +190,8 @@ int main(int argc, char** argv)
   cudaEventElapsedTime(&milliseconds, start, stop);
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
+
+  nvml.log_stop();
 
   // NVML
   // Create thread to kill GPU stats

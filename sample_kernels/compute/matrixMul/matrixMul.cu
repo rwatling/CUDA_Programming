@@ -51,6 +51,8 @@
 #include <helper_functions.h>
 #include <helper_cuda.h>
 
+#include "nvmlClass.h"
+
 /**
  * Matrix multiplication (CUDA Kernel) on the device: C = A * B
  * wA is A's width and wB is B's width
@@ -174,9 +176,9 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_B), mem_size_B));
   checkCudaErrors(cudaMalloc(reinterpret_cast<void **>(&d_C), mem_size_C));
   // Allocate CUDA events that we'll use for timing
-  cudaEvent_t start, stop;
-  checkCudaErrors(cudaEventCreate(&start));
-  checkCudaErrors(cudaEventCreate(&stop));
+  //cudaEvent_t start, stop;
+  //checkCudaErrors(cudaEventCreate(&start));
+  //checkCudaErrors(cudaEventCreate(&stop));
 
   checkCudaErrors(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
@@ -190,84 +192,86 @@ int MatrixMultiply(int argc, char **argv,
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  // Create and start timer
-  printf("Computing result using CUDA Kernel...\n");
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
 
-  // Performs warmup operation using matrixMul CUDA kernel
-  if (block_size == 16) {
-    MatrixMulCUDA<16>
-        <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-  } else {
-    MatrixMulCUDA<32>
-        <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  printf("done\n");
-  checkCudaErrors(cudaStreamSynchronize(stream));
+  // Defaults:
+  // Blocks: 200
+  // Threads: 1024
 
-  // Record the start event
-  checkCudaErrors(cudaEventRecord(start, stream));
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+
+  std::string nvml_filename = "./matrixMul_default.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("matrixMul_compute");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
+
+  //Timing
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
 
   // Execute the kernel
-  int nIter = 300;
+  int nIter = 1000;
 
   for (int j = 0; j < nIter; j++) {
-    if (block_size == 16) {
-      MatrixMulCUDA<16>
-          <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-    } else {
+    //if (block_size == 16) {
+      //MatrixMulCUDA<16>
+        //  <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
+    //} else {
       MatrixMulCUDA<32>
           <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-    }
+    //}
   }
 
-  // Record the stop event
-  checkCudaErrors(cudaEventRecord(stop, stream));
+  //Timing
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  cudaEventElapsedTime(&milliseconds, start, stop);
+  cudaEventDestroy(start);
+  cudaEventDestroy(stop);
 
-  // Wait for the stop event to complete
-  checkCudaErrors(cudaEventSynchronize(stop));
+  nvml.log_stop();
 
-  float msecTotal = 0.0f;
-  checkCudaErrors(cudaEventElapsedTime(&msecTotal, start, stop));
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
 
-  // Compute and print the performance
-  float msecPerMatrixMul = msecTotal / nIter;
-  double flopsPerMatrixMul = 2.0 * static_cast<double>(dimsA.x) *
-                             static_cast<double>(dimsA.y) *
-                             static_cast<double>(dimsB.x);
-  double gigaFlops =
-      (flopsPerMatrixMul * 1.0e-9f) / (msecPerMatrixMul / 1000.0f);
-  printf(
-      "Performance= %.2f GFlop/s, Time= %.3f msec, Size= %.0f Ops,"
-      " WorkgroupSize= %u threads/block\n",
-      gigaFlops, msecPerMatrixMul, flopsPerMatrixMul, threads.x * threads.y);
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
+  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
+
+  std::cout << "Total blocks: " << (dimsB.x / threads.x) * (dimsA.y / threads.y) << std::endl;
+  std::cout << "Threads per block: " << threads.x * threads.y << std::endl;
 
   // Copy result from device to host
   checkCudaErrors(
       cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
   checkCudaErrors(cudaStreamSynchronize(stream));
-
-  printf("Checking computed result for correctness: ");
-  bool correct = true;
-
-  // test relative error by the formula
-  //     |<x, y>_cpu - <x,y>_gpu|/<|x|, |y|>  < eps
-  double eps = 1.e-6;  // machine zero
-
-  for (int i = 0; i < static_cast<int>(dimsC.x * dimsC.y); i++) {
-    double abs_err = fabs(h_C[i] - (dimsA.x * valB));
-    double dot_length = dimsA.x;
-    double abs_val = fabs(h_C[i]);
-    double rel_err = abs_err / abs_val / dot_length;
-
-    if (rel_err > eps) {
-      printf("Error! Matrix[%05d]=%.8f, ref=%.8f error term is > %E\n",
-             i, h_C[i], dimsA.x * valB, eps);
-      correct = false;
-    }
-  }
-
-  printf("%s\n", correct ? "Result = PASS" : "Result = FAIL");
 
   // Clean up memory
   checkCudaErrors(cudaFreeHost(h_A));
@@ -276,17 +280,8 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaFree(d_A));
   checkCudaErrors(cudaFree(d_B));
   checkCudaErrors(cudaFree(d_C));
-  checkCudaErrors(cudaEventDestroy(start));
-  checkCudaErrors(cudaEventDestroy(stop));
-  printf(
-      "\nNOTE: The CUDA Samples are not meant for performance "
-      "measurements. Results may vary when GPU Boost is enabled.\n");
 
-  if (correct) {
-    return EXIT_SUCCESS;
-  } else {
-    return EXIT_FAILURE;
-  }
+  return EXIT_SUCCESS;
 }
 
 

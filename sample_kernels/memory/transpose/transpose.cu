@@ -46,7 +46,7 @@ cudaError_t checkCuda(cudaError_t result)
 }
 
 const int TILE_DIM = 32;
-const int BLOCK_ROWS = 4;
+const int BLOCK_ROWS = 8;
 const int NUM_REPS = 1;
 
 // Check errors and print GB/s
@@ -195,12 +195,12 @@ int main(int argc, char **argv)
   checkCuda( cudaMalloc(&d_tdata, mem_size) );
 
   //NVML Stuff
-  std::string nvml_filename = "./transpose_tile32_b4.csv";
+  std::string nvml_filename = "./transpose_default.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
   int iterations = 10000;
 
-  type.append("Tile 32 Block 8");
+  type.append("transpose_hybrid");
   nvmlClass nvml( devId, nvml_filename, type);
 
   // check parameters and calculate execution configuration
@@ -240,37 +240,14 @@ int main(int argc, char **argv)
   const int NUM_REPS = 1;
   */
 
-  //Tests
-  /*
-  const int TILE_DIM = 16;
-  const int BLOCK_ROWS = 8;
-  const int NUM_REPS = 1;
-  */
-
-  /*
-  const int TILE_DIM = 64;
-  const int BLOCK_ROWS = 8;
-  const int NUM_REPS = 1;
-  */
-
-  /*
-  const int TILE_DIM = 32;
-  const int BLOCK_ROWS = 16;
-  const int NUM_REPS = 1;
-  */
-
-  /*
-  const int TILE_DIM = 32;
-  const int BLOCK_ROWS = 4;
-  const int NUM_REPS = 1;
-  */
-
   // ------------------
   // transposeCoalesced
   // ------------------
   checkCuda( cudaMemset(d_tdata, 0, mem_size) );
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
 
   checkCuda( cudaEventRecord(startEvent, 0) );
 
@@ -281,6 +258,8 @@ int main(int argc, char **argv)
   checkCuda( cudaEventRecord(stopEvent, 0) );
   checkCuda( cudaEventSynchronize(stopEvent) );
   checkCuda( cudaEventElapsedTime(&ms, startEvent, stopEvent) );
+
+  nvml.log_stop();
 
   // NVML
   // Create thread to kill GPU stats
@@ -304,6 +283,9 @@ int main(int argc, char **argv)
   printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
   printf("%25s", "coalesced transpose");
   postprocess(gold, h_tdata, nx * ny, ms);
+
+  std::cout << "Total blocks: " << nx/TILE_DIM * ny/TILE_DIM << std::endl;
+  std::cout << "Threads per block: " << TILE_DIM * BLOCK_ROWS << std::endl;
 
 
 error_exit:
