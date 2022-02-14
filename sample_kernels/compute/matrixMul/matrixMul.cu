@@ -235,8 +235,10 @@ int MatrixMultiply(int argc, char **argv,
       //MatrixMulCUDA<16>
         //  <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
     //} else {
+
       MatrixMulCUDA<32>
           <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
+
     //}
   }
 
