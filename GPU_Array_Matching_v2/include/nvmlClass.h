@@ -128,16 +128,16 @@ class nvmlClass {
             time_steps_.push_back( device_stats );
 
             if (start_flag_) {
-              start_stop_file_ << "type,time,power\n";
-              start_stop_file_ << type_ << "," << device_stats.timestamp << "," << device_stats.powerUsage <<"\n";
+              start_stop_file_ << "type,timestep,power\n";
+              start_stop_file_ << type_ << "," << time_steps_.size() << "," << device_stats.powerUsage <<"\n";
               start_flag_ = false;
             } else if (stop_flag_) {
-              start_stop_file_ << type_ << "," <<  device_stats.timestamp << "," << device_stats.powerUsage <<"\n";
+              start_stop_file_ << type_ << "," <<  time_steps_.size() << "," << device_stats.powerUsage <<"\n";
               start_stop_file_.close();
               stop_flag_ = false;
             }
 
-            std::this_thread::sleep_for( std::chrono::microseconds(1) );
+            std::this_thread::sleep_for( std::chrono::microseconds(500) );
         }
 
         writeData();
@@ -145,7 +145,7 @@ class nvmlClass {
 
     void killThread( ) {
         // Retrieve a few empty samples
-        std::this_thread::sleep_for( std::chrono::seconds(3) );
+        std::this_thread::sleep_for( std::chrono::seconds(1) );
 
         // Set loop to false to exit while loop
         loop_ = false;
@@ -180,7 +180,7 @@ class nvmlClass {
       start_stop_file_.open(start_stop_name_, std::ios::out);
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(3) );
+      std::this_thread::sleep_for( std::chrono::seconds(1) );
 
       start_flag_ = true;
     }

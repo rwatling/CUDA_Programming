@@ -198,7 +198,7 @@ int main(int argc, char **argv)
   std::string nvml_filename = "./transpose_default.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
-  int iterations = 10000;
+  int iterations = 5000;
 
   type.append("transpose_hybrid");
   nvmlClass nvml( devId, nvml_filename, type);
