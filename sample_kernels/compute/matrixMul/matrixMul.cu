@@ -208,8 +208,6 @@ int MatrixMultiply(int argc, char **argv,
 
   checkCudaErrors(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
-  nvml.log_point();
-
   // copy host memory to device
   checkCudaErrors(
       cudaMemcpyAsync(d_A, h_A, mem_size_A, cudaMemcpyHostToDevice, stream));
@@ -265,10 +263,6 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(
       cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
   checkCudaErrors(cudaStreamSynchronize(stream));
-
-  nvml.log_point();
-
-
 
   // Clean up memory
   checkCudaErrors(cudaFreeHost(h_A));
