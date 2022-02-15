@@ -177,8 +177,6 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaMallocHost(&h_B, mem_size_B));
   cudaStream_t stream;
 
-  nvml.log_point();
-
   // Initialize host memory
   const float valB = 0.01f;
   ConstantInit(h_A, size_A, 1.0f);
@@ -247,8 +245,6 @@ int MatrixMultiply(int argc, char **argv,
 
     //}
   }
-
-  nvml.log_point();
 
   //Timing
   cudaEventRecord(stop, 0);
