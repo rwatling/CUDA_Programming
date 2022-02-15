@@ -180,6 +180,15 @@ class nvmlClass {
        << temp_power_usage <<"\n";
     }
 
+    void log_point() {
+      uint temp_power_usage = 0;
+      NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
+
+      start_stop_file_ << type_ << ","
+       << std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( ) << ","
+       << temp_power_usage <<"\n";
+    }
+
     void log_stop() {
 
       uint temp_power_usage = 0;

@@ -164,6 +164,8 @@ int MatrixMultiply(int argc, char **argv,
 
  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
+ nvml.log_start();
+
   // Allocate host memory for matrices A and B
   unsigned int size_A = dimsA.x * dimsA.y;
   unsigned int mem_size_A = sizeof(float) * size_A;
@@ -174,6 +176,8 @@ int MatrixMultiply(int argc, char **argv,
   float *h_B;
   checkCudaErrors(cudaMallocHost(&h_B, mem_size_B));
   cudaStream_t stream;
+
+  nvml.log_point();
 
   // Initialize host memory
   const float valB = 0.01f;
@@ -204,6 +208,8 @@ int MatrixMultiply(int argc, char **argv,
 
   checkCudaErrors(cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking));
 
+  nvml.log_point();
+
   // copy host memory to device
   checkCudaErrors(
       cudaMemcpyAsync(d_A, h_A, mem_size_A, cudaMemcpyHostToDevice, stream));
@@ -222,7 +228,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEvent_t start, stop;
   float milliseconds;
 
-  nvml.log_start();
+  nvml.log_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -244,7 +250,7 @@ int MatrixMultiply(int argc, char **argv,
     //}
   }
 
-  nvml.log_stop();
+  nvml.log_point();
 
   //Timing
   cudaEventRecord(stop, 0);
@@ -253,12 +259,14 @@ int MatrixMultiply(int argc, char **argv,
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
+  nvml.log_point();
+
   // Copy result from device to host
   checkCudaErrors(
       cudaMemcpyAsync(h_C, d_C, mem_size_C, cudaMemcpyDeviceToHost, stream));
   checkCudaErrors(cudaStreamSynchronize(stream));
 
-
+  nvml.log_point();
 
 
 
@@ -269,6 +277,8 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaFree(d_A));
   checkCudaErrors(cudaFree(d_B));
   checkCudaErrors(cudaFree(d_C));
+
+  nvml.log_stop();
 
   // NVML
   // Create thread to kill GPU stats
