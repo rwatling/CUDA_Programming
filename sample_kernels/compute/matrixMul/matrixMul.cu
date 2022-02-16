@@ -268,7 +268,7 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaFree(d_B));
   checkCudaErrors(cudaFree(d_C));
 
-  nvml.log_stop();
+  nvml.log_point();
 
   // NVML
   // Create thread to kill GPU stats
@@ -283,6 +283,8 @@ int MatrixMultiply(int argc, char **argv,
   cpu_threads.clear();
   nvml_filename.clear();
   type.clear();
+
+  nvml.log_stop();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
