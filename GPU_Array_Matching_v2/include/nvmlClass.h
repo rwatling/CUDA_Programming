@@ -134,6 +134,10 @@ class nvmlClass {
     }
 
     void killThread( ) {
+
+        // Retrieve a few empty samples
+        std::this_thread::sleep_for( std::chrono::seconds(5));
+
         // Set loop to false to exit while loop
         loop_ = false;
     }
@@ -163,19 +167,21 @@ class nvmlClass {
 
       uint temp_power_usage = 0;
       NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
+      time_t timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
 
       start_stop_file_ << "type,timestamp,power\n";
       start_stop_file_ << type_ << ","
-       << std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( ) << ","
+       << timestamp << ","
        << temp_power_usage <<"\n";
     }
 
     void log_point() {
       uint temp_power_usage = 0;
       NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
+      time_t timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
 
       start_stop_file_ << type_ << ","
-       << std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( ) << ","
+       << timestamp << ","
        << temp_power_usage <<"\n";
     }
 
@@ -183,14 +189,12 @@ class nvmlClass {
 
       uint temp_power_usage = 0;
       NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
+      time_t timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
 
       start_stop_file_ << type_ << ","
-      <<  std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( ) << ","
+      <<  timestamp << ","
       << temp_power_usage <<"\n";
       start_stop_file_.close();
-
-      // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(5));
     }
 
   private:
