@@ -159,7 +159,7 @@ class nvmlClass {
       start_stop_file_.open(start_stop_name_, std::ios::out);
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(3));
+      std::this_thread::sleep_for( std::chrono::seconds(5));
 
       uint temp_power_usage = 0;
       NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
@@ -190,7 +190,7 @@ class nvmlClass {
       start_stop_file_.close();
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(3));
+      std::this_thread::sleep_for( std::chrono::seconds(5));
     }
 
   private:
