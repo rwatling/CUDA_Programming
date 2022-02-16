@@ -130,13 +130,37 @@ class nvmlClass {
             std::this_thread::sleep_for( std::chrono::milliseconds(5));
         }
 
+        std::this_thread::sleep_for( std::chrono::seconds(10));
+
+        device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
+        NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
+        NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
+        NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
+        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_GRAPHICS, &device_stats.graphicsClock));
+        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
+        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
+
+        time_steps_.push_back( device_stats );
+
+        std::this_thread::sleep_for( std::chrono::seconds(10));
+
+        device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
+        NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
+        NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
+        NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
+        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_GRAPHICS, &device_stats.graphicsClock));
+        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
+        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
+
+        time_steps_.push_back( device_stats );
+
         writeData();
     }
 
     void killThread( ) {
 
         // Retrieve a few empty samples
-        std::this_thread::sleep_for( std::chrono::seconds(1));
+        //std::this_thread::sleep_for( std::chrono::seconds(3));
 
         // Set loop to false to exit while loop
         loop_ = false;
@@ -163,7 +187,7 @@ class nvmlClass {
       start_stop_file_.open(start_stop_name_, std::ios::out);
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(1));
+      std::this_thread::sleep_for( std::chrono::seconds(3));
 
       uint temp_power_usage = 0;
       NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
