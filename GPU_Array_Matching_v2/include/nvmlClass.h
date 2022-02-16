@@ -190,7 +190,7 @@ class nvmlClass {
       start_stop_file_.close();
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(5));
+      std::this_thread::sleep_for( std::chrono::seconds(3));
     }
 
   private:
