@@ -130,29 +130,20 @@ class nvmlClass {
             std::this_thread::sleep_for( std::chrono::milliseconds(5));
         }
 
-        std::this_thread::sleep_for( std::chrono::seconds(10));
+        for (int i = 0; i < 20; i++) {
 
-        device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
-        NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
-        NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
-        NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
-        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_GRAPHICS, &device_stats.graphicsClock));
-        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
-        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
+          device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
+          NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
+          NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
+          NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
+          NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_GRAPHICS, &device_stats.graphicsClock));
+          NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
+          NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
 
-        time_steps_.push_back( device_stats );
+          time_steps_.push_back( device_stats );
 
-        std::this_thread::sleep_for( std::chrono::seconds(10));
-
-        device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
-        NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
-        NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &device_stats.powerUsage ) );
-        NVML_RT_CALL( nvmlDeviceGetEnforcedPowerLimit( device_, &device_stats.powerLimit ) );
-        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_GRAPHICS, &device_stats.graphicsClock));
-        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_MEM, &device_stats.memClock));
-        NVML_RT_CALL( nvmlDeviceGetClockInfo( device_, NVML_CLOCK_SM, &device_stats.smClock));
-
-        time_steps_.push_back( device_stats );
+          std::this_thread::sleep_for( std::chrono::seconds(1));
+        }
 
         writeData();
     }
