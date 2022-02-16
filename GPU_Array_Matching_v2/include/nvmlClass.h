@@ -127,7 +127,7 @@ class nvmlClass {
 
             time_steps_.push_back( device_stats );
 
-            std::this_thread::sleep_for( std::chrono::microseconds(250));
+            std::this_thread::sleep_for( std::chrono::milliseconds(5));
         }
 
         writeData();
@@ -136,7 +136,7 @@ class nvmlClass {
     void killThread( ) {
 
         // Retrieve a few empty samples
-        std::this_thread::sleep_for( std::chrono::seconds(5));
+        std::this_thread::sleep_for( std::chrono::seconds(1));
 
         // Set loop to false to exit while loop
         loop_ = false;
@@ -163,7 +163,7 @@ class nvmlClass {
       start_stop_file_.open(start_stop_name_, std::ios::out);
 
       // Retrieve a few empty samples
-      std::this_thread::sleep_for( std::chrono::seconds(5));
+      std::this_thread::sleep_for( std::chrono::seconds(1));
 
       uint temp_power_usage = 0;
       NVML_RT_CALL( nvmlDeviceGetPowerUsage( device_, &temp_power_usage ) );
