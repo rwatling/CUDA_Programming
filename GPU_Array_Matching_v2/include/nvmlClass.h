@@ -130,7 +130,8 @@ class nvmlClass {
             std::this_thread::sleep_for( std::chrono::milliseconds(5));
         }
 
-        for (int i = 0; i < 20; i++) {
+        //3000 * 5 ms = 15s
+        for (int i = 0; i < 3000; i++) {
 
           device_stats.timestamp = std::chrono::high_resolution_clock::now( ).time_since_epoch( ).count( );
           NVML_RT_CALL( nvmlDeviceGetTemperature( device_, NVML_TEMPERATURE_GPU, &device_stats.temperature ) );
@@ -142,7 +143,7 @@ class nvmlClass {
 
           time_steps_.push_back( device_stats );
 
-          std::this_thread::sleep_for( std::chrono::seconds(1));
+          std::this_thread::sleep_for( std::chrono::milliseconds(5));
         }
 
         writeData();

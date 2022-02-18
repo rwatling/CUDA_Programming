@@ -80,11 +80,13 @@ ggplot(matrixMul_df, aes(x = timestamp, y = power_draw_mW, group = type, color =
   # matrixMul start stop
   geom_point(aes(x = matrixMul_df_startstop[1, 2], y = matrixMul_df_startstop[1,3], color = matrixMul_df_startstop[1,1])) +
   geom_point(aes(x = matrixMul_df_startstop[2, 2], y = matrixMul_df_startstop[2,3], color = matrixMul_df_startstop[2,1])) +
+  geom_point(aes(x = matrixMul_df_startstop[3, 2], y = matrixMul_df_startstop[3,3], color = matrixMul_df_startstop[3,1])) +
+  geom_point(aes(x = matrixMul_df_startstop[4, 2], y = matrixMul_df_startstop[4,3], color = matrixMul_df_startstop[4,1])) +
   ylab("Power (mW)") +
-  xlab("Timestep") +
+  xlab("Timestamp") +
   ggtitle("Sample Kernels Power Consumption")+
   scale_color_manual(values = cols) +
-  theme(legend.position=c(0.8, 0.2),
+  theme(legend.position="none",
         plot.title = element_text(hjust = 0.5 , size = 14),
         # Hide panel borders and remove grid lines
         panel.border = element_blank(),
