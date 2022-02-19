@@ -109,6 +109,33 @@ void xyzw_frequency_thrust_host(int *count, char *text, int n)
 
 int main(int argc, char** argv)
 {
+
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+  int iterations = 15500;
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+  std::string nvml_filename = "./wordcount_default.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("wordcount_memory");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
+
   const char *filename = "warandpeace.txt";
 
   int numBytes = 16*1048576;
@@ -129,17 +156,6 @@ int main(int argc, char** argv)
   cudaMalloc(&d_count, sizeof(int));
   cudaMemset(d_count, 0, sizeof(int));
 
-  /************************NVML get device********************************/
-  int nvml_dev {};
-  cudaError_t cuda_err;
-  cudaGetDevice( &nvml_dev );
-  cuda_err = cudaSetDevice( nvml_dev );
-
-  /*************************CUDA Timing***********************************/
-  cudaEvent_t start, stop;
-  float milliseconds;
-  int iterations = 250;
-
   // threads and blocks configurations
   // Original: 8, 256
 
@@ -159,20 +175,7 @@ int main(int argc, char** argv)
   // Test9: 8, 128
   // Test10: 8, 1024
 
-  if (cuda_err != cudaSuccess) {
-    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-  }
-
-  std::string nvml_filename = "./wordcount_default.csv";
-  std::vector<std::thread> cpu_threads;
-  std::string type;
-
-  type.append("wordcount_memory");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
-
-  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
-
-  nvml.log_start();
+  nvml.log_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -191,6 +194,21 @@ int main(int argc, char** argv)
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
+  nvml.log_point();
+
+  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
+
+  //xyzw_frequency_thrust_device<<<1, 1>>>(d_count, d_text, len);
+  cudaMemcpy(&count, d_count, sizeof(int), cudaMemcpyDeviceToHost);
+
+  //xyzw_frequency_thrust_host(&count, h_text, len);
+
+  //std::cout << "counted " << count << " instances of 'x', 'y', 'z', or 'w' in \""
+  //<< filename << "\"" << std::endl;
+
+  cudaFree(d_count);
+  cudaFree(d_text);
+
   nvml.log_stop();
 
   // NVML
@@ -206,19 +224,6 @@ int main(int argc, char** argv)
   cpu_threads.clear();
   nvml_filename.clear();
   type.clear();
-
-  std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
-
-  //xyzw_frequency_thrust_device<<<1, 1>>>(d_count, d_text, len);
-  cudaMemcpy(&count, d_count, sizeof(int), cudaMemcpyDeviceToHost);
-
-  //xyzw_frequency_thrust_host(&count, h_text, len);
-
-  std::cout << "counted " << count << " instances of 'x', 'y', 'z', or 'w' in \""
-  << filename << "\"" << std::endl;
-
-  cudaFree(d_count);
-  cudaFree(d_text);
 
   return 0;
 }

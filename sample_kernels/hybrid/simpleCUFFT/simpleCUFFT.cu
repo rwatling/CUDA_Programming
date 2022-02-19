@@ -73,6 +73,28 @@ int main(int argc, char **argv) { runTest(argc, argv); }
 //! Run a simple test for CUDA
 ////////////////////////////////////////////////////////////////////////////////
 void runTest(int argc, char **argv) {
+
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+  std::string nvml_filename = "./simpleCUFFT_default.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("simpleCUFFT_hybrid");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
+
   printf("[simpleCUFFT] is starting...\n");
 
   findCudaDevice(argc, (const char **)argv);
@@ -148,12 +170,6 @@ void runTest(int argc, char **argv) {
   // Multiply the coefficients together and normalize the result
   printf("Launching ComplexPointwiseMulAndScale<<< >>>\n");
 
-  /************************NVML get device********************************/
-  int nvml_dev {};
-  cudaError_t cuda_err;
-  cudaGetDevice( &nvml_dev );
-  cuda_err = cudaSetDevice( nvml_dev );
-
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
@@ -177,22 +193,9 @@ void runTest(int argc, char **argv) {
   // Test9: 32, 128
   // Test10: 32, 1024
 
-  int iterations = 10000;
+  int iterations = 2000000;
 
-  if (cuda_err != cudaSuccess) {
-    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-  }
-
-  std::string nvml_filename = "./simpleCUFFT_default.csv";
-  std::vector<std::thread> cpu_threads;
-  std::string type;
-
-  type.append("simpleCUFFT_hybrid");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
-
-  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
-
-  nvml.log_start();
+  nvml.log_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -211,21 +214,7 @@ void runTest(int argc, char **argv) {
    cudaEventDestroy(start);
    cudaEventDestroy(stop);
 
-   nvml.log_stop();
-
-   // NVML
-   // Create thread to kill GPU stats
-   // Join both threads to main
-   cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
-
-   for (auto& th : cpu_threads) {
-     th.join();
-     th.~thread();
-   }
-
-   cpu_threads.clear();
-   nvml_filename.clear();
-   type.clear();
+   nvml.log_point();
 
    std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
@@ -270,6 +259,22 @@ void runTest(int argc, char **argv) {
   checkCudaErrors(cudaFree(d_filter_kernel));
 
   //exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
+
+  nvml.log_stop();
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
 }
 
 // Pad data

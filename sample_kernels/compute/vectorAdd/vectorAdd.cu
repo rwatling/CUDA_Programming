@@ -60,6 +60,34 @@ __global__ void vectorAdd(const float *A, const float *B, float *C,
  * Host main routine
  */
 int main(void) {
+
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+  int iterations = 2000000;
+
+  std::string nvml_filename = "./vectorAdd_default.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("vectorAdd_compute");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
+
   // Error code to check return values for CUDA calls
   cudaError_t err = cudaSuccess;
 
@@ -147,36 +175,12 @@ int main(void) {
   printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid,
          threadsPerBlock);
 
-   /************************NVML get device********************************/
-   int nvml_dev {};
-   cudaError_t cuda_err;
-   cudaGetDevice( &nvml_dev );
-   cuda_err = cudaSetDevice( nvml_dev );
-
-
-   if (cuda_err != cudaSuccess) {
-     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-   }
 
    //Default:
    //Blocks: 196
    //Threads: 256
 
-   /*************************CUDA Timing***********************************/
-   cudaEvent_t start, stop;
-   float milliseconds;
-   int iterations = 10000;
-
-   std::string nvml_filename = "./vectorAdd_default.csv";
-   std::vector<std::thread> cpu_threads;
-   std::string type;
-
-   type.append("vectorAdd_compute");
-   nvmlClass nvml( nvml_dev, nvml_filename, type);
-
-   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
-
-   nvml.log_start();
+   nvml.log_point();
 
    //Timing
    cudaEventCreate(&start);
@@ -195,21 +199,7 @@ int main(void) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  nvml.log_stop();
-
-  // NVML
-  // Create thread to kill GPU stats
-  // Join both threads to main
-  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
-
-  for (auto& th : cpu_threads) {
-    th.join();
-    th.~thread();
-  }
-
-  cpu_threads.clear();
-  nvml_filename.clear();
-  type.clear();
+  nvml.log_point();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
@@ -275,5 +265,22 @@ int main(void) {
   free(h_C);
 
   printf("Done\n");
+
+  nvml.log_stop();
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
+
   return 0;
 }

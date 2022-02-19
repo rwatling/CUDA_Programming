@@ -60,6 +60,33 @@ __global__ void stride(T* a, int s)
 template <typename T>
 void runTest(int deviceId, int nMB)
 {
+
+  /************************NVML get device********************************/
+  int nvml_dev {};
+  cudaError_t cuda_err;
+  cudaGetDevice( &nvml_dev );
+  cuda_err = cudaSetDevice( nvml_dev );
+
+  /*************************CUDA Timing***********************************/
+  cudaEvent_t start, stop;
+  float milliseconds;
+  int iterations = 1000000;
+
+  if (cuda_err != cudaSuccess) {
+    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
+  }
+
+  std::string nvml_filename = "./coalescing_default.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+
+  type.append("coalescing_memory");
+  nvmlClass nvml( nvml_dev, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
+
   //int blockSize = 256;
   //float ms;
 
@@ -96,17 +123,6 @@ void runTest(int deviceId, int nMB)
   printf("\n");
   printf("Stride, Bandwidth (GB/s):\n");*/
 
-  /************************NVML get device********************************/
-  int nvml_dev {};
-  cudaError_t cuda_err;
-  cudaGetDevice( &nvml_dev );
-  cuda_err = cudaSetDevice( nvml_dev );
-
-  /*************************CUDA Timing***********************************/
-  cudaEvent_t start, stop;
-  float milliseconds;
-  int iterations = 10000;
-
   // Original
   // n/blockSize = 4096 blocks
   // blockSize = 256 threads
@@ -125,20 +141,7 @@ void runTest(int deviceId, int nMB)
   // block 4096 threads 128
   // block 4096 threads 64
 
-  if (cuda_err != cudaSuccess) {
-    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
-  }
-
-  std::string nvml_filename = "./coalescing_default.csv";
-  std::vector<std::thread> cpu_threads;
-  std::string type;
-
-  type.append("coalescing_memory");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
-
-  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
-
-  nvml.log_start();
+  nvml.log_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -157,21 +160,7 @@ void runTest(int deviceId, int nMB)
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  nvml.log_stop();
-
-  // NVML
-  // Create thread to kill GPU stats
-  // Join both threads to main
-  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
-
-  for (auto& th : cpu_threads) {
-    th.join();
-    th.~thread();
-  }
-
-  cpu_threads.clear();
-  nvml_filename.clear();
-  type.clear();
+  nvml.log_point();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
@@ -190,6 +179,22 @@ void runTest(int deviceId, int nMB)
   checkCuda( cudaEventDestroy(startEvent) );
   checkCuda( cudaEventDestroy(stopEvent) );*/
   cudaFree(d_a);
+
+  nvml.log_stop();
+
+  // NVML
+  // Create thread to kill GPU stats
+  // Join both threads to main
+  cpu_threads.emplace_back(std::thread( &nvmlClass::killThread, &nvml));
+
+  for (auto& th : cpu_threads) {
+    th.join();
+    th.~thread();
+  }
+
+  cpu_threads.clear();
+  nvml_filename.clear();
+  type.clear();
 }
 
 int main(int argc, char **argv)

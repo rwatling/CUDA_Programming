@@ -157,8 +157,21 @@ __global__ void transposeNoBankConflicts(float *odata, const float *idata)
      odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
+  //NVML Stuff
+  int devId = 0;
+  std::string nvml_filename = "./transpose_default.csv";
+  std::vector<std::thread> cpu_threads;
+  std::string type;
+  int iterations = 350000;
+
+  type.append("transpose_hybrid");
+  nvmlClass nvml( devId, nvml_filename, type);
+
+  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
+
+  nvml.log_start();
+
   const int nx = 1024;
   const int ny = 1024;
 
@@ -171,7 +184,7 @@ int main(int argc, char **argv)
   dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);
   dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
 
-  int devId = 0;
+  //int devId = 0;
   if (argc > 1) devId = atoi(argv[1]);
 
   cudaDeviceProp prop;
@@ -193,15 +206,6 @@ int main(int argc, char **argv)
   checkCuda( cudaMalloc(&d_idata, mem_size) );
   checkCuda( cudaMalloc(&d_cdata, mem_size) );
   checkCuda( cudaMalloc(&d_tdata, mem_size) );
-
-  //NVML Stuff
-  std::string nvml_filename = "./transpose_default.csv";
-  std::vector<std::thread> cpu_threads;
-  std::string type;
-  int iterations = 5000;
-
-  type.append("transpose_hybrid");
-  nvmlClass nvml( devId, nvml_filename, type);
 
   // check parameters and calculate execution configuration
   if (nx % TILE_DIM || ny % TILE_DIM) {
@@ -245,9 +249,7 @@ int main(int argc, char **argv)
   // ------------------
   checkCuda( cudaMemset(d_tdata, 0, mem_size) );
 
-  cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
-
-  nvml.log_start();
+  nvml.log_point();
 
   checkCuda( cudaEventRecord(startEvent, 0) );
 
@@ -258,6 +260,20 @@ int main(int argc, char **argv)
   checkCuda( cudaEventRecord(stopEvent, 0) );
   checkCuda( cudaEventSynchronize(stopEvent) );
   checkCuda( cudaEventElapsedTime(&ms, startEvent, stopEvent) );
+
+  nvml.log_point();
+
+  checkCuda( cudaMemcpy(h_tdata, d_tdata, mem_size, cudaMemcpyDeviceToHost) );
+
+  // ------------
+  // time kernels
+  // ------------
+  printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
+  printf("%25s", "coalesced transpose");
+  postprocess(gold, h_tdata, nx * ny, ms);
+
+  std::cout << "Total blocks: " << nx/TILE_DIM * ny/TILE_DIM << std::endl;
+  std::cout << "Threads per block: " << TILE_DIM * BLOCK_ROWS << std::endl;
 
   nvml.log_stop();
 
@@ -274,18 +290,6 @@ int main(int argc, char **argv)
   cpu_threads.clear();
   nvml_filename.clear();
   type.clear();
-
-  checkCuda( cudaMemcpy(h_tdata, d_tdata, mem_size, cudaMemcpyDeviceToHost) );
-
-  // ------------
-  // time kernels
-  // ------------
-  printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
-  printf("%25s", "coalesced transpose");
-  postprocess(gold, h_tdata, nx * ny, ms);
-
-  std::cout << "Total blocks: " << nx/TILE_DIM * ny/TILE_DIM << std::endl;
-  std::cout << "Threads per block: " << TILE_DIM * BLOCK_ROWS << std::endl;
 
 
 error_exit:
