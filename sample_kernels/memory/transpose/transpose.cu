@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
   std::string type;
   int iterations = 350000;
 
-  type.append("transpose_hybrid");
+  type.append("transpose_memory");
   nvmlClass nvml( devId, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
