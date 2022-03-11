@@ -65,15 +65,18 @@ void count_if(int *count, T *data, int n, Predicate p)
 // Note the use of range-based for loop and initializer_list inside the functor
 // We use auto so we don't have to know the type of the functor or array
 __global__
-void xyzw_frequency(int *count, char *text, int n)
+void xyzw_frequency(int *count, char *text, int n, int workThreads)
 {
+  int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
   const char letters[] { 'x','y','z','w' };
 
-  count_if(count, text, n, [&](char c) {
-    for (const auto x : letters)
-      if (c == x) return true;
-    return false;
-  });
+  if (threadId <= workThreads) {
+    count_if(count, text, n, [&](char c) {
+      for (const auto x : letters)
+        if (c == x) return true;
+      return false;
+    });
+  }
 }
 
 // A bug in CUDA 7.0 causes errors when this is called
@@ -97,6 +100,7 @@ void xyzw_frequency_thrust_device(int *count, char *text, int n)
 #if 0
 void xyzw_frequency_thrust_host(int *count, char *text, int n)
 {
+
   const char letters[] { 'x','y','z','w' };
 
   *count = thrust::count_if(thrust::host, text, text+n, [&](char c) {
@@ -120,16 +124,19 @@ int main(int argc, char** argv)
   cudaEvent_t start, stop;
   float milliseconds;
   int iterations = 15500;
+  int numThreads = 256;
+  int numIdle = 512;
+  int numBlocks = 8;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./wordcount_default.csv";
+  std::string nvml_filename = "./wordcount_idle512.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("wordcount_memory");
+  type.append("idle512_wordcount_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -184,7 +191,7 @@ int main(int argc, char** argv)
 
   for (int i = 0; i < iterations; i++) {
     // Try uncommenting one kernel call at a time
-    xyzw_frequency<<<8, 256>>>(d_count, d_text, len);
+    xyzw_frequency<<<numBlocks, numThreads + numIdle>>>(d_count, d_text, len, numThreads * numBlocks);
   }
 
   //Timing

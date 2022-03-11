@@ -48,7 +48,7 @@ static __device__ __host__ inline Complex ComplexAdd(Complex, Complex);
 static __device__ __host__ inline Complex ComplexScale(Complex, float);
 static __device__ __host__ inline Complex ComplexMul(Complex, Complex);
 static __global__ void ComplexPointwiseMulAndScale(Complex *, const Complex *,
-                                                   int, float);
+                                                   int, float, int);
 
 // Filtering functions
 void Convolve(const Complex *, int, const Complex *, int, Complex *);
@@ -84,11 +84,11 @@ void runTest(int argc, char **argv) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./simpleCUFFT_default.csv";
+  std::string nvml_filename = "./simpleCUFFT_idle512.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("simpleCUFFT_hybrid");
+  type.append("idle512_simpleCUFFT_hybrid");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -194,6 +194,9 @@ void runTest(int argc, char **argv) {
   // Test10: 32, 1024
 
   int iterations = 2000000;
+  int numIdle = 512;
+  int numThreads = 256;
+  int numBlocks = 32;
 
   nvml.log_point();
 
@@ -203,8 +206,8 @@ void runTest(int argc, char **argv) {
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    ComplexPointwiseMulAndScale<<<32, 256>>>(d_signal, d_filter_kernel, new_size,
-                                           1.0f / new_size);
+    ComplexPointwiseMulAndScale<<<numBlocks, numThreads + numIdle>>>(d_signal, d_filter_kernel, new_size,
+                                           1.0f / new_size, numThreads*numBlocks);
   }
 
    //Timing
@@ -362,11 +365,13 @@ static __device__ __host__ inline Complex ComplexMul(Complex a, Complex b) {
 
 // Complex pointwise multiplication
 static __global__ void ComplexPointwiseMulAndScale(Complex *a, const Complex *b,
-                                                   int size, float scale) {
+                                                   int size, float scale, int workThreads) {
   const int numThreads = blockDim.x * gridDim.x;
   const int threadID = blockIdx.x * blockDim.x + threadIdx.x;
 
-  for (int i = threadID; i < size; i += numThreads) {
-    a[i] = ComplexScale(ComplexMul(a[i], b[i]), scale);
+  if (threadID <= workThreads) {
+    for (int i = threadID; i < size; i += numThreads) {
+      a[i] = ComplexScale(ComplexMul(a[i], b[i]), scale);
+    }
   }
 }

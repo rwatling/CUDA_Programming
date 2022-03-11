@@ -48,11 +48,13 @@
  * number of elements numElements.
  */
 __global__ void vectorAdd(const float *A, const float *B, float *C,
-                          int numElements) {
+                          int numElements, int workThreads) {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  if (i < numElements) {
-    C[i] = A[i] + B[i] + 0.0f;
+  if (i <= workThreads) {
+    if (i < numElements) {
+      C[i] = A[i] + B[i] + 0.0f;
+    }
   }
 }
 
@@ -76,12 +78,13 @@ int main(void) {
   cudaEvent_t start, stop;
   float milliseconds;
   int iterations = 2000000;
+  int numIdle = 512;
 
-  std::string nvml_filename = "./vectorAdd_default.csv";
+  std::string nvml_filename = "./vectorAdd_idle512.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("vectorAdd_compute");
+  type.append("idle512_vectorAdd_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -188,7 +191,7 @@ int main(void) {
    cudaEventRecord(start, 0);
 
    for (int i = 0; i < iterations; i++) {
-     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, numElements);
+     vectorAdd<<<blocksPerGrid, threadsPerBlock + numIdle>>>(d_A, d_B, d_C, numElements, threadsPerBlock*blocksPerGrid);
      err = cudaGetLastError();
    }
 
