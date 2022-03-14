@@ -190,7 +190,6 @@ int main(int argc, char** argv)
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    // Try uncommenting one kernel call at a time
     xyzw_frequency<<<numBlocks, numThreads + numIdle>>>(d_count, d_text, len, numThreads * numBlocks);
   }
 
