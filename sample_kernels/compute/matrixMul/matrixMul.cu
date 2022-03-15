@@ -59,9 +59,12 @@
  */
 template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
     float *B, int wA,
-    int wB, int workThreads) {
+    int wB, int workThreads, int idleThreads) {
 
-  int my_id = threadIdx.x + blockDim.x * threadIdx.y;
+  int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+
+  int my_id = blockId * (blockDim.x * blockDim.y)
+  + (threadIdx.y * blockDim.x) + threadIdx.x;
 
   // Block index
   int bx = blockIdx.x;
@@ -96,7 +99,6 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
        a <= aEnd;
        a += aStep, b += bStep) {
 
-    if (my_id <= workThreads) {
       // Declaration of the shared memory array As used to
       // store the sub-matrix of A
       __shared__ float As[BLOCK_SIZE][BLOCK_SIZE];
@@ -105,6 +107,7 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
       // store the sub-matrix of B
       __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
 
+    if (my_id <= (workThreads - idleThreads)) {
       // Load the matrices from device memory
       // to shared memory; each thread loads
       // one element of each matrix
@@ -115,11 +118,11 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
     // Synchronize to make sure the matrices are loaded
     __syncthreads();
 
-    if (my_id < workThreads) {
+    if (my_id <= workThreads) {
       // Multiply the two matrices together;
       // each thread computes one element
       // of the block sub-matrix
-  #pragma unroll
+      #pragma unroll
 
       for (int k = 0; k < BLOCK_SIZE; ++k) {
         Csub += As[ty][k] * Bs[k][tx];
@@ -134,8 +137,10 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
 
   // Write the block sub-matrix to device memory;
   // each thread writes one element
-  int c = wB * BLOCK_SIZE * by + BLOCK_SIZE * bx;
-  C[c + wB * ty + tx] = Csub;
+  if (my_id <= (workThreads - idleThreads)) {
+    int c = wB * BLOCK_SIZE * by + BLOCK_SIZE * bx;
+    C[c + wB * ty + tx] = Csub;
+  }
 }
 
 void ConstantInit(float *data, int size, float val) {
@@ -163,11 +168,11 @@ int MatrixMultiply(int argc, char **argv,
    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./matrixMul_idle8.csv";
+  std::string nvml_filename = "./matrixMul_idle512.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("matrixMul_compute");
+  type.append("idle512_matrixMul_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -224,10 +229,8 @@ int MatrixMultiply(int argc, char **argv,
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  int numIdle = 16;
-  int intThreads = 200;
-  std::cout << "Threads: " << threads << std::endl;
-  dim3 threadsPlusIdle = (dim3) threads + numIdle;
+  int idleThreads = 512; //Note results of matrix multiply will be incorrect if there are idle threads
+  int workThreads = block_size * block_size * (dimsB.x / threads.x) * (dimsA.y / threads.y);
 
   // Defaults:
   // Blocks: 200
@@ -254,7 +257,7 @@ int MatrixMultiply(int argc, char **argv,
     //} else {
 
       MatrixMulCUDA<32>
-          <<<grid, threadsPlusIdle, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x, intThreads);
+          <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x, workThreads, idleThreads);
 
     //}
   }
@@ -300,8 +303,8 @@ int MatrixMultiply(int argc, char **argv,
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
-  std::cout << "Total blocks: " << (dimsB.x / threads.x) * (dimsA.y / threads.y) << std::endl;
-  std::cout << "Threads per block: " << threads.x * threads.y << std::endl;
+  //std::cout << "Total blocks: " << (dimsB.x / threads.x) * (dimsA.y / threads.y) << std::endl;
+  //std::cout << "Threads per block: " << threads.x * threads.y << std::endl;
 
 
   return EXIT_SUCCESS;

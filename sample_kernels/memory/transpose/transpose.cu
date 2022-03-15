@@ -49,6 +49,18 @@ const int TILE_DIM = 32;
 const int BLOCK_ROWS = 8;
 const int NUM_REPS = 1;
 
+__device__ int getGlobalIdx_3D_3D() {
+
+int blockId = blockIdx.x + blockIdx.y * gridDim.x
++ gridDim.x * gridDim.y * blockIdx.z;
+
+int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
++ (threadIdx.z * (blockDim.x * blockDim.y))
++ (threadIdx.y * blockDim.x)  + threadIdx.x;
+
+return threadId;
+}
+
 // Check errors and print GB/s
 void postprocess(const float *ref, const float *res, int n, float ms)
 {
@@ -100,7 +112,7 @@ __global__ void copySharedMem(float *odata, const float *idata)
 // naive transpose
 // Simplest transpose; doesn't use shared memory.
 // Global memory reads are coalesced but writes are not.
-__global__ void transposeNaive(float *odata, const float *idata)
+/*__global__ void transposeNaive(float *odata, const float *idata)
 {
   int x = blockIdx.x * TILE_DIM + threadIdx.x;
   int y = blockIdx.y * TILE_DIM + threadIdx.y;
@@ -108,36 +120,43 @@ __global__ void transposeNaive(float *odata, const float *idata)
 
   for (int j = 0; j < TILE_DIM; j+= BLOCK_ROWS)
     odata[x*width + (y+j)] = idata[(y+j)*width + x];
-}
+}*/
 
 // coalesced transpose
 // Uses shared memory to achieve coalesing in both reads and writes
 // Tile width == #banks causes shared memory bank conflicts.
-__global__ void transposeCoalesced(float *odata, const float *idata)
+__global__ void transposeCoalesced(float *odata, const float *idata, int workThreads, int idleThreads)
 {
+  int my_id = getGlobalIdx_3D_3D();
+
   __shared__ float tile[TILE_DIM][TILE_DIM];
 
   int x = blockIdx.x * TILE_DIM + threadIdx.x;
   int y = blockIdx.y * TILE_DIM + threadIdx.y;
   int width = gridDim.x * TILE_DIM;
 
-  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
-     tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
+
+  if (my_id <= (workThreads - idleThreads)) {
+    for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+       tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
+  }
 
   __syncthreads();
 
   x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
   y = blockIdx.x * TILE_DIM + threadIdx.y;
 
-  for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
-     odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
+  if (my_id <= (workThreads - idleThreads)) {
+    for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
+       odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
+  }
 }
 
 
 // No bank-conflict transpose
 // Same as transposeCoalesced except the first tile dimension is padded
 // to avoid shared memory bank conflicts.
-__global__ void transposeNoBankConflicts(float *odata, const float *idata)
+/*__global__ void transposeNoBankConflicts(float *odata, const float *idata)
 {
   __shared__ float tile[TILE_DIM][TILE_DIM+1];
 
@@ -155,17 +174,18 @@ __global__ void transposeNoBankConflicts(float *odata, const float *idata)
 
   for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
      odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
-}
+}*/
 
 int main(int argc, char **argv) {
   //NVML Stuff
   int devId = 0;
-  std::string nvml_filename = "./transpose_default.csv";
+  std::string nvml_filename = "./transpose_idle512.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
+
   int iterations = 350000;
 
-  type.append("transpose_memory");
+  type.append("idle512_transpose_memory");
   nvmlClass nvml( devId, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -183,17 +203,19 @@ int main(int argc, char **argv) {
 
   dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);
   dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
+  int workThreads = (nx/TILE_DIM) * (ny/TILE_DIM) * (TILE_DIM * BLOCK_ROWS);
+  int idleThreads = 512;
 
   //int devId = 0;
   if (argc > 1) devId = atoi(argv[1]);
 
   cudaDeviceProp prop;
   checkCuda( cudaGetDeviceProperties(&prop, devId));
-  printf("\nDevice : %s\n", prop.name);
+  /*printf("\nDevice : %s\n", prop.name);
   printf("Matrix size: %d %d, Block size: %d %d, Tile size: %d %d\n",
          nx, ny, TILE_DIM, BLOCK_ROWS, TILE_DIM, TILE_DIM);
   printf("dimGrid: %d %d %d. dimBlock: %d %d %d\n",
-         dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);
+         dimGrid.x, dimGrid.y, dimGrid.z, dimBlock.x, dimBlock.y, dimBlock.z);*/
 
   checkCuda( cudaSetDevice(devId) );
 
@@ -254,7 +276,7 @@ int main(int argc, char **argv) {
   checkCuda( cudaEventRecord(startEvent, 0) );
 
   for (int i = 0; i < iterations; i++) {
-    transposeCoalesced<<<dimGrid, dimBlock>>>(d_tdata, d_idata);
+    transposeCoalesced<<<dimGrid, dimBlock>>>(d_tdata, d_idata, workThreads, idleThreads);
   }
 
   checkCuda( cudaEventRecord(stopEvent, 0) );
@@ -268,9 +290,9 @@ int main(int argc, char **argv) {
   // ------------
   // time kernels
   // ------------
-  printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
-  printf("%25s", "coalesced transpose");
-  postprocess(gold, h_tdata, nx * ny, ms);
+  //printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
+  //printf("%25s", "coalesced transpose");
+  //postprocess(gold, h_tdata, nx * ny, ms);
 
   std::cout << "Total blocks: " << nx/TILE_DIM * ny/TILE_DIM << std::endl;
   std::cout << "Threads per block: " << TILE_DIM * BLOCK_ROWS << std::endl;
