@@ -74,7 +74,7 @@ vectorAdd_idle512_start_stop <- read.csv("./vector_add/start_stop_idle512_vector
 vectorAdd_idle512_start_stop$timestamp <- vectorAdd_idle512_start_stop$timestamp - min(vectorAdd_idle512_df$timestamp)
 vectorAdd_idle512_df$timestamp <- vectorAdd_idle512_df$timestamp - min(vectorAdd_idle512_df$timestamp)
 
-vectorAdd_all_df <- rbind(vectorAdd_df, vectorAdd_idle32_df, vectorAdd_idle64_df, vectorAdd_idle128_df, vectorAdd_idle256_df, vectorAdd_idle512_df)
+vectorAdd_all_df <- rbind(vectorAdd_idle32_df, vectorAdd_idle64_df, vectorAdd_idle128_df, vectorAdd_idle256_df, vectorAdd_idle512_df)
 
 
 png("vector_idle.png")
@@ -124,7 +124,7 @@ simpleCUFFT_idle512_start_stop <- read.csv("./simple_cufft/start_stop_idle512_si
 simpleCUFFT_idle512_start_stop$timestamp <- simpleCUFFT_idle512_start_stop$timestamp - min(simpleCUFFT_idle512_df$timestamp)
 simpleCUFFT_idle512_df$timestamp <- simpleCUFFT_idle512_df$timestamp - min(simpleCUFFT_idle512_df$timestamp)
 
-simpleCUFFT_all_df <- rbind(simpleCUFFT_df, simpleCUFFT_idle32_df, simpleCUFFT_idle64_df, simpleCUFFT_idle128_df, simpleCUFFT_idle256_df, simpleCUFFT_idle512_df)
+simpleCUFFT_all_df <- rbind(simpleCUFFT_idle32_df, simpleCUFFT_idle64_df, simpleCUFFT_idle128_df, simpleCUFFT_idle256_df, simpleCUFFT_idle512_df)
 
 png("cufft_idle.png")
 ggplot(simpleCUFFT_all_df, aes(x = timestep, y = power_draw_mW, group = type, color = type)) +
@@ -173,7 +173,7 @@ coalescing_idle512_start_stop <- read.csv("./coalescing/start_stop_idle512_coale
 coalescing_idle512_start_stop$timestamp <- coalescing_idle512_start_stop$timestamp - min(coalescing_idle512_df$timestamp)
 coalescing_idle512_df$timestamp <- coalescing_idle512_df$timestamp - min(coalescing_idle512_df$timestamp)
 
-coalescing_all_df <- rbind(coalescing_df, coalescing_idle32_df, coalescing_idle64_df, coalescing_idle128_df, coalescing_idle256_df, coalescing_idle512_df)
+coalescing_all_df <- rbind(coalescing_idle32_df, coalescing_idle64_df, coalescing_idle128_df, coalescing_idle256_df, coalescing_idle512_df)
 
 png("coalescing_idle.png")
 ggplot(coalescing_all_df, aes(x = timestep, y = power_draw_mW, group = type, color = type)) +
@@ -222,7 +222,7 @@ wordcount_idle512_start_stop <- read.csv("./word_count/start_stop_idle512_wordco
 wordcount_idle512_start_stop$timestamp <- wordcount_idle512_start_stop$timestamp - min(wordcount_idle512_df$timestamp)
 wordcount_idle512_df$timestamp <- wordcount_idle512_df$timestamp - min(wordcount_idle512_df$timestamp)
 
-wordcount_all_df <- rbind(wordcount_df, wordcount_idle32_df, wordcount_idle64_df, wordcount_idle128_df, wordcount_idle256_df, wordcount_idle512_df)
+wordcount_all_df <- rbind(wordcount_idle32_df, wordcount_idle64_df, wordcount_idle128_df, wordcount_idle256_df, wordcount_idle512_df)
 
 png("word_idle.png")
 ggplot(wordcount_all_df, aes(x = timestep, y = power_draw_mW, group = type, color = type)) +
