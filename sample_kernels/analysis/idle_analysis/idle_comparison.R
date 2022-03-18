@@ -243,3 +243,101 @@ ggplot(wordcount_all_df, aes(x = timestep, y = power_draw_mW, group = type, colo
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
 dev.off()
+
+### IDLE: Matrix Multiplication ###
+setwd("~/CUDA_Programming/sample_kernels/analysis/idle_analysis")
+matrixMul_idle32_df <- read.csv("./matrix_mul/matrixMul_idle32.csv")
+matrixMul_idle32_start_stop <- read.csv("./matrix_mul/start_stop_idle32_matrixMul_compute.csv")
+matrixMul_idle32_start_stop$timestamp <- matrixMul_idle32_start_stop$timestamp - min(matrixMul_idle32_df$timestamp)
+matrixMul_idle32_df$timestamp <- matrixMul_idle32_df$timestamp - min(matrixMul_idle32_df$timestamp)
+
+matrixMul_idle64_df <- read.csv("./matrix_mul/matrixMul_idle64.csv")
+matrixMul_idle64_start_stop <- read.csv("./matrix_mul/start_stop_idle64_matrixMul_compute.csv")
+matrixMul_idle64_start_stop$timestamp <- matrixMul_idle64_start_stop$timestamp - min(matrixMul_idle64_df$timestamp)
+matrixMul_idle64_df$timestamp <- matrixMul_idle64_df$timestamp - min(matrixMul_idle64_df$timestamp)
+
+matrixMul_idle128_df <- read.csv("./matrix_mul/matrixMul_idle128.csv")
+matrixMul_idle128_start_stop <- read.csv("./matrix_mul/start_stop_idle128_matrixMul_compute.csv")
+matrixMul_idle128_start_stop$timestamp <- matrixMul_idle128_start_stop$timestamp - min(matrixMul_idle128_df$timestamp)
+matrixMul_idle128_df$timestamp <- matrixMul_idle128_df$timestamp - min(matrixMul_idle128_df$timestamp)
+
+matrixMul_idle256_df <- read.csv("./matrix_mul/matrixMul_idle256.csv")
+matrixMul_idle256_start_stop <- read.csv("./matrix_mul/start_stop_idle256_matrixMul_compute.csv")
+matrixMul_idle256_start_stop$timestamp <- matrixMul_idle256_start_stop$timestamp - min(matrixMul_idle256_df$timestamp)
+matrixMul_idle256_df$timestamp <- matrixMul_idle256_df$timestamp - min(matrixMul_idle256_df$timestamp)
+
+matrixMul_idle512_df <- read.csv("./matrix_mul/matrixMul_idle512.csv")
+matrixMul_idle512_start_stop <- read.csv("./matrix_mul/start_stop_idle512_matrixMul_compute.csv")
+matrixMul_idle512_start_stop$timestamp <- matrixMul_idle512_start_stop$timestamp - min(matrixMul_idle512_df$timestamp)
+matrixMul_idle512_df$timestamp <- matrixMul_idle512_df$timestamp - min(matrixMul_idle512_df$timestamp)
+
+matrixMul_all_df <- rbind(matrixMul_idle32_df, matrixMul_idle64_df, matrixMul_idle128_df, matrixMul_idle256_df, matrixMul_idle512_df)
+
+png("matrix_idle.png")
+ggplot(matrixMul_all_df, aes(x = timestep, y = power_draw_mW, group = type, color = type)) +
+  geom_line() +
+  ylab("Power (mW)") +
+  xlab("Timestamp") +
+  ggtitle("Word Count Idle Threads Comparison")+
+  theme(legend.position=c(0.6, 0.8),
+        plot.title = element_text(hjust = 0.5 , size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+dev.off()
+
+### IDLE: Transpose ###
+setwd("~/CUDA_Programming/sample_kernels/analysis/idle_analysis")
+transpose_idle32_df <- read.csv("./transpose/transpose_idle32.csv")
+transpose_idle32_start_stop <- read.csv("./transpose/start_stop_idle32_transpose_memory.csv")
+transpose_idle32_start_stop$timestamp <- transpose_idle32_start_stop$timestamp - min(transpose_idle32_df$timestamp)
+transpose_idle32_df$timestamp <- transpose_idle32_df$timestamp - min(transpose_idle32_df$timestamp)
+
+transpose_idle64_df <- read.csv("./transpose/transpose_idle64.csv")
+transpose_idle64_start_stop <- read.csv("./transpose/start_stop_idle64_transpose_memory.csv")
+transpose_idle64_start_stop$timestamp <- transpose_idle64_start_stop$timestamp - min(transpose_idle64_df$timestamp)
+transpose_idle64_df$timestamp <- transpose_idle64_df$timestamp - min(transpose_idle64_df$timestamp)
+
+transpose_idle128_df <- read.csv("./transpose/transpose_idle128.csv")
+transpose_idle128_start_stop <- read.csv("./transpose/start_stop_idle128_transpose_memory.csv")
+transpose_idle128_start_stop$timestamp <- transpose_idle128_start_stop$timestamp - min(transpose_idle128_df$timestamp)
+transpose_idle128_df$timestamp <- transpose_idle128_df$timestamp - min(transpose_idle128_df$timestamp)
+
+transpose_idle256_df <- read.csv("./transpose/transpose_idle256.csv")
+transpose_idle256_start_stop <- read.csv("./transpose/start_stop_idle256_transpose_memory.csv")
+transpose_idle256_start_stop$timestamp <- transpose_idle256_start_stop$timestamp - min(transpose_idle256_df$timestamp)
+transpose_idle256_df$timestamp <- transpose_idle256_df$timestamp - min(transpose_idle256_df$timestamp)
+
+transpose_idle512_df <- read.csv("./transpose/transpose_idle512.csv")
+transpose_idle512_start_stop <- read.csv("./transpose/start_stop_idle512_transpose_memory.csv")
+transpose_idle512_start_stop$timestamp <- transpose_idle512_start_stop$timestamp - min(transpose_idle512_df$timestamp)
+transpose_idle512_df$timestamp <- transpose_idle512_df$timestamp - min(transpose_idle512_df$timestamp)
+
+transpose_all_df <- rbind(transpose_idle32_df, transpose_idle64_df, transpose_idle128_df, transpose_idle256_df, transpose_idle512_df)
+
+png("transpose_idle.png")
+ggplot(transpose_all_df, aes(x = timestep, y = power_draw_mW, group = type, color = type)) +
+  geom_line() +
+  ylab("Power (mW)") +
+  xlab("Timestamp") +
+  ggtitle("Word Count Idle Threads Comparison")+
+  theme(legend.position=c(0.6, 0.8),
+        plot.title = element_text(hjust = 0.5 , size = 14),
+        # Hide panel borders and remove grid lines
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        # Change axis line
+        axis.line = element_line(colour = "black"),
+        panel.background = element_rect(fill="white"),
+        text = element_text(size=14),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank())
+dev.off()
