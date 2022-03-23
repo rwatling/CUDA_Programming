@@ -65,12 +65,12 @@ void count_if(int *count, T *data, int n, Predicate p)
 // Note the use of range-based for loop and initializer_list inside the functor
 // We use auto so we don't have to know the type of the functor or array
 __global__
-void xyzw_frequency(int *count, char *text, int n, int workThreads)
+void xyzw_frequency(int *count, char *text, int n, int workThreads, int idleThreads)
 {
   int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
   const char letters[] { 'x','y','z','w' };
 
-  if (threadId <= workThreads) {
+  if (threadId <= (workThreads - idleThreads)) {
     count_if(count, text, n, [&](char c) {
       for (const auto x : letters)
         if (c == x) return true;
@@ -125,18 +125,18 @@ int main(int argc, char** argv)
   float milliseconds;
   int iterations = 15500;
   int numThreads = 256;
-  int numIdle = 512;
+  int numIdle = 64;
   int numBlocks = 8;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./wordcount_idle512.csv";
+  std::string nvml_filename = "./wordcount_idle64.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle512_wordcount_memory");
+  type.append("idle64_wordcount_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    xyzw_frequency<<<numBlocks, numThreads + numIdle>>>(d_count, d_text, len, numThreads * numBlocks);
+    xyzw_frequency<<<numBlocks, numThreads>>>(d_count, d_text, len, numThreads * numBlocks, numIdle);
   }
 
   //Timing

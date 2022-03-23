@@ -51,12 +51,12 @@ __global__ void offset(T* a, int s)
 }
 
 template <typename T>
-__global__ void stride(T* a, int s, int workThreads)
+__global__ void stride(T* a, int s, int workThreads, int idleThreads)
 {
   int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
   int i = (blockDim.x * blockIdx.x + threadIdx.x) * s;
 
-  if (threadId <= workThreads) {
+  if (threadId <= (workThreads - idleThreads)) {
     a[i] = a[i] + 1;
   }
 }
@@ -76,18 +76,18 @@ void runTest(int deviceId, int nMB)
   float milliseconds;
   int iterations = 1000000;
   int numThreads = 256;
-  int numIdle = 512;
+  int numIdle = 64;
   int numBlocks = 4096;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./coalescing_idle512.csv";
+  std::string nvml_filename = "./coalescing_idle64.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle512_coalescing_memory");
+  type.append("idle64_coalescing_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -157,7 +157,7 @@ void runTest(int deviceId, int nMB)
 
   for (int i = 0; i < iterations; i++) {
     //stride<<<n/blockSize, blockSize>>>(d_a, 1); // warm up
-    stride<<<numBlocks, numThreads + numIdle>>>(d_a, 1, numThreads);
+    stride<<<numBlocks, numThreads>>>(d_a, 1, numThreads, numIdle);
   }
 
   //Timing

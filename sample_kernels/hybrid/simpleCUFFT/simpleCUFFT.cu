@@ -84,11 +84,11 @@ void runTest(int argc, char **argv) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./simpleCUFFT_idle512.csv";
+  std::string nvml_filename = "./simpleCUFFT_idle64.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle512_simpleCUFFT_hybrid");
+  type.append("idle64_simpleCUFFT_hybrid");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -194,7 +194,7 @@ void runTest(int argc, char **argv) {
   // Test10: 32, 1024
 
   int iterations = 2000000;
-  int numIdle = 512;
+  int numIdle = 64;
   int numThreads = 256;
   int numBlocks = 32;
 
@@ -206,8 +206,8 @@ void runTest(int argc, char **argv) {
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    ComplexPointwiseMulAndScale<<<numBlocks, numThreads + numIdle>>>(d_signal, d_filter_kernel, new_size,
-                                           1.0f / new_size, numThreads*numBlocks);
+    ComplexPointwiseMulAndScale<<<numBlocks, numThreads>>>(d_signal, d_filter_kernel, new_size,
+                                           1.0f / new_size, numThreads*numBlocks, numIdle);
   }
 
    //Timing
@@ -365,11 +365,11 @@ static __device__ __host__ inline Complex ComplexMul(Complex a, Complex b) {
 
 // Complex pointwise multiplication
 static __global__ void ComplexPointwiseMulAndScale(Complex *a, const Complex *b,
-                                                   int size, float scale, int workThreads) {
+                                                   int size, float scale, int workThreads, int idleThreads) {
   const int numThreads = blockDim.x * gridDim.x;
   const int threadID = blockIdx.x * blockDim.x + threadIdx.x;
 
-  if (threadID <= workThreads) {
+  if (threadID <= (workThreads-idleThreads)) {
     for (int i = threadID; i < size; i += numThreads) {
       a[i] = ComplexScale(ComplexMul(a[i], b[i]), scale);
     }

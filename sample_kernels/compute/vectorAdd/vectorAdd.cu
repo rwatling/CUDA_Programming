@@ -48,10 +48,10 @@
  * number of elements numElements.
  */
 __global__ void vectorAdd(const float *A, const float *B, float *C,
-                          int numElements, int workThreads) {
+                          int numElements, int workThreads, int idleThreads) {
   int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  if (i <= workThreads) {
+  if (i <= (workThreads - idleThreads)) {
     if (i < numElements) {
       C[i] = A[i] + B[i] + 0.0f;
     }
@@ -78,13 +78,13 @@ int main(void) {
   cudaEvent_t start, stop;
   float milliseconds;
   int iterations = 2000000;
-  int numIdle = 512;
+  int numIdle = 64;
 
-  std::string nvml_filename = "./vectorAdd_idle512.csv";
+  std::string nvml_filename = "./vectorAdd_idle64_r1.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle512_vectorAdd_compute");
+  type.append("idle64_r1_vectorAdd_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -153,7 +153,7 @@ int main(void) {
   // Copy the host input vectors A and B in host memory to the device input
   // vectors in
   // device memory
-  printf("Copy input data from the host memory to the CUDA device\n");
+  //printf("Copy input data from the host memory to the CUDA device\n");
   err = cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
 
   if (err != cudaSuccess) {
@@ -191,7 +191,7 @@ int main(void) {
    cudaEventRecord(start, 0);
 
    for (int i = 0; i < iterations; i++) {
-     vectorAdd<<<blocksPerGrid, threadsPerBlock + numIdle>>>(d_A, d_B, d_C, numElements, threadsPerBlock*blocksPerGrid);
+     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, numElements, threadsPerBlock, numIdle);
      err = cudaGetLastError();
    }
 
@@ -228,14 +228,14 @@ int main(void) {
   }
 
   // Verify that the result vector is correct
-  for (int i = 0; i < numElements; ++i) {
+  /*for (int i = 0; i < numElements; ++i) {
     if (fabs(h_A[i] + h_B[i] - h_C[i]) > 1e-5) {
       fprintf(stderr, "Result verification failed at element %d!\n", i);
       exit(EXIT_FAILURE);
     }
   }
 
-  printf("Test PASSED\n");
+  printf("Test PASSED\n");*/
 
   // Free device global memory
   err = cudaFree(d_A);
@@ -267,7 +267,7 @@ int main(void) {
   free(h_B);
   free(h_C);
 
-  printf("Done\n");
+  //printf("Done\n");
 
   nvml.log_stop();
 
