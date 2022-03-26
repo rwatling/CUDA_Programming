@@ -1,0 +1,5 @@
+type,timestamp,power
+idle64_r1_coalescing_memory,1648252531777113000,32538
+idle64_r1_coalescing_memory,1648252532186822092,44355
+idle64_r1_coalescing_memory,1648252537265153670,181100
+idle64_r1_coalescing_memory,1648252537266389398,181100

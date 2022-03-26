@@ -48,7 +48,7 @@ static __device__ __host__ inline Complex ComplexAdd(Complex, Complex);
 static __device__ __host__ inline Complex ComplexScale(Complex, float);
 static __device__ __host__ inline Complex ComplexMul(Complex, Complex);
 static __global__ void ComplexPointwiseMulAndScale(Complex *, const Complex *,
-                                                   int, float, int);
+                                                   int, float, int, int);
 
 // Filtering functions
 void Convolve(const Complex *, int, const Complex *, int, Complex *);
@@ -84,11 +84,11 @@ void runTest(int argc, char **argv) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./simpleCUFFT_idle64.csv";
+  std::string nvml_filename = "./simpleCUFFT_idle1024_r5.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle64_simpleCUFFT_hybrid");
+  type.append("idle1024_r5_simpleCUFFT_hybrid");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -193,8 +193,8 @@ void runTest(int argc, char **argv) {
   // Test9: 32, 128
   // Test10: 32, 1024
 
-  int iterations = 2000000;
-  int numIdle = 64;
+  int iterations = 1000000;
+  int numIdle = 1024;
   int numThreads = 256;
   int numBlocks = 32;
 

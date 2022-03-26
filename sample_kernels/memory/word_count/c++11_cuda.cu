@@ -123,20 +123,20 @@ int main(int argc, char** argv)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 15500;
+  int iterations = 35000;
   int numThreads = 256;
-  int numIdle = 64;
-  int numBlocks = 8;
+  int numIdle = 1024;
+  int numBlocks = 16;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./wordcount_idle64.csv";
+  std::string nvml_filename = "./wordcount_idle1024_r5.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle64_wordcount_memory");
+  type.append("idle1024_r5_wordcount_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));

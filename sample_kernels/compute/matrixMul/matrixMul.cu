@@ -168,11 +168,11 @@ int MatrixMultiply(int argc, char **argv,
    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./matrixMul_idle512.csv";
+  std::string nvml_filename = "./matrixMul_idle1024_r4.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle512_matrixMul_compute");
+  type.append("idle1024_r4_matrixMul_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -229,7 +229,7 @@ int MatrixMultiply(int argc, char **argv,
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  int idleThreads = 512; //Note results of matrix multiply will be incorrect if there are idle threads
+  int idleThreads = 1024; //Note results of matrix multiply will be incorrect if there are idle threads
   int workThreads = block_size * block_size * (dimsB.x / threads.x) * (dimsA.y / threads.y);
 
   // Defaults:
