@@ -7,7 +7,7 @@ all: coalescing
 coalescing: coalescing.o
 	$(CC) ${CFLAGS} ${IFLAGS} -o coalescing coalescing.o ${LDFLAGS}
 
-coalescing.o:
+coalescing.o: coalescing.cu
 	$(CC) ${CFLAGS} ${IFLAGS} -c coalescing.cu
 
 clean:

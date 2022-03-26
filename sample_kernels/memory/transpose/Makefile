@@ -7,7 +7,7 @@ all: transpose
 transpose: transpose.o
 	$(CC) ${CFLAGS} ${IFLAGS} -o transpose transpose.o ${LDFLAGS}
 
-transpose.o:
+transpose.o: transpose.cu
 	$(CC) ${CFLAGS} ${IFLAGS} -c transpose.cu
 
 clean:

@@ -51,14 +51,14 @@ const int NUM_REPS = 1;
 
 __device__ int getGlobalIdx_3D_3D() {
 
-int blockId = blockIdx.x + blockIdx.y * gridDim.x
-+ gridDim.x * gridDim.y * blockIdx.z;
+  int blockId = blockIdx.x + blockIdx.y * gridDim.x
+  + gridDim.x * gridDim.y * blockIdx.z;
 
-int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-+ (threadIdx.z * (blockDim.x * blockDim.y))
-+ (threadIdx.y * blockDim.x)  + threadIdx.x;
+  int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+  + (threadIdx.z * (blockDim.x * blockDim.y))
+  + (threadIdx.y * blockDim.x)  + threadIdx.x;
 
-return threadId;
+  return threadId;
 }
 
 // Check errors and print GB/s
@@ -179,13 +179,13 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int workThr
 int main(int argc, char **argv) {
   //NVML Stuff
   int devId = 0;
-  std::string nvml_filename = "./transpose_idle512.csv";
+  std::string nvml_filename = "./transpose_idle1024_r5.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  int iterations = 350000;
+  int iterations = 400000;
 
-  type.append("idle512_transpose_memory");
+  type.append("idle1024_r5_transpose_memory");
   nvmlClass nvml( devId, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -199,12 +199,14 @@ int main(int argc, char **argv) {
   //const int BLOCK_ROWS = 8;
   //const int NUM_REPS = 1;
 
+  //1024 blocks 256 threads
+
   const int mem_size = nx*ny*sizeof(float);
 
   dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);
   dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
   int workThreads = (nx/TILE_DIM) * (ny/TILE_DIM) * (TILE_DIM * BLOCK_ROWS);
-  int idleThreads = 512;
+  int idleThreads = 1024;
 
   //int devId = 0;
   if (argc > 1) devId = atoi(argv[1]);
@@ -293,6 +295,8 @@ int main(int argc, char **argv) {
   //printf("%25s%25s%25s\n", "Routine", "Bandwidth (GB/s)", "Time (ms)");
   //printf("%25s", "coalesced transpose");
   //postprocess(gold, h_tdata, nx * ny, ms);
+
+  printf("Time (ms): %.4f\n", ms);
 
   std::cout << "Total blocks: " << nx/TILE_DIM * ny/TILE_DIM << std::endl;
   std::cout << "Threads per block: " << TILE_DIM * BLOCK_ROWS << std::endl;
