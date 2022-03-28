@@ -67,10 +67,10 @@ void count_if(int *count, T *data, int n, Predicate p)
 __global__
 void xyzw_frequency(int *count, char *text, int n, int workThreads, int idleThreads)
 {
-  int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
+  //int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
   const char letters[] { 'x','y','z','w' };
 
-  if (threadId <= (workThreads - idleThreads)) {
+  if (threadIdx.x <= (workThreads - idleThreads)) {
     count_if(count, text, n, [&](char c) {
       for (const auto x : letters)
         if (c == x) return true;
@@ -190,7 +190,7 @@ int main(int argc, char** argv)
   cudaEventRecord(start, 0);
 
   for (int i = 0; i < iterations; i++) {
-    xyzw_frequency<<<numBlocks, numThreads>>>(d_count, d_text, len, numThreads * numBlocks, numIdle);
+    xyzw_frequency<<<numBlocks, numThreads>>>(d_count, d_text, len, numThreads, numIdle);
   }
 
   //Timing

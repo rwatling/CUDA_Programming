@@ -127,7 +127,7 @@ __global__ void copySharedMem(float *odata, const float *idata)
 // Tile width == #banks causes shared memory bank conflicts.
 __global__ void transposeCoalesced(float *odata, const float *idata, int workThreads, int idleThreads)
 {
-  int my_id = getGlobalIdx_3D_3D();
+  //int my_id = getGlobalIdx_3D_3D();
 
   __shared__ float tile[TILE_DIM][TILE_DIM];
 
@@ -136,7 +136,7 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int workThr
   int width = gridDim.x * TILE_DIM;
 
 
-  if (my_id <= (workThreads - idleThreads)) {
+  if (threadIdx.x <= (workThreads - idleThreads)) {
     for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
        tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
   }
@@ -146,7 +146,7 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int workThr
   x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
   y = blockIdx.x * TILE_DIM + threadIdx.y;
 
-  if (my_id <= (workThreads - idleThreads)) {
+  if (threadIdx.x <= (workThreads - idleThreads)) {
     for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
        odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
   }
@@ -205,8 +205,8 @@ int main(int argc, char **argv) {
 
   dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);
   dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
-  int workThreads = (nx/TILE_DIM) * (ny/TILE_DIM) * (TILE_DIM * BLOCK_ROWS);
-  int idleThreads = 1024;
+  int workThreads = (TILE_DIM * BLOCK_ROWS);
+  int idleThreads = 64;
 
   //int devId = 0;
   if (argc > 1) devId = atoi(argv[1]);

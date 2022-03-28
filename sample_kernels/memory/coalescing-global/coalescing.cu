@@ -53,10 +53,10 @@ __global__ void offset(T* a, int s)
 template <typename T>
 __global__ void stride(T* a, int s, int workThreads, int idleThreads)
 {
-  int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
+  //int threadId = (blockIdx.x * blockDim.x) + threadIdx.x;
   int i = (blockDim.x * blockIdx.x + threadIdx.x) * s;
 
-  if (threadId <= (workThreads - idleThreads)) {
+  if (threadIdx.x <= (workThreads - idleThreads)) {
     a[i] = a[i] + 1;
   }
 }
@@ -74,10 +74,10 @@ void runTest(int deviceId, int nMB)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 1250000;
+  int iterations = 1500000;
   int numThreads = 256;
-  int numIdle = 1024;
-  int numBlocks = 4096;
+  int numIdle = 64;
+  int numBlocks = 1024;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;

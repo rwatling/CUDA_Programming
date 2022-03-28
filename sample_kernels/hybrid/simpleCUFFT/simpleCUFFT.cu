@@ -194,7 +194,7 @@ void runTest(int argc, char **argv) {
   // Test10: 32, 1024
 
   int iterations = 1000000;
-  int numIdle = 1024;
+  int numIdle = 64;
   int numThreads = 256;
   int numBlocks = 32;
 
@@ -207,7 +207,7 @@ void runTest(int argc, char **argv) {
 
   for (int i = 0; i < iterations; i++) {
     ComplexPointwiseMulAndScale<<<numBlocks, numThreads>>>(d_signal, d_filter_kernel, new_size,
-                                           1.0f / new_size, numThreads*numBlocks, numIdle);
+                                           1.0f / new_size, numThreads, numIdle);
   }
 
    //Timing
@@ -369,7 +369,7 @@ static __global__ void ComplexPointwiseMulAndScale(Complex *a, const Complex *b,
   const int numThreads = blockDim.x * gridDim.x;
   const int threadID = blockIdx.x * blockDim.x + threadIdx.x;
 
-  if (threadID <= (workThreads-idleThreads)) {
+  if (threadIdx.x <= (workThreads-idleThreads)) {
     for (int i = threadID; i < size; i += numThreads) {
       a[i] = ComplexScale(ComplexMul(a[i], b[i]), scale);
     }

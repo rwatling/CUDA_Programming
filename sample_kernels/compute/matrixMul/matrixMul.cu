@@ -61,10 +61,10 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
     float *B, int wA,
     int wB, int workThreads, int idleThreads) {
 
-  int blockId = blockIdx.x + blockIdx.y * gridDim.x;
+  //int blockId = blockIdx.x + blockIdx.y * gridDim.x;
 
-  int my_id = blockId * (blockDim.x * blockDim.y)
-  + (threadIdx.y * blockDim.x) + threadIdx.x;
+  //int my_id = blockId * (blockDim.x * blockDim.y)
+  //+ (threadIdx.y * blockDim.x) + threadIdx.x;
 
   // Block index
   int bx = blockIdx.x;
@@ -107,7 +107,7 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
       // store the sub-matrix of B
       __shared__ float Bs[BLOCK_SIZE][BLOCK_SIZE];
 
-    if (my_id <= (workThreads - idleThreads)) {
+    if (tx <= (workThreads - idleThreads)) {
       // Load the matrices from device memory
       // to shared memory; each thread loads
       // one element of each matrix
@@ -118,7 +118,7 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
     // Synchronize to make sure the matrices are loaded
     __syncthreads();
 
-    if (my_id <= workThreads) {
+    if (tx <= workThreads) {
       // Multiply the two matrices together;
       // each thread computes one element
       // of the block sub-matrix
@@ -137,7 +137,7 @@ template <int BLOCK_SIZE> __global__ void MatrixMulCUDA(float *C, float *A,
 
   // Write the block sub-matrix to device memory;
   // each thread writes one element
-  if (my_id <= (workThreads - idleThreads)) {
+  if (tx <= (workThreads - idleThreads)) {
     int c = wB * BLOCK_SIZE * by + BLOCK_SIZE * bx;
     C[c + wB * ty + tx] = Csub;
   }
@@ -168,11 +168,11 @@ int MatrixMultiply(int argc, char **argv,
    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./matrixMul_idle1024_r4.csv";
+  std::string nvml_filename = "./matrixMul_idle64_r1.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle1024_r4_matrixMul_compute");
+  type.append("idle64_r1_matrixMul_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -229,8 +229,8 @@ int MatrixMultiply(int argc, char **argv,
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  int idleThreads = 1024; //Note results of matrix multiply will be incorrect if there are idle threads
-  int workThreads = block_size * block_size * (dimsB.x / threads.x) * (dimsA.y / threads.y);
+  int idleThreads = 512; //Note results of matrix multiply will be incorrect if there are idle threads
+  int workThreads = block_size * block_size;
 
   // Defaults:
   // Blocks: 200

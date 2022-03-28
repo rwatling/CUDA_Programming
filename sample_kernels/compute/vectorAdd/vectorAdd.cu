@@ -49,9 +49,9 @@
  */
 __global__ void vectorAdd(const float *A, const float *B, float *C,
                           int numElements, int workThreads, int idleThreads) {
-  int i = blockDim.x * blockIdx.x + threadIdx.x;
+  //int i = blockDim.x * blockIdx.x + threadIdx.x;
 
-  if (i <= (workThreads - idleThreads)) {
+  if (threadIdx.x <= (workThreads - idleThreads)) {
     if (i < numElements) {
       C[i] = A[i] + B[i] + 0.0f;
     }
@@ -78,7 +78,7 @@ int main(void) {
   cudaEvent_t start, stop;
   float milliseconds;
   int iterations = 1000000;
-  int numIdle = 1024;
+  int numIdle = 64;
 
   std::string nvml_filename = "./vectorAdd_idle1024_r5.csv";
   std::vector<std::thread> cpu_threads;
@@ -191,7 +191,7 @@ int main(void) {
    cudaEventRecord(start, 0);
 
    for (int i = 0; i < iterations; i++) {
-     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, numElements, threadsPerBlock * blocksPerGrid, numIdle);
+     vectorAdd<<<blocksPerGrid, threadsPerBlock>>>(d_A, d_B, d_C, numElements, threadsPerBlock, numIdle);
      err = cudaGetLastError();
    }
 
