@@ -76,18 +76,18 @@ void runTest(int deviceId, int nMB)
   float milliseconds;
   int iterations = 1500000;
   int numThreads = 256;
-  int numIdle = 64;
+  int numIdle = 128;
   int numBlocks = 1024;
 
   if (cuda_err != cudaSuccess) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./coalescing_idle1024_r5.csv";
+  std::string nvml_filename = "./coalescing_idle128_r5.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle1024_r5_coalescing_memory");
+  type.append("idle128_r5_coalescing_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));

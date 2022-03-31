@@ -1,0 +1,5 @@
+type,timestamp,power
+idle512_r3_matrixMul_compute,1648600915947757042,113638
+idle512_r3_matrixMul_compute,1648600916154537055,113766
+idle512_r3_matrixMul_compute,1648600921628934737,153368
+idle512_r3_matrixMul_compute,1648600921706762960,153239

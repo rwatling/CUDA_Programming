@@ -129,24 +129,26 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int workThr
 {
   //int my_id = getGlobalIdx_3D_3D();
 
+  int x;
+  int y;
+  int width;
   __shared__ float tile[TILE_DIM][TILE_DIM];
 
-  int x = blockIdx.x * TILE_DIM + threadIdx.x;
-  int y = blockIdx.y * TILE_DIM + threadIdx.y;
-  int width = gridDim.x * TILE_DIM;
-
-
   if (threadIdx.x <= (workThreads - idleThreads)) {
+    x = blockIdx.x * TILE_DIM + threadIdx.x;
+    y = blockIdx.y * TILE_DIM + threadIdx.y;
+    width = gridDim.x * TILE_DIM;
+
     for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
        tile[threadIdx.y+j][threadIdx.x] = idata[(y+j)*width + x];
   }
 
   __syncthreads();
 
-  x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
-  y = blockIdx.x * TILE_DIM + threadIdx.y;
-
   if (threadIdx.x <= (workThreads - idleThreads)) {
+    x = blockIdx.y * TILE_DIM + threadIdx.x;  // transpose block offset
+    y = blockIdx.x * TILE_DIM + threadIdx.y;
+
     for (int j = 0; j < TILE_DIM; j += BLOCK_ROWS)
        odata[(y+j)*width + x] = tile[threadIdx.x][threadIdx.y + j];
   }
@@ -179,13 +181,13 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int workThr
 int main(int argc, char **argv) {
   //NVML Stuff
   int devId = 0;
-  std::string nvml_filename = "./transpose_idle1024_r5.csv";
+  std::string nvml_filename = "./transpose_idle128_r5.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   int iterations = 400000;
 
-  type.append("idle1024_r5_transpose_memory");
+  type.append("idle128_r5_transpose_memory");
   nvmlClass nvml( devId, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -205,8 +207,9 @@ int main(int argc, char **argv) {
 
   dim3 dimGrid(nx/TILE_DIM, ny/TILE_DIM, 1);
   dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
+
   int workThreads = (TILE_DIM * BLOCK_ROWS);
-  int idleThreads = 64;
+  int idleThreads = 128;
 
   //int devId = 0;
   if (argc > 1) devId = atoi(argv[1]);
