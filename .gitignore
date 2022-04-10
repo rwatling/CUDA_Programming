@@ -21,3 +21,4 @@ sample_kernels/memory/transpose/transpose
 sample_kernels/memory/coalescing-global/coalescing
 sample_kernels/memory/word_count/c++11_cuda
 sample_kernels/compute/matrixMul/matrixMul
+papi-install
