@@ -74,9 +74,9 @@ void runTest(int deviceId, int nMB)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 1500000;
+  int iterations = 1; //1500000;
   int numThreads = 256;
-  int numIdle = 128;
+  int numIdle = 0;
   int numBlocks = 1024;
 
   if (cuda_err != cudaSuccess) {
