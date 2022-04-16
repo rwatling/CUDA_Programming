@@ -229,7 +229,7 @@ int MatrixMultiply(int argc, char **argv,
   dim3 threads(block_size, block_size);
   dim3 grid(dimsB.x / threads.x, dimsA.y / threads.y);
 
-  int idleThreads = 256; //Note results of matrix multiply will be incorrect if there are idle threads
+  int idleThreads = 0; //Note results of matrix multiply will be incorrect if there are idle threads
   int workThreads = block_size * block_size;
 
   // Defaults:
@@ -248,7 +248,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEventRecord(start, 0);
 
   // Execute the kernel
-  int nIter = 75000;
+  int nIter = 1;//75000;
 
   for (int j = 0; j < nIter; j++) {
     //if (block_size == 16) {

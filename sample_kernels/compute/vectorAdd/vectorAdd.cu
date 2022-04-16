@@ -77,8 +77,8 @@ int main(void) {
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 2000000;
-  int numIdle = 128;
+  int iterations = 1;//2000000;
+  int numIdle = 0;
 
   std::string nvml_filename = "./vectorAdd_idle128_r4.csv";
   std::vector<std::thread> cpu_threads;

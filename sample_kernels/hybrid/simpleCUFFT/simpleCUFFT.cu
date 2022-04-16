@@ -193,8 +193,8 @@ void runTest(int argc, char **argv) {
   // Test9: 32, 128
   // Test10: 32, 1024
 
-  int iterations = 2500000;
-  int numIdle = 128;
+  int iterations = 1;//2500000;
+  int numIdle = 0;
   int numThreads = 256;
   int numBlocks = 32;
 

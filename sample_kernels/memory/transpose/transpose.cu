@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  int iterations = 400000;
+  int iterations = 1;//400000;
 
   type.append("idle128_r5_transpose_memory");
   nvmlClass nvml( devId, nvml_filename, type);
@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
   dim3 dimBlock(TILE_DIM, BLOCK_ROWS, 1);
 
   int workThreads = (TILE_DIM * BLOCK_ROWS);
-  int idleThreads = 128;
+  int idleThreads = 0;
 
   //int devId = 0;
   if (argc > 1) devId = atoi(argv[1]);

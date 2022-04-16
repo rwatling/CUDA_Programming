@@ -123,9 +123,9 @@ int main(int argc, char** argv)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 25000;
+  int iterations = 1; //25000;
   int numThreads = 256;
-  int numIdle = 128;
+  int numIdle = 0;
   int numBlocks = 16;
 
   if (cuda_err != cudaSuccess) {
