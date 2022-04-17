@@ -45,7 +45,7 @@ cudaError_t checkCuda(cudaError_t result)
   return result;
 }
 
-const int TILE_DIM = 32;
+const int TILE_DIM = 16;
 const int BLOCK_ROWS = 8;
 const int NUM_REPS = 1;
 
@@ -181,13 +181,13 @@ __global__ void transposeCoalesced(float *odata, const float *idata, int workThr
 int main(int argc, char **argv) {
   //NVML Stuff
   int devId = 0;
-  std::string nvml_filename = "./transpose_idle128_r5.csv";
+  std::string nvml_filename = "./transpose_t128_b4096.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  int iterations = 1;//400000;
+  int iterations = 400000;
 
-  type.append("idle128_r5_transpose_memory");
+  type.append("t128_b4096_transpose_memory");
   nvmlClass nvml( devId, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -201,7 +201,25 @@ int main(int argc, char **argv) {
   //const int BLOCK_ROWS = 8;
   //const int NUM_REPS = 1;
 
-  //1024 blocks 256 threads
+  // Default
+  //1024 blocks
+  //256 threads
+
+  // Config 1: Block rows * 2
+  // blocks: 1024
+  // threads: 512
+
+  // Config 2: Block rows / 2
+  // blocks: 1024
+  // threads: 128
+
+  // Config 3: Double TILE_DIM
+  // blocks: 256
+  // threads: 512
+
+  // Config 4: Half TILE_DIM
+  // blocks: 4096
+  // threads: 128
 
   const int mem_size = nx*ny*sizeof(float);
 
