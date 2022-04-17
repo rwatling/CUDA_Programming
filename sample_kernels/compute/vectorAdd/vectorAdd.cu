@@ -77,14 +77,14 @@ int main(void) {
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 1;//2000000;
+  int iterations = 1000000;
   int numIdle = 0;
 
-  std::string nvml_filename = "./vectorAdd_idle128_r4.csv";
+  std::string nvml_filename = "./vectorAdd_t256_b512.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle128_r4_vectorAdd_compute");
+  type.append("t256_b512_vectorAdd_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -174,13 +174,33 @@ int main(void) {
 
   // Launch the Vector Add CUDA Kernel
   int threadsPerBlock = 256;
-  int blocksPerGrid = (numElements + threadsPerBlock - 1) / threadsPerBlock;
+  int blocksPerGrid = 512;// (numElements + threadsPerBlock - 1) / threadsPerBlock;
   printf("CUDA kernel launch with %d blocks of %d threads\n", blocksPerGrid,
          threadsPerBlock);
 
 
-   //Default:
+   //Default: threadsPerBlock = 256
    //Blocks: 196
+   //Threads: 256
+
+   //Config 1: threadsPerBlock = 128
+   //Blocks: 391
+   //Threads: 128
+
+   //Config 2: threadsPerBlock = 64
+   //Blocks: 782
+   //Threads: 64
+
+   //Config 3: threadsPerBlock = 512
+   //Blocks: 98
+   //Threads: 512
+
+   //Config 4: threadsPerBlock = 256
+   //Blocks: 64
+   //Threads: 256
+
+   //Config 5: threadsPerBlock = 256
+   //Blocks: 512
    //Threads: 256
 
    nvml.log_point();

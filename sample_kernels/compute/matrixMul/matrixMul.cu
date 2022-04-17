@@ -168,11 +168,11 @@ int MatrixMultiply(int argc, char **argv,
    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./matrixMul_idle512_r5.csv";
+  std::string nvml_filename = "./matrixMul_t256_b50.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle512_r5_matrixMul_compute");
+  type.append("t256_b50_matrixMul_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -236,6 +236,26 @@ int MatrixMultiply(int argc, char **argv,
   // Blocks: 200
   // Threads: 1024
 
+  // Config 1: Block size = 16
+  // Blocks: 200
+  // Threads: 256
+
+  // Config 2: Block Size = 8
+  // Blocks: 200
+  // Threads: 64
+
+  // Config 3: Changed dimsA and dimsB to double, block size = 32
+  // Blocks: 800
+  // Threads: 1024
+
+  // Config 4: Changed dimsA and dimsB to half, block size = 32
+  // Blocks: 50
+  // Threads: 1024
+
+  // Config 4: Changed dimsA and dimsB to half, block size = 16
+  // Blocks: 50
+  // Threads: 256
+
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
@@ -248,7 +268,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEventRecord(start, 0);
 
   // Execute the kernel
-  int nIter = 1;//75000;
+  int nIter = 75000;
 
   for (int j = 0; j < nIter; j++) {
     //if (block_size == 16) {
@@ -303,8 +323,8 @@ int MatrixMultiply(int argc, char **argv,
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
-  //std::cout << "Total blocks: " << (dimsB.x / threads.x) * (dimsA.y / threads.y) << std::endl;
-  //std::cout << "Threads per block: " << threads.x * threads.y << std::endl;
+  std::cout << "Total blocks: " << (dimsB.x / threads.x) * (dimsA.y / threads.y) << std::endl;
+  std::cout << "Threads per block: " << threads.x * threads.y << std::endl;
 
 
   return EXIT_SUCCESS;
@@ -334,8 +354,17 @@ int main(int argc, char **argv) {
 
   int block_size = 32;
 
+  //Original
   dim3 dimsA(5 * 2 * block_size, 5 * 2 * block_size, 1);
   dim3 dimsB(5 * 4 * block_size, 5 * 2 * block_size, 1);
+
+  // Config 3
+  //dim3 dimsA(5 * 4 * block_size, 5 * 4 * block_size, 1);
+  //dim3 dimsB(5 * 8 * block_size, 5 * 4 * block_size, 1);
+
+  //Config 4 and 5
+  //dim3 dimsA(5 * 1 * block_size, 5 * 1 * block_size, 1);
+  //dim3 dimsB(5 * 2 * block_size, 5 * 1 * block_size, 1);
 
   // width of Matrix A
   if (checkCmdLineFlag(argc, (const char **)argv, "wA")) {

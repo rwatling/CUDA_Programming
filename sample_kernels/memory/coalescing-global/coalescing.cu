@@ -74,8 +74,8 @@ void runTest(int deviceId, int nMB)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 1; //1500000;
-  int numThreads = 256;
+  int iterations = 1250000;
+  int numThreads = 64;
   int numIdle = 0;
   int numBlocks = 1024;
 
@@ -83,11 +83,11 @@ void runTest(int deviceId, int nMB)
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./coalescing_idle128_r5.csv";
+  std::string nvml_filename = "./coalescing_t64_b1024.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle128_r5_coalescing_memory");
+  type.append("t_b1024_coalescing_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -131,22 +131,21 @@ void runTest(int deviceId, int nMB)
   printf("Stride, Bandwidth (GB/s):\n");*/
 
   // Original
-  // n/blockSize = 4096 blocks
-  // blockSize = 256 threads
+  // 1024 blocks
+  // 256 threads
 
   //Same ratio
-  // blocks 2048, threads 512
-  // blocks 1024, threads 1024
+  // blocks 2048, threads 128
+  // blocks 512, threads 512
 
   // Change Blocks
   // blocks 2048 threads 256
-  // blocks 1024 threads 256
   // blocks 512 threads 256
 
   // Change Threads
-  // blocks 4096 threads 512
-  // block 4096 threads 128
-  // block 4096 threads 64
+  // blocks 1024 threads 512
+  // block 1024 threads 1024
+  // block 1024 threads 64
 
   nvml.log_point();
 

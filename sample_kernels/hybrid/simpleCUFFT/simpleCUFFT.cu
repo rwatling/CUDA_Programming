@@ -84,11 +84,11 @@ void runTest(int argc, char **argv) {
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./simpleCUFFT_idle128_r5.csv";
+  std::string nvml_filename = "./simpleCUFFT_t64_b32.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle128_r5_simpleCUFFT_hybrid");
+  type.append("t64_b32_simpleCUFFT_hybrid");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -174,29 +174,27 @@ void runTest(int argc, char **argv) {
   cudaEvent_t start, stop;
   float milliseconds;
 
-  // threads and blocks configurations
-  // Original: 32, 256
+  // threads and blocks configurations1024
+  // Original: 32, 256 (blocks, threads)
 
   // Keep ratio the same
   // Test1: 16, 512
-  // Test2: 8, 1024
-  // Test3: 64, 128
+  // Test2: 64, 128
 
   // Change blocks
-  // Test4: 64, 256
+  // Test3: 64, 256
+  // Test4: 128, 256
   // Test5: 16, 256
-  // Test6: 8, 256
-  // Test7: 1, 256
 
   //Change threads
-  // Test8: 32, 512
-  // Test9: 32, 128
-  // Test10: 32, 1024
+  // Test6: 32, 512
+  // Test7: 32, 1024
+  // Test8: 32, 64
 
-  int iterations = 1;//2500000;
+  int iterations = 1250000;
   int numIdle = 0;
-  int numThreads = 256;
   int numBlocks = 32;
+  int numThreads = 64;
 
   nvml.log_point();
 

@@ -123,8 +123,8 @@ int main(int argc, char** argv)
   /*************************CUDA Timing***********************************/
   cudaEvent_t start, stop;
   float milliseconds;
-  int iterations = 1; //25000;
-  int numThreads = 256;
+  int iterations = 25000;
+  int numThreads = 64;
   int numIdle = 0;
   int numBlocks = 16;
 
@@ -132,11 +132,11 @@ int main(int argc, char** argv)
     std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./wordcount_idle128_r5.csv";
+  std::string nvml_filename = "./wordcount_t64_b16.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("idle128_r5_wordcount_memory");
+  type.append("t64_b16_wordcount_memory");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -164,23 +164,21 @@ int main(int argc, char** argv)
   cudaMemset(d_count, 0, sizeof(int));
 
   // threads and blocks configurations
-  // Original: 8, 256
+  // Original: 16, 256
 
   // Keep ratio the same
-  // Test1: 16, 128
-  // Test2: 4, 512
-  // Test3: 32, 64
+  // Test1: 32, 128
+  // Test2: 8, 512
 
   // Change blocks
-  // Test4: 1, 256
-  // Test5: 4, 256
-  // Test6: 16, 256
-  // Test7: 32, 256
+  // Test3: 32, 256
+  // Test4: 8, 256
+  // Test5: 64, 256
 
   //Change threads
-  // Test8: 8, 512
-  // Test9: 8, 128
-  // Test10: 8, 1024
+  // Test6: 16, 512
+  // Test7: 16, 64
+  // Test8: 16, 1024
 
   nvml.log_point();
 
