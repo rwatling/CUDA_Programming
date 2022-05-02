@@ -168,11 +168,11 @@ int MatrixMultiply(int argc, char **argv,
    std::cerr << "cudaSetDevice failed for nvml\n" << std::endl;
   }
 
-  std::string nvml_filename = "./matrixMul_t256_b50.csv";
+  std::string nvml_filename = "./matrixMul_t1024_b200.csv";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
-  type.append("t256_b50_matrixMul_compute");
+  type.append("t1024_b200_matrixMul_compute");
   nvmlClass nvml( nvml_dev, nvml_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
@@ -268,7 +268,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEventRecord(start, 0);
 
   // Execute the kernel
-  int nIter = 75000;
+  int nIter = 1;//75000;
 
   for (int j = 0; j < nIter; j++) {
     //if (block_size == 16) {

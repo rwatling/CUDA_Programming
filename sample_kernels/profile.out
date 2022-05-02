@@ -1,0 +1,112 @@
+==PROF== Connected to process 230671 (/home/rwatling/CUDA_Programming/sample_kernels/compute/matrixMul/matrixMul)
+==PROF== Profiling "MatrixMulCUDA" - 1: 0%....50%....100% - 34 passes
+[Matrix Multiply Using CUDA] - Starting...
+MatrixA(320,320), MatrixB(640,320)
+Kernel elapsed time: 3587.95 (ms)
+
+Total blocks: 200
+Threads per block: 1024
+==PROF== Disconnected from process 230671
+[230671] matrixMul@127.0.0.1
+  void MatrixMulCUDA<32>(float*, float*, float*, int, int, int, int), 2022-May-02 07:05:44, Context 1, Stream 13
+    Section: GPU Speed Of Light
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    DRAM Frequency                                                           cycle/nsecond                           9.46
+    SM Frequency                                                             cycle/nsecond                           1.39
+    Elapsed Cycles                                                                   cycle                        106,469
+    Memory [%]                                                                           %                          64.98
+    SOL DRAM                                                                             %                           1.77
+    Duration                                                                       usecond                          76.77
+    SOL L1/TEX Cache                                                                     %                          81.18
+    SOL L2 Cache                                                                         %                          10.70
+    SM Active Cycles                                                                 cycle                      85,181.61
+    SM [%]                                                                               %                          64.98
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    OK    Compute and Memory are well-balanced: To reduce runtime, both computation and memory traffic must be reduced. 
+          Check both the Compute Workload Analysis and Memory Workload Analysis report sections.                        
+
+    OK    The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 6% of 
+          this device's fp32 peak performance and 0% of its fp64 peak performance.                                      
+
+    Section: Compute Workload Analysis
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    Executed Ipc Active                                                         inst/cycle                           0.89
+    Executed Ipc Elapsed                                                        inst/cycle                           0.71
+    Issue Slots Busy                                                                     %                          22.43
+    Issued Ipc Active                                                           inst/cycle                           0.90
+    SM Busy                                                                              %                          28.40
+    ---------------------------------------------------------------------- --------------- ------------------------------
+
+    Section: Memory Workload Analysis
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    Memory Throughput                                                         Gbyte/second                          16.05
+    Mem Busy                                                                             %                          38.82
+    Max Bandwidth                                                                        %                          64.98
+    L1/TEX Hit Rate                                                                      %                           1.26
+    L2 Compression Success Rate                                                          %                              0
+    L2 Compression Ratio                                                                                                0
+    L2 Hit Rate                                                                          %                          92.80
+    Mem Pipes Busy                                                                       %                          64.98
+    ---------------------------------------------------------------------- --------------- ------------------------------
+
+    Section: Scheduler Statistics
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    One or More Eligible                                                                 %                          22.46
+    Issued Warp Per Scheduler                                                                                        0.22
+    No Eligible                                                                          %                          77.54
+    Active Warps Per Scheduler                                                        warp                           8.03
+    Eligible Warps Per Scheduler                                                      warp                           0.98
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    WRN   Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only      
+          issues an instruction every 4.5 cycles. This might leave hardware resources underutilized and may lead to     
+          less optimal performance. Out of the maximum of 12 warps per scheduler, this kernel allocates an average of   
+          8.03 active warps per scheduler, but only an average of 0.98 warps were eligible per cycle. Eligible warps    
+          are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible   
+          warp results in no instruction being issued and the issue slot remains unused. To increase the number of      
+          eligible warps either increase the number of active warps or reduce the time the active warps are stalled.    
+
+    Section: Warp State Statistics
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    Warp Cycles Per Issued Instruction                                               cycle                          35.73
+    Warp Cycles Per Executed Instruction                                             cycle                          35.92
+    Avg. Active Threads Per Warp                                                                                       32
+    Avg. Not Predicated Off Threads Per Warp                                                                        31.24
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    WRN   On average each warp of this kernel spends 20.8 cycles being stalled waiting for the MIO instruction queue to 
+          be not full. This represents about 58.1% of the total average of 35.7 cycles between issuing two              
+          instructions. This stall reason is high in cases of extreme utilization of the MIO pipelines, which include   
+          special math instructions, dynamic branches, as well as shared memory instructions.                           
+
+    Section: Instruction Statistics
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    Avg. Executed Instructions Per Scheduler                                          inst                      19,004.88
+    Executed Instructions                                                             inst                      6,233,600
+    Avg. Issued Instructions Per Scheduler                                            inst                      19,107.94
+    Issued Instructions                                                               inst                      6,267,404
+    ---------------------------------------------------------------------- --------------- ------------------------------
+
+    Section: Launch Statistics
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    Block Size                                                                                                      1,024
+    Grid Size                                                                                                         200
+    Registers Per Thread                                                   register/thread                             36
+    Shared Memory Configuration Size                                                 Kbyte                          16.38
+    Driver Shared Memory Per Block                                             Kbyte/block                           1.02
+    Dynamic Shared Memory Per Block                                             byte/block                              0
+    Static Shared Memory Per Block                                             Kbyte/block                           8.19
+    Threads                                                                         thread                        204,800
+    Waves Per SM                                                                                                     2.44
+    ---------------------------------------------------------------------- --------------- ------------------------------
+
+    Section: Occupancy
+    ---------------------------------------------------------------------- --------------- ------------------------------
+    Block Limit SM                                                                   block                             16
+    Block Limit Registers                                                            block                              1
+    Block Limit Shared Mem                                                           block                             11
+    Block Limit Warps                                                                block                              1
+    Theoretical Active Warps per SM                                                   warp                             32
+    Theoretical Occupancy                                                                %                          66.67
+    Achieved Occupancy                                                                   %                          66.47
+    Achieved Active Warps Per SM                                                      warp                          31.90
+    ---------------------------------------------------------------------- --------------- ------------------------------
+
