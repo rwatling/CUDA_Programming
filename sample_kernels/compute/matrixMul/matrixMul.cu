@@ -169,15 +169,16 @@ int MatrixMultiply(int argc, char **argv,
   }
 
   std::string nvml_filename = "./matrixMul_t1024_b200.csv";
+  std::string nvml_stats_filename = "./matrixMul_t1024_b200_stats.txt";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   type.append("t1024_b200_matrixMul_compute");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
+  nvmlClass nvml( nvml_dev, nvml_filename, nvml_stats_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-  nvml.log_start();
+  nvml.ping_start();
 
   // Allocate host memory for matrices A and B
   unsigned int size_A = dimsA.x * dimsA.y;
@@ -260,7 +261,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEvent_t start, stop;
   float milliseconds;
 
-  nvml.log_point();
+  nvml.ping_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -268,7 +269,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEventRecord(start, 0);
 
   // Execute the kernel
-  int nIter = 1;//75000;
+  int nIter = 75000;//75000;
 
   for (int j = 0; j < nIter; j++) {
     //if (block_size == 16) {
@@ -289,7 +290,7 @@ int MatrixMultiply(int argc, char **argv,
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  nvml.log_point();
+  nvml.ping_point();
 
   // Copy result from device to host
   checkCudaErrors(
@@ -305,7 +306,7 @@ int MatrixMultiply(int argc, char **argv,
   checkCudaErrors(cudaFree(d_C));
 
 
-  nvml.log_stop();
+  nvml.ping_point();
 
   // NVML
   // Create thread to kill GPU stats
