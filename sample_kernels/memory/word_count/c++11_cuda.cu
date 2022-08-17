@@ -133,15 +133,16 @@ int main(int argc, char** argv)
   }
 
   std::string nvml_filename = "./wordcount_t64_b16.csv";
+  std::string nvml_stats_filename = "./wordcount_t64_b16_stats.txt";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   type.append("t64_b16_wordcount_memory");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
+  nvmlClass nvml( nvml_dev, nvml_filename, nvml_stats_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-  nvml.log_start();
+  nvml.ping_start();
 
   const char *filename = "warandpeace.txt";
 
@@ -180,7 +181,7 @@ int main(int argc, char** argv)
   // Test7: 16, 64
   // Test8: 16, 1024
 
-  nvml.log_point();
+  nvml.ping_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -198,7 +199,7 @@ int main(int argc, char** argv)
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  nvml.log_point();
+  nvml.ping_point();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
@@ -213,7 +214,7 @@ int main(int argc, char** argv)
   cudaFree(d_count);
   cudaFree(d_text);
 
-  nvml.log_stop();
+  nvml.ping_point();
 
   // NVML
   // Create thread to kill GPU stats

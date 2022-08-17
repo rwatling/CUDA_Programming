@@ -85,15 +85,16 @@ void runTest(int argc, char **argv) {
   }
 
   std::string nvml_filename = "./simpleCUFFT_t64_b32.csv";
+  std::string nvml_stat_filename = "./simpleCUFFT_t64_b32_stats.txt";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   type.append("t64_b32_simpleCUFFT_hybrid");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
+  nvmlClass nvml( nvml_dev, nvml_filename, nvml_stat_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-  nvml.log_start();
+  nvml.ping_start();
 
   printf("[simpleCUFFT] is starting...\n");
 
@@ -196,7 +197,7 @@ void runTest(int argc, char **argv) {
   int numBlocks = 32;
   int numThreads = 64;
 
-  nvml.log_point();
+  nvml.ping_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -215,7 +216,7 @@ void runTest(int argc, char **argv) {
    cudaEventDestroy(start);
    cudaEventDestroy(stop);
 
-   nvml.log_point();
+   nvml.ping_point();
 
    std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
@@ -261,7 +262,7 @@ void runTest(int argc, char **argv) {
 
   //exit(bTestResult ? EXIT_SUCCESS : EXIT_FAILURE);
 
-  nvml.log_stop();
+  nvml.ping_point();
 
   // NVML
   // Create thread to kill GPU stats

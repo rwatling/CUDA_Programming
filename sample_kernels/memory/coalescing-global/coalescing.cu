@@ -84,15 +84,16 @@ void runTest(int deviceId, int nMB)
   }
 
   std::string nvml_filename = "./coalescing_t64_b1024.csv";
+  std::string nvml_stats_filename = "./colescing_t64_b1024_stats.txt";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   type.append("t_b1024_coalescing_memory");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
+  nvmlClass nvml( nvml_dev, nvml_filename, nvml_stats_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-  nvml.log_start();
+  nvml.ping_start();
 
   //int blockSize = 256;
   //float ms;
@@ -147,7 +148,7 @@ void runTest(int deviceId, int nMB)
   // block 1024 threads 1024
   // block 1024 threads 64
 
-  nvml.log_point();
+  nvml.ping_point();
 
   //Timing
   cudaEventCreate(&start);
@@ -166,7 +167,7 @@ void runTest(int deviceId, int nMB)
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  nvml.log_point();
+  nvml.ping_point();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
@@ -186,7 +187,7 @@ void runTest(int deviceId, int nMB)
   checkCuda( cudaEventDestroy(stopEvent) );*/
   cudaFree(d_a);
 
-  nvml.log_stop();
+  nvml.ping_point();
 
   // NVML
   // Create thread to kill GPU stats

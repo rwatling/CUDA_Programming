@@ -182,17 +182,18 @@ int main(int argc, char **argv) {
   //NVML Stuff
   int devId = 0;
   std::string nvml_filename = "./transpose_t128_b4096.csv";
+  std::string nvml_stats_filename = "./transpose_t128_b4096_stats.txt";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   int iterations = 400000;
 
   type.append("t128_b4096_transpose_memory");
-  nvmlClass nvml( devId, nvml_filename, type);
+  nvmlClass nvml( devId, nvml_filename, nvml_stats_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-  nvml.log_start();
+  nvml.ping_start();
 
   const int nx = 1024;
   const int ny = 1024;
@@ -294,7 +295,7 @@ int main(int argc, char **argv) {
   // ------------------
   checkCuda( cudaMemset(d_tdata, 0, mem_size) );
 
-  nvml.log_point();
+  nvml.ping_point();
 
   checkCuda( cudaEventRecord(startEvent, 0) );
 
@@ -306,7 +307,7 @@ int main(int argc, char **argv) {
   checkCuda( cudaEventSynchronize(stopEvent) );
   checkCuda( cudaEventElapsedTime(&ms, startEvent, stopEvent) );
 
-  nvml.log_point();
+  nvml.ping_point();
 
   checkCuda( cudaMemcpy(h_tdata, d_tdata, mem_size, cudaMemcpyDeviceToHost) );
 
@@ -322,7 +323,7 @@ int main(int argc, char **argv) {
   std::cout << "Total blocks: " << nx/TILE_DIM * ny/TILE_DIM << std::endl;
   std::cout << "Threads per block: " << TILE_DIM * BLOCK_ROWS << std::endl;
 
-  nvml.log_stop();
+  nvml.ping_point();
 
   // NVML
   // Create thread to kill GPU stats
