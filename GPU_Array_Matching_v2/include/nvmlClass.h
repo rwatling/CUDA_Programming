@@ -305,10 +305,15 @@ class nvmlClass {
                 stats_file_ << "Step from " << current_stat_pt - 1 << " to " << current_stat_pt
                             << " time elapsed: " 
                             << (stat_pts_time_steps_[current_stat_pt].timestamp - stat_pts_time_steps_[current_stat_pt - 1].timestamp) / convert_ns_S
-                            << "\n";
+                            << " seconds\n";
               } else {
                 stats_file_ << "Step from beginning to " << current_stat_pt
                             << " energy (mJ): " << step_energy / convert_mJ << "\n";
+              
+                stats_file_ << "Step from beginning to " << current_stat_pt
+                            << " time elapsed: " 
+                            << (stat_pts_time_steps_[current_stat_pt].timestamp - time_steps_[0].timestamp) / convert_ns_S
+                            << " seconds\n";
               }
 
               step_energy = 0;
@@ -335,20 +340,25 @@ class nvmlClass {
         stats_file_ << "Step from " << current_stat_pt - 1 << " to end"
                     << " energy (mJ): " << step_energy / convert_mJ << "\n";
 
-        stats_file_ << "-------------------------------------------------------------------------------------\n";
+        stats_file_ << "Step from " << current_stat_pt - 1 << " to end"
+                            << " time elapsed: " 
+                            << (time_steps_[total_time_steps - 1].timestamp - stat_pts_time_steps_[current_stat_pt - 1].timestamp) / convert_ns_S
+                            << " seconds\n";
 
         // Print energy information
+        stats_file_ << "-------------------------------------------------------------------------------------\n";
+
         stats_file_ << "Total energy (mJ): " << (total_energy / convert_mJ) << "\n";
 
-        // Print total time
+        // Print total time        
         total_time = (time_steps_[total_time_steps - 1].timestamp - time_steps_[0].timestamp);
         stats_file_ << "Total time: " 
                     << total_time / convert_ns_S
-                    << "\n";
-        
-        stats_file_ << "-------------------------------------------------------------------------------------\n";
+                    << " seconds\n";
 
         // Print maxiumum information
+        stats_file_ << "-------------------------------------------------------------------------------------\n";
+
         stats_file_ << "Global maximum power reading: " << max_power 
                  << " mW on step " << max_step
                  << " at timestamp " << max_timestamp << "\n";

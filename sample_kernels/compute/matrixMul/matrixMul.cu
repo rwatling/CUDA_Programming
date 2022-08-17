@@ -272,15 +272,8 @@ int MatrixMultiply(int argc, char **argv,
   int nIter = 75000;//75000;
 
   for (int j = 0; j < nIter; j++) {
-    //if (block_size == 16) {
-      //MatrixMulCUDA<16>
-        //  <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x);
-    //} else {
-
       MatrixMulCUDA<32>
           <<<grid, threads, 0, stream>>>(d_C, d_A, d_B, dimsA.x, dimsB.x, workThreads, idleThreads);
-
-    //}
   }
 
   //Timing

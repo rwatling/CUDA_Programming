@@ -81,15 +81,16 @@ int main(void) {
   int numIdle = 0;
 
   std::string nvml_filename = "./vectorAdd_t256_b512.csv";
+  std::string nvml_stats_filename = "./vectorAdd_t256_b512_stats.txt";
   std::vector<std::thread> cpu_threads;
   std::string type;
 
   type.append("t256_b512_vectorAdd_compute");
-  nvmlClass nvml( nvml_dev, nvml_filename, type);
+  nvmlClass nvml( nvml_dev, nvml_filename, nvml_stats_filename, type);
 
   cpu_threads.emplace_back(std::thread(&nvmlClass::getStats, &nvml));
 
-  nvml.log_start();
+  nvml.ping_start();
 
   // Error code to check return values for CUDA calls
   cudaError_t err = cudaSuccess;
@@ -151,9 +152,8 @@ int main(void) {
   }
 
   // Copy the host input vectors A and B in host memory to the device input
-  // vectors in
-  // device memory
-  //printf("Copy input data from the host memory to the CUDA device\n");
+  // vectors in device memory
+  printf("Copy input data from the host memory to the CUDA device\n");
   err = cudaMemcpy(d_A, h_A, size, cudaMemcpyHostToDevice);
 
   if (err != cudaSuccess) {
@@ -203,7 +203,7 @@ int main(void) {
    //Blocks: 512
    //Threads: 256
 
-   nvml.log_point();
+   nvml.ping_point();
 
    //Timing
    cudaEventCreate(&start);
@@ -222,12 +222,12 @@ int main(void) {
   cudaEventDestroy(start);
   cudaEventDestroy(stop);
 
-  nvml.log_point();
+  nvml.ping_point();
 
   std::cout << "Kernel elapsed time: " << milliseconds << " (ms)" << std::endl << std::endl;
 
-  //std::cout << "Total blocks: " << blocksPerGrid << std::endl;
-  //std::cout << "Threads per block: " << threadsPerBlock << std::endl;
+  std::cout << "Total blocks: " << blocksPerGrid << std::endl;
+  std::cout << "Threads per block: " << threadsPerBlock << std::endl;
 
   if (err != cudaSuccess) {
     fprintf(stderr, "Failed to launch vectorAdd kernel (error code %s)!\n",
@@ -289,7 +289,7 @@ int main(void) {
 
   //printf("Done\n");
 
-  nvml.log_stop();
+  nvml.ping_point();
 
   // NVML
   // Create thread to kill GPU stats
