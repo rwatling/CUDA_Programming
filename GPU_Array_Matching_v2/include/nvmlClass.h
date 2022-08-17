@@ -53,6 +53,8 @@
 
 int constexpr size_of_vector { 100000 };
 int constexpr nvml_device_name_buffer_size { 100 };
+double constexpr convert_mJ { 1000000000 };
+double constexpr convert_ns_S { 1000000000};
 
 // *************** FOR ERROR CHECKING *******************
 #ifndef NVML_RT_CALL
@@ -177,7 +179,7 @@ class nvmlClass {
 
     void ping_start() {
 
-      // Retrieve empty samples
+      // Retrieve empty samples for 5s
       std::this_thread::sleep_for( std::chrono::seconds(5));
 
       ping_point();
@@ -251,9 +253,19 @@ class nvmlClass {
         uint min_step  = 0;
         time_t min_timestamp = 0;
 
-        // Print data
-        // Note: We ignore the very last step so integration works properly
-        for ( int i = 0; i < static_cast<int>( time_steps_.size( ) - 1 ); i++ ) {
+        // Energy stats
+        int current_stat_pt = 0;
+        time_t total_time = 0;
+        double total_energy = 0;
+        double step_energy = 0;
+
+        // Vector sizes
+        int total_time_steps = static_cast<int>( time_steps_.size( ));
+        int total_stat_pts = static_cast<int> ( stat_pts_time_steps_.size( ));
+
+        // Analyze stats
+        // Note: We ignore the very last step of time_steps_ so integration works properly
+        for ( int i = 0; i < (total_time_steps - 1 ); i++ ) {
 
             // Current information
             time_t current_timestamp = time_steps_[i].timestamp;
@@ -271,20 +283,39 @@ class nvmlClass {
                      << time_steps_[i].powerLimit << ","  // mW
                      << time_steps_[i].graphicsClock << "," //MHz
                      << time_steps_[i].memClock << "," //MHz
-                     << time_steps_[i].smClock << "\n"; //MHz
+                     << time_steps_[i].smClock << "\n"; //MHz            
 
-            //for ( int j = 0; j < static_cast<int>( significant_points_.size( ) ); j++)
+            // Calculate energy
+            double h_time = (double) next_timestamp - current_timestamp;
+            double temp_energy = 0.5 * (current_power + next_power) * h_time;
 
-            /*if current_timestamp < significant_points_time_[0] {
-              //Calculate energy
-            } else if current_timestamp < significant_points_time_[1] {
-              //Calculate energy
-            } else if current_timestamp < significant_points_time_[2] {
-              //Calculate energy
-            } else if current_timestamp < significant_points_time[3] {
-              //Calculate energy
-            }*/
+            // Update energy totals
+            step_energy += temp_energy;
+            total_energy += temp_energy;
 
+            // Update timestep and report information from timestep
+            if ((next_timestamp > stat_pts_time_steps_[current_stat_pt].timestamp) && (current_stat_pt < total_stat_pts)) {
+              
+              stats_file_ << "-------------------------------------------------------------------------------------\n"; 
+
+              if (current_stat_pt > 0) {
+                stats_file_ << "Step from " << current_stat_pt - 1 << " to " << current_stat_pt
+                          << " energy (mJ): " << step_energy / convert_mJ << "\n";
+
+                stats_file_ << "Step from " << current_stat_pt - 1 << " to " << current_stat_pt
+                            << " time elapsed: " 
+                            << (stat_pts_time_steps_[current_stat_pt].timestamp - stat_pts_time_steps_[current_stat_pt - 1].timestamp) / convert_ns_S
+                            << "\n";
+              } else {
+                stats_file_ << "Step from beginning to " << current_stat_pt
+                            << " energy (mJ): " << step_energy / convert_mJ << "\n";
+              }
+
+              step_energy = 0;
+              current_stat_pt++;
+            }
+
+            // Max and min
             if (max_power < current_power) {
               max_power = current_power;
               max_step = i;
@@ -298,19 +329,36 @@ class nvmlClass {
             }
         }
 
+        //Last point to end
+        stats_file_ << "-------------------------------------------------------------------------------------\n";
+
+        stats_file_ << "Step from " << current_stat_pt - 1 << " to end"
+                    << " energy (mJ): " << step_energy / convert_mJ << "\n";
+
+        stats_file_ << "-------------------------------------------------------------------------------------\n";
+
+        // Print energy information
+        stats_file_ << "Total energy (mJ): " << (total_energy / convert_mJ) << "\n";
+
+        // Print total time
+        total_time = (time_steps_[total_time_steps - 1].timestamp - time_steps_[0].timestamp);
+        stats_file_ << "Total time: " 
+                    << total_time / convert_ns_S
+                    << "\n";
+        
+        stats_file_ << "-------------------------------------------------------------------------------------\n";
+
         // Print maxiumum information
         stats_file_ << "Global maximum power reading: " << max_power 
                  << " mW on step " << max_step
                  << " at timestamp " << max_timestamp << "\n";
         
+        // Print minimum information
         stats_file_ << "Global minimum power reading: " << min_power 
                  << " mW on step " << min_step
                  << " at timestamp " << min_timestamp << "\n";
-
-        // Print energy usage information
-        // We want
-        // - Between each ping
-        // - Global energy usage
+        
+        stats_file_ << "-------------------------------------------------------------------------------------\n";
 
         outfile_.close( );
         stats_file_.close(  );
