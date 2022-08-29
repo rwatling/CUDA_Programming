@@ -3,8 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "papi.h"
-#include "papi_test.h"
+#include "powercapPAPIClass.h"
 
 #define MATRIX_SIZE 1024
 
@@ -44,10 +43,21 @@ void matrix_multiply()
 
 int main ( int argc, char **argv) {
     
-    
+    std::string papi_filename = "test.txt";
+
+    powercapPAPIClass papi(papi_filename);
+
+    papi.initialize_papi();
+
+    papi.start_counting();
 
     // Sample Work
     printf("Hello world!\n");
-
     matrix_multiply();
+    matrix_multiply();
+    matrix_multiply();
+
+    papi.stop_counting();
+
+    papi.finalize_papi();
 }

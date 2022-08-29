@@ -1,0 +1,28 @@
+PAPI initialized
+
+Stopping measurements, took %.3fs, gathering results...
+
+
+scaled energy measurements:
+powercap:::ENERGY_UJ:ZONE0	 1214.53 J	Average Power 48.5812 W
+powercap:::ENERGY_UJ:ZONE0_SUBZONE0	 132.966 J	Average Power 5.31862 W
+powercap:::ENERGY_UJ:ZONE1	 1117.31 J	Average Power 44.6923 W
+powercap:::ENERGY_UJ:ZONE1_SUBZONE0	 159.769 J	Average Power 6.39076 W
+
+long term time window values:
+powercap:::TIME_WINDOW_A_US:ZONE0  0.999424 (secs)
+powercap:::TIME_WINDOW_A_US:ZONE0_SUBZONE0  0.000976 (secs)
+powercap:::TIME_WINDOW_A_US:ZONE1  0.999424 (secs)
+powercap:::TIME_WINDOW_A_US:ZONE1_SUBZONE0  0.000976 (secs)
+
+short term time window values:
+
+long term power limit:
+powercap:::POWER_LIMIT_A_UW:ZONE0  205 (watts)
+powercap:::POWER_LIMIT_A_UW:ZONE0_SUBZONE0  39 (watts)
+powercap:::POWER_LIMIT_A_UW:ZONE1  205 (watts)
+powercap:::POWER_LIMIT_A_UW:ZONE1_SUBZONE0  39 (watts)
+
+short term power limit:
+powercap:::POWER_LIMIT_B_UW:ZONE0  413 (watts)
+powercap:::POWER_LIMIT_B_UW:ZONE1  413 (watts)
